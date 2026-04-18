@@ -247,20 +247,6 @@ flutter analyze
 
 Three hundred and sixty-seven tests cover every resolver, every builder, every registry, the architecture invariants, and end-to-end `RuneView` renders for each phase. Main is kept green at all times; every commit passes both gates under `very_good_analysis`.
 
-## Roadmap
-
-- [x] **Phase 1** — parse → resolve → build pipeline with five MVP widgets and `EdgeInsets.all`. Tagged `v0.0.1-phase1`.
-- [x] **Phase 2a** — named constants, shallow data binding, string interpolation, compound literals. Tagged `v0.0.2-phase2a`.
-- [x] **Phase 2b** — value builders (`EdgeInsets.symmetric/only/fromLTRB`, `TextStyle`, `Color(hex)`, `BorderRadius.circular`, `BoxDecoration`). Tagged `v0.0.3-phase2b`.
-- [x] **Phase 2c** — layout/chrome widget builders (`Padding`, `Stack`, `Card`, `Image.network/.asset`, `Icon`, `ListView`, `AppBar`, `Scaffold`, and more). Tagged `v0.0.4-phase2c`.
-- [x] **Phase 2d** — button widgets (`ElevatedButton`, `TextButton`, `IconButton`) + `RuneView.onEvent` catch-all event bridge. Tagged `v0.0.5-phase2d`.
-- [x] **Phase 2e** — `RuneDefaults` helper, architecture test, pub-readiness. Tagged `v0.0.6-phase2e`.
-- [x] **Polish** — `very_good_analysis ^5.1.0` migration, `CHANGELOG.md`, pub metadata. Tagged `v0.0.7-polish`.
-- [x] **Phase 3a** — `PropertyResolver` + `ExtensionRegistry` + `RuneBridge` contract + shallow data-prefix traversal. Tagged `v0.0.8-phase3a`.
-- [x] **Phase 3b** — deep dot-path (`user.profile.name`), index access (`items[0]`), list `for`-elements. Tagged `v0.0.9-phase3b`.
-- [x] **Phase 3c** — sibling [`rune_responsive_sizer`](packages/rune_responsive_sizer) demo package (`.w`/`.h`/`.sp`/`.dm` via MediaQuery). Tagged `v0.0.10-phase3c`.
-- [x] **Phase 4** — performance benchmarks, dev overlay, hot-reload cache invalidation, `0.1.0` release. Tagged `v0.1.0`. `pub.dev` publish pending user action.
-
 ## Example
 
 See [`example/`](example/) for a runnable demo that exercises the full current feature set.
