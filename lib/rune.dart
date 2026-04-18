@@ -6,6 +6,7 @@ library rune;
 
 export 'src/binding/rune_data_context.dart' show RuneDataContext;
 export 'src/binding/rune_event_dispatcher.dart' show RuneEventDispatcher;
+export 'src/bridges/rune_bridge.dart' show RuneBridge;
 export 'src/builders/builder.dart'
     show RuneBuilder, RuneValueBuilder, RuneWidgetBuilder;
 export 'src/builders/resolved_arguments.dart' show ResolvedArguments;
@@ -15,6 +16,8 @@ export 'src/core/rune_context.dart' show RuneContext;
 export 'src/defaults/rune_defaults.dart' show RuneDefaults;
 export 'src/dynamic_view.dart' show RuneView;
 export 'src/registry/constant_registry.dart' show ConstantRegistry;
+export 'src/registry/extension_registry.dart'
+    show ExtensionRegistry, RuneExtensionHandler;
 export 'src/registry/registry.dart' show Registry;
 export 'src/registry/value_registry.dart' show ValueRegistry;
 export 'src/registry/widget_registry.dart' show WidgetRegistry;

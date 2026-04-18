@@ -1,5 +1,15 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:rune/src/bridges/rune_bridge.dart';
 import 'package:rune/src/config.dart';
+import 'package:rune/src/registry/extension_registry.dart';
+
+final class _TestBridge implements RuneBridge {
+  const _TestBridge();
+  @override
+  void registerInto(RuneConfig config) {
+    config.extensions.register('testBridgeProp', (t, c) => 'registered');
+  }
+}
 
 void main() {
   group('RuneConfig.defaults()', () {
@@ -92,6 +102,27 @@ void main() {
       expect(c.widgets.contains('ElevatedButton'), isTrue);
       expect(c.widgets.contains('TextButton'), isTrue);
       expect(c.widgets.contains('IconButton'), isTrue);
+    });
+
+    test('exposes an extensions registry', () {
+      final c = RuneConfig.defaults();
+      expect(c.extensions, isA<ExtensionRegistry>());
+    });
+
+    test('empty config has empty extensions', () {
+      final c = RuneConfig();
+      expect(c.extensions.size, 0);
+    });
+
+    test('withBridges applies each bridge', () {
+      final c = RuneConfig.defaults().withBridges(const [_TestBridge()]);
+      expect(c.extensions.contains('testBridgeProp'), isTrue);
+    });
+
+    test('withBridges returns same config instance (fluent)', () {
+      final c = RuneConfig();
+      final result = c.withBridges(const [_TestBridge()]);
+      expect(identical(c, result), isTrue);
     });
   });
 }

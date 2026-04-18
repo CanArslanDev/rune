@@ -1,5 +1,7 @@
+import 'package:rune/src/bridges/rune_bridge.dart';
 import 'package:rune/src/defaults/rune_defaults.dart';
 import 'package:rune/src/registry/constant_registry.dart';
+import 'package:rune/src/registry/extension_registry.dart';
 import 'package:rune/src/registry/value_registry.dart';
 import 'package:rune/src/registry/widget_registry.dart';
 
@@ -17,9 +19,11 @@ final class RuneConfig {
     WidgetRegistry? widgets,
     ValueRegistry? values,
     ConstantRegistry? constants,
+    ExtensionRegistry? extensions,
   })  : widgets = widgets ?? WidgetRegistry(),
         values = values ?? ValueRegistry(),
-        constants = constants ?? ConstantRegistry();
+        constants = constants ?? ConstantRegistry(),
+        extensions = extensions ?? ExtensionRegistry();
 
   /// Creates a configuration with the full Phase 1-2d default builder
   /// set pre-registered via [RuneDefaults.registerAll]: Phase 1 MVP
@@ -41,4 +45,28 @@ final class RuneConfig {
   /// Registry of named static constants (e.g. `Colors.red`,
   /// `MainAxisAlignment.center`).
   final ConstantRegistry constants;
+
+  /// Registry of property-access extensions (`.w`, `.h`, `.px`, etc.)
+  /// consulted by `PropertyResolver` when evaluating `PropertyAccess`
+  /// expressions.
+  final ExtensionRegistry extensions;
+
+  /// Applies each bridge in [bridges] to this config in order,
+  /// registering their contributions. Returns `this` so the call can
+  /// chain fluently.
+  ///
+  /// ```dart
+  /// final config = RuneConfig.defaults()
+  ///     .withBridges([const MyBridge(), const OtherBridge()]);
+  /// ```
+  ///
+  /// Duplicate registrations across bridges surface as `StateError`
+  /// from the underlying registries — bridges should own disjoint
+  /// namespaces.
+  RuneConfig withBridges(List<RuneBridge> bridges) {
+    for (final bridge in bridges) {
+      bridge.registerInto(this);
+    }
+    return this; // ignore: avoid_returning_this
+  }
 }
