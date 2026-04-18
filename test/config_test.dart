@@ -46,5 +46,16 @@ void main() {
       final c = RuneConfig();
       expect(c.constants.size, 0);
     });
+
+    test('registers Phase 2b value builders', () {
+      final c = RuneConfig.defaults();
+      expect(c.values.contains('EdgeInsets.symmetric'), isTrue);
+      expect(c.values.contains('EdgeInsets.only'), isTrue);
+      expect(c.values.contains('EdgeInsets.fromLTRB'), isTrue);
+      expect(c.values.contains('Color'), isTrue);
+      expect(c.values.contains('TextStyle'), isTrue);
+      expect(c.values.contains('BorderRadius.circular'), isTrue);
+      expect(c.values.contains('BoxDecoration'), isTrue);
+    });
   });
 }

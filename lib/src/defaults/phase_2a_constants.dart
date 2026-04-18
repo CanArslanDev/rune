@@ -6,7 +6,7 @@ import 'package:rune/src/registry/constant_registry.dart';
 ///   base tone of each `MaterialColor`, which is itself a `Color`).
 /// - All enum values in: `MainAxisAlignment`, `CrossAxisAlignment`,
 ///   `MainAxisSize`, `TextAlign`, `BoxFit`, `StackFit`, `Axis`,
-///   `TextOverflow`.
+///   `TextOverflow`, `BoxShape`.
 /// - The nine aligned-singleton `Alignment` values.
 /// - The `FontWeight` weights `w100..w900`, `normal`, and `bold`.
 /// - `EdgeInsets.zero`.
@@ -25,6 +25,7 @@ void registerPhase2aConstants(ConstantRegistry registry) {
   _registerStackFit(registry);
   _registerAxis(registry);
   _registerFontWeight(registry);
+  _registerBoxShape(registry); // Phase 2b addition
   _registerEdgeInsetsSingletons(registry);
 }
 
@@ -171,6 +172,13 @@ void _registerFontWeight(ConstantRegistry r) {
     'w900': FontWeight.w900,
     'normal': FontWeight.normal,
     'bold': FontWeight.bold,
+  });
+}
+
+// Registers all BoxShape enum values by name.
+void _registerBoxShape(ConstantRegistry r) {
+  r.registerAll('BoxShape', <String, Object?>{
+    for (final v in BoxShape.values) v.name: v,
   });
 }
 

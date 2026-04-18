@@ -90,5 +90,12 @@ void main() {
       registerPhase2aConstants(r);
       expect(() => registerPhase2aConstants(r), throwsStateError);
     });
+
+    test('seeds BoxShape', () {
+      final r = ConstantRegistry();
+      registerPhase2aConstants(r);
+      expect(r.resolve('BoxShape', 'rectangle'), BoxShape.rectangle);
+      expect(r.resolve('BoxShape', 'circle'), BoxShape.circle);
+    });
   });
 }
