@@ -4,6 +4,7 @@ import 'package:rune/src/binding/rune_data_context.dart';
 import 'package:rune/src/binding/rune_event_dispatcher.dart';
 import 'package:rune/src/core/rune_context.dart';
 import 'package:rune/src/registry/constant_registry.dart';
+import 'package:rune/src/registry/extension_registry.dart';
 import 'package:rune/src/registry/value_registry.dart';
 import 'package:rune/src/registry/widget_registry.dart';
 
@@ -21,6 +22,7 @@ void main() {
         data: data,
         events: events,
         constants: constants,
+        extensions: ExtensionRegistry(),
       );
       expect(ctx.widgets, same(widgets));
       expect(ctx.values, same(values));
@@ -37,6 +39,7 @@ void main() {
         data: RuneDataContext.empty,
         events: RuneEventDispatcher(),
         constants: ConstantRegistry(),
+        extensions: ExtensionRegistry(),
       );
       final newData = RuneDataContext(const {'k': 'v'});
       final copy = ctx.copyWith(data: newData);
@@ -54,6 +57,7 @@ void main() {
         data: RuneDataContext.empty,
         events: RuneEventDispatcher(),
         constants: ConstantRegistry(),
+        extensions: ExtensionRegistry(),
       );
       final copy = ctx.copyWith();
       expect(copy.widgets, same(ctx.widgets));
@@ -84,6 +88,7 @@ void main() {
         data: RuneDataContext.empty,
         events: RuneEventDispatcher(),
         constants: ConstantRegistry(),
+        extensions: ExtensionRegistry(),
         flutterContext: captured,
       );
 
@@ -98,6 +103,7 @@ void main() {
         data: RuneDataContext.empty,
         events: RuneEventDispatcher(),
         constants: constants,
+        extensions: ExtensionRegistry(),
       );
       expect(ctx.constants, same(constants));
     });
@@ -111,11 +117,43 @@ void main() {
         data: RuneDataContext.empty,
         events: RuneEventDispatcher(),
         constants: originalConstants,
+        extensions: ExtensionRegistry(),
       );
       expect(ctx.copyWith().constants, same(originalConstants));
       expect(
         ctx.copyWith(constants: newConstants).constants,
         same(newConstants),
+      );
+    });
+
+    test('extensions field is required and exposed', () {
+      final extensions = ExtensionRegistry();
+      final ctx = RuneContext(
+        widgets: WidgetRegistry(),
+        values: ValueRegistry(),
+        data: RuneDataContext.empty,
+        events: RuneEventDispatcher(),
+        constants: ConstantRegistry(),
+        extensions: extensions,
+      );
+      expect(ctx.extensions, same(extensions));
+    });
+
+    test('copyWith replaces extensions only when provided', () {
+      final original = ExtensionRegistry();
+      final replacement = ExtensionRegistry();
+      final ctx = RuneContext(
+        widgets: WidgetRegistry(),
+        values: ValueRegistry(),
+        data: RuneDataContext.empty,
+        events: RuneEventDispatcher(),
+        constants: ConstantRegistry(),
+        extensions: original,
+      );
+      expect(ctx.copyWith().extensions, same(original));
+      expect(
+        ctx.copyWith(extensions: replacement).extensions,
+        same(replacement),
       );
     });
   });

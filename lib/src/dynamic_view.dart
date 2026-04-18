@@ -8,6 +8,7 @@ import 'package:rune/src/core/exceptions.dart';
 import 'package:rune/src/core/rune_context.dart';
 import 'package:rune/src/parser/ast_cache.dart';
 import 'package:rune/src/parser/dart_parser.dart';
+import 'package:rune/src/registry/extension_registry.dart';
 import 'package:rune/src/resolver/expression_resolver.dart';
 import 'package:rune/src/resolver/identifier_resolver.dart';
 import 'package:rune/src/resolver/invocation_resolver.dart';
@@ -109,6 +110,7 @@ class _RuneViewState extends State<RuneView> {
       data: RuneDataContext(widget.data ?? const <String, Object?>{}),
       events: events,
       constants: widget.config.constants,
+      extensions: ExtensionRegistry(),
       flutterContext: flutterCtx,
     );
   }

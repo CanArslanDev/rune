@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:rune/src/binding/rune_data_context.dart';
 import 'package:rune/src/binding/rune_event_dispatcher.dart';
 import 'package:rune/src/registry/constant_registry.dart';
+import 'package:rune/src/registry/extension_registry.dart';
 import 'package:rune/src/registry/value_registry.dart';
 import 'package:rune/src/registry/widget_registry.dart';
 
@@ -12,6 +13,7 @@ import 'package:rune/src/registry/widget_registry.dart';
 /// - [data] to resolve free identifiers (e.g. `Text(userName)`),
 /// - [events] to wire named-event handlers (e.g. `onPressed: "submit"`),
 /// - [constants] to resolve prefixed static constants (e.g. `Colors.red`),
+/// - [extensions] to resolve property-access extensions (e.g. `10.w`),
 /// - [flutterContext] to access `MediaQuery`, `Theme`, etc. when needed.
 ///
 /// [flutterContext] is nullable because pure resolver/builder unit tests
@@ -25,13 +27,14 @@ import 'package:rune/src/registry/widget_registry.dart';
 @immutable
 final class RuneContext {
   /// Constructs a [RuneContext] with the given registries, data, events,
-  /// and constants.
+  /// constants, and extensions.
   const RuneContext({
     required this.widgets,
     required this.values,
     required this.data,
     required this.events,
     required this.constants,
+    required this.extensions,
     this.flutterContext,
   });
 
@@ -54,6 +57,11 @@ final class RuneContext {
   /// when resolving `PrefixedIdentifier` expressions like `Colors.red`.
   final ConstantRegistry constants;
 
+  /// Registry of property-access extensions (e.g., `.w`, `.h`, `.px`)
+  /// consulted by `PropertyResolver` when evaluating `PropertyAccess`
+  /// expressions like `10.w`.
+  final ExtensionRegistry extensions;
+
   /// The enclosing Flutter `BuildContext`, used by builders that need
   /// `MediaQuery`, `Theme`, etc. `null` during non-widget-pumping unit
   /// tests where no real widget tree exists.
@@ -73,6 +81,7 @@ final class RuneContext {
     RuneDataContext? data,
     RuneEventDispatcher? events,
     ConstantRegistry? constants,
+    ExtensionRegistry? extensions,
     BuildContext? flutterContext,
   }) {
     return RuneContext(
@@ -81,6 +90,7 @@ final class RuneContext {
       data: data ?? this.data,
       events: events ?? this.events,
       constants: constants ?? this.constants,
+      extensions: extensions ?? this.extensions,
       flutterContext: flutterContext ?? this.flutterContext,
     );
   }
