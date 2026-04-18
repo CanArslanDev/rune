@@ -6,6 +6,17 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [0.0.10] — 2026-04-18 — Phase 3c
+
+### Added
+- Sibling package `rune_responsive_sizer` at `packages/rune_responsive_sizer/`
+  — a `RuneBridge` implementation that registers four responsive-sizing
+  property extensions: `.w` (percent of screen width), `.h` (percent of
+  screen height), `.sp` (text-scaled pixels), `.dm` (percent of
+  `min(width, height)`). Applied via
+  `RuneConfig.defaults().withBridges([const ResponsiveSizerBridge()])`.
+  Independent version track; ships at `0.0.1` alongside this root bump.
+
 ## [0.0.9] — 2026-04-18 — Phase 3b
 
 ### Added
@@ -174,7 +185,8 @@ All notable changes to this project are documented here. Format follows
 - Example app at `example/lib/main.dart` demonstrating the full Phase 1
   feature set.
 
-[Unreleased]: https://github.com/CanArslanDev/rune/compare/v0.0.9...HEAD
+[Unreleased]: https://github.com/CanArslanDev/rune/compare/v0.0.10...HEAD
+[0.0.10]: https://github.com/CanArslanDev/rune/compare/v0.0.9-phase3b...v0.0.10-phase3c
 [0.0.9]: https://github.com/CanArslanDev/rune/compare/v0.0.8-phase3a...v0.0.9-phase3b
 [0.0.8]: https://github.com/CanArslanDev/rune/compare/v0.0.7-polish...v0.0.8-phase3a
 [0.0.7]: https://github.com/CanArslanDev/rune/compare/v0.0.6-phase2e...v0.0.7-polish

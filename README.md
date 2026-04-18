@@ -224,6 +224,8 @@ final config = RuneConfig.defaults()
 
 The `RuneDefaults` helper exposes the same surface internally: `RuneDefaults.registerWidgets(registry)` / `registerValues` / `registerConstants` / `registerAll(config)`. Handy for custom configs that want only a subset of defaults.
 
+A live working bridge ships at [`packages/rune_responsive_sizer`](packages/rune_responsive_sizer) — a ~70-line implementation that adds `.w` / `.h` / `.sp` / `.dm` responsive-sizing extensions. Use it as both a consumer (pair it with `rune` via path dep) and a reference for writing your own bridges.
+
 ## Error handling
 
 - `RuneException` is a `sealed class` with five variants:
@@ -256,7 +258,7 @@ Three hundred and sixty-seven tests cover every resolver, every builder, every r
 - [x] **Polish** — `very_good_analysis ^5.1.0` migration, `CHANGELOG.md`, pub metadata. Tagged `v0.0.7-polish`.
 - [x] **Phase 3a** — `PropertyResolver` + `ExtensionRegistry` + `RuneBridge` contract + shallow data-prefix traversal. Tagged `v0.0.8-phase3a`.
 - [x] **Phase 3b** — deep dot-path (`user.profile.name`), index access (`items[0]`), list `for`-elements. Tagged `v0.0.9-phase3b`.
-- [ ] **Phase 3c** — sibling `rune_responsive_sizer` demo package (`.w`/`.h`/`.sp` via MediaQuery).
+- [x] **Phase 3c** — sibling [`rune_responsive_sizer`](packages/rune_responsive_sizer) demo package (`.w`/`.h`/`.sp`/`.dm` via MediaQuery). Tagged `v0.0.10-phase3c`.
 - [ ] **Phase 4** — performance benchmarks, dev overlay, hot-reload cache invalidation, `0.1.0` release + `pub.dev` publish.
 
 ## Example
