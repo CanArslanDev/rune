@@ -42,5 +42,13 @@ void main() {
         throwsA(isA<ResolveException>()),
       );
     });
+
+    test('AdjacentStrings concatenates in source order', () {
+      expect(resolver.resolve(parseLit("'hello ' 'world'")), 'hello world');
+    });
+
+    test('AdjacentStrings with three parts', () {
+      expect(resolver.resolve(parseLit("'a' 'b' 'c'")), 'abc');
+    });
   });
 }

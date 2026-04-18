@@ -24,6 +24,8 @@ final class LiteralResolver {
       BooleanLiteral(:final value) => value,
       NullLiteral() => null,
       SimpleStringLiteral(:final value) => value,
+      AdjacentStrings(:final strings) =>
+        strings.map((s) => (s as SimpleStringLiteral).value).join(),
       _ => throw ResolveException(
           node.toSource(),
           'Unsupported literal: ${node.runtimeType}',
