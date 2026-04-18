@@ -4,5 +4,15 @@
 /// `import 'package:rune/rune.dart';` and never reach into `src/`.
 library rune;
 
-// Public exports are added incrementally as Phase 1 tasks land.
+export 'src/binding/rune_data_context.dart' show RuneDataContext;
+export 'src/binding/rune_event_dispatcher.dart' show RuneEventDispatcher;
+export 'src/builders/builder.dart'
+    show RuneBuilder, RuneValueBuilder, RuneWidgetBuilder;
+export 'src/builders/resolved_arguments.dart' show ResolvedArguments;
+export 'src/config.dart' show RuneConfig;
 export 'src/core/exceptions.dart';
+export 'src/core/rune_context.dart' show RuneContext;
+export 'src/dynamic_view.dart' show RuneView;
+export 'src/registry/registry.dart' show Registry;
+export 'src/registry/value_registry.dart' show ValueRegistry;
+export 'src/registry/widget_registry.dart' show WidgetRegistry;
