@@ -6,6 +6,29 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [0.1.0] — 2026-04-18 — Phase 4
+
+### Added
+- `benchmark/parse_resolve_bench.dart` — runnable Dart script that
+  measures parse + resolve time on a canonical ~30-node widget tree
+  over 500 iterations. Reports cold (cache-miss) and warm (cache-hit)
+  stats; soft-checks cold p95 against a 16ms / 60fps budget.
+- `RuneDevOverlay` — opt-in `StatelessWidget` wrapper that, on
+  long-press in debug/profile builds, opens a bottom sheet with the
+  source string and a descendant count. Pass-through in release
+  builds. Exported from `package:rune/rune.dart`.
+
+### Changed
+- `RuneView` now overrides `State.reassemble()` to clear its per-
+  instance `AstCache`. Hot-reload picks up source edits in the host
+  app immediately; previously the cached parsed AST would continue
+  to serve.
+
+### Released
+- First minor release. API stable enough for early adopters. Future
+  0.x minors focus on widget / value / extension additions without
+  breaking existing consumers.
+
 ## [0.0.10] — 2026-04-18 — Phase 3c
 
 ### Added
@@ -185,7 +208,8 @@ All notable changes to this project are documented here. Format follows
 - Example app at `example/lib/main.dart` demonstrating the full Phase 1
   feature set.
 
-[Unreleased]: https://github.com/CanArslanDev/rune/compare/v0.0.10...HEAD
+[Unreleased]: https://github.com/CanArslanDev/rune/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/CanArslanDev/rune/compare/v0.0.10-phase3c...v0.1.0
 [0.0.10]: https://github.com/CanArslanDev/rune/compare/v0.0.9-phase3b...v0.0.10-phase3c
 [0.0.9]: https://github.com/CanArslanDev/rune/compare/v0.0.8-phase3a...v0.0.9-phase3b
 [0.0.8]: https://github.com/CanArslanDev/rune/compare/v0.0.7-polish...v0.0.8-phase3a

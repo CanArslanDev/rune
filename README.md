@@ -32,7 +32,7 @@ Deliver UI from a server, a CMS, or a designer tool without shipping a new app b
 
 ```yaml
 dependencies:
-  rune: ^0.0.9
+  rune: ^0.1.0
 ```
 
 The package is pre-publication; use a `git:` or `path:` dependency until a tagged `pub.dev` release lands. `dart pub publish --dry-run` currently reports 0 errors / 0 warnings.
@@ -99,7 +99,7 @@ A runnable version lives in [`example/`](example/).
 
 ## Supported source syntax
 
-Current release: **Phase 3b (`v0.0.9-phase3b`)**.
+Current release: **`v0.1.0`** (first minor — Phase 1 through Phase 4 shipped).
 
 | Category              | Elements                                                                                                                                                                                                     |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -259,7 +259,7 @@ Three hundred and sixty-seven tests cover every resolver, every builder, every r
 - [x] **Phase 3a** — `PropertyResolver` + `ExtensionRegistry` + `RuneBridge` contract + shallow data-prefix traversal. Tagged `v0.0.8-phase3a`.
 - [x] **Phase 3b** — deep dot-path (`user.profile.name`), index access (`items[0]`), list `for`-elements. Tagged `v0.0.9-phase3b`.
 - [x] **Phase 3c** — sibling [`rune_responsive_sizer`](packages/rune_responsive_sizer) demo package (`.w`/`.h`/`.sp`/`.dm` via MediaQuery). Tagged `v0.0.10-phase3c`.
-- [ ] **Phase 4** — performance benchmarks, dev overlay, hot-reload cache invalidation, `0.1.0` release + `pub.dev` publish.
+- [x] **Phase 4** — performance benchmarks, dev overlay, hot-reload cache invalidation, `0.1.0` release. Tagged `v0.1.0`. `pub.dev` publish pending user action.
 
 ## Example
 
