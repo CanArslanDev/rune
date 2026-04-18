@@ -86,5 +86,12 @@ void main() {
       final c = RuneConfig.defaults();
       expect(c.constants.contains('Icons', 'home'), isTrue);
     });
+
+    test('registers Phase 2d button builders', () {
+      final c = RuneConfig.defaults();
+      expect(c.widgets.contains('ElevatedButton'), isTrue);
+      expect(c.widgets.contains('TextButton'), isTrue);
+      expect(c.widgets.contains('IconButton'), isTrue);
+    });
   });
 }

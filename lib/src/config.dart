@@ -11,9 +11,11 @@ import 'package:rune/src/builders/widgets/card_builder.dart';
 import 'package:rune/src/builders/widgets/center_builder.dart';
 import 'package:rune/src/builders/widgets/column_builder.dart';
 import 'package:rune/src/builders/widgets/container_builder.dart';
+import 'package:rune/src/builders/widgets/elevated_button_builder.dart';
 import 'package:rune/src/builders/widgets/expanded_builder.dart';
 import 'package:rune/src/builders/widgets/flexible_builder.dart';
 import 'package:rune/src/builders/widgets/icon_builder.dart';
+import 'package:rune/src/builders/widgets/icon_button_builder.dart';
 import 'package:rune/src/builders/widgets/image_asset_builder.dart';
 import 'package:rune/src/builders/widgets/image_network_builder.dart';
 import 'package:rune/src/builders/widgets/list_view_builder.dart';
@@ -23,6 +25,7 @@ import 'package:rune/src/builders/widgets/scaffold_builder.dart';
 import 'package:rune/src/builders/widgets/sized_box_builder.dart';
 import 'package:rune/src/builders/widgets/stack_builder.dart';
 import 'package:rune/src/builders/widgets/text_builder.dart';
+import 'package:rune/src/builders/widgets/text_button_builder.dart';
 import 'package:rune/src/defaults/phase_2a_constants.dart';
 import 'package:rune/src/defaults/phase_2c_icons.dart';
 import 'package:rune/src/registry/constant_registry.dart';
@@ -55,6 +58,8 @@ final class RuneConfig {
   /// Phase 2c adds ten widget builders (Padding, Center, Stack, Expanded,
   /// Flexible, Card, Icon, ListView, AppBar, Scaffold), two Image value
   /// builders (Image.network, Image.asset), and ~60 Icons.* constants.
+  /// Phase 2d adds three interactive button builders: ElevatedButton,
+  /// TextButton, and IconButton.
   factory RuneConfig.defaults() {
     final config = RuneConfig();
     config.widgets
@@ -72,7 +77,10 @@ final class RuneConfig {
       ..registerBuilder(const IconBuilder())
       ..registerBuilder(const ListViewBuilder())
       ..registerBuilder(const AppBarBuilder())
-      ..registerBuilder(const ScaffoldBuilder());
+      ..registerBuilder(const ScaffoldBuilder())
+      ..registerBuilder(const ElevatedButtonBuilder())
+      ..registerBuilder(const TextButtonBuilder())
+      ..registerBuilder(const IconButtonBuilder());
     config.values
       ..registerBuilder(const EdgeInsetsAllBuilder())
       ..registerBuilder(const EdgeInsetsSymmetricBuilder())
