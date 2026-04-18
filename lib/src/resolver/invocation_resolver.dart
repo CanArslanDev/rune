@@ -33,6 +33,8 @@ final class InvocationResolver implements InvocationResolverContract {
     };
   }
 
+  /// Extracts `(typeName, constructorName?)` from a bare call-syntax node
+  /// (e.g. `Text('hi')`, `EdgeInsets.all(16)`) and dispatches to [_dispatch].
   Object? _resolveMethodInvocation(MethodInvocation node, RuneContext ctx) {
     final String typeName;
     final String? constructorName;
@@ -61,6 +63,10 @@ final class InvocationResolver implements InvocationResolverContract {
     );
   }
 
+  /// Extracts `(typeName, constructorName?)` from an explicit `new`-form
+  /// call (e.g. `new Text('hi')`, `new EdgeInsets.all(16)`), accounting for
+  /// the analyzer quirk where a named constructor's class name is pushed
+  /// into `importPrefix` without type resolution. Dispatches to [_dispatch].
   Object? _resolveInstanceCreation(
     InstanceCreationExpression node,
     RuneContext ctx,
@@ -95,9 +101,9 @@ final class InvocationResolver implements InvocationResolverContract {
     required RuneContext ctx,
     required String source,
   }) {
-    final ResolvedArguments args = _resolveArguments(argumentList, ctx);
     final widgetBuilder = ctx.widgets.find(typeName);
     if (widgetBuilder != null) {
+      final ResolvedArguments args = _resolveArguments(argumentList, ctx);
       return widgetBuilder.build(args, ctx);
     }
     final valueBuilder = ctx.values.findValue(
@@ -105,6 +111,7 @@ final class InvocationResolver implements InvocationResolverContract {
       constructorName: constructorName,
     );
     if (valueBuilder != null) {
+      final ResolvedArguments args = _resolveArguments(argumentList, ctx);
       return valueBuilder.build(args, ctx);
     }
     throw UnregisteredBuilderException(source, typeName);
