@@ -1,0 +1,27 @@
+name: rune_responsive_sizer
+description: Responsive-sizer bridge for the rune package — registers .w / .h / .sp / .dm property extensions.
+version: 0.0.1
+repository: https://github.com/CanArslanDev/rune
+homepage: https://github.com/CanArslanDev/rune
+issue_tracker: https://github.com/CanArslanDev/rune/issues
+topics:
+  - rune
+  - bridge
+  - responsive
+  - sizer
+  - media-query
+
+environment:
+  sdk: ^3.4.0
+  flutter: ">=3.22.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  rune:
+    path: ../..
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  very_good_analysis: ^5.1.0
