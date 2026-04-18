@@ -6,6 +6,32 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [0.0.9] — 2026-04-18 — Phase 3b
+
+### Added
+- Deep dot-path data access — `user.profile.name` and arbitrary-depth
+  traversal now work through `PropertyResolver`'s new map-first
+  branch. Each `PropertyAccess` segment walks one map level; missing
+  keys return `null`.
+- Index access — `items[0]`, `map['key']`, `items[0].title` via a new
+  `IndexExpression` dispatch arm. List out-of-range throws
+  `ResolveException`; non-list/map targets throw with a type-mismatch
+  message.
+- `for`-element in list literals — `[for (final item in items)
+  Text(item.title)]`. Loop variable binds into a scoped
+  `RuneDataContext` via `extend`, so `item.title` resolves against
+  the merged data. Static elements around the for-element are
+  preserved in source order; nested for-elements compose. Only
+  `for`-each with declaration is supported (C-style `for` and
+  `IfElement` throw `ResolveException`).
+
+### Changed
+- `PropertyResolver.resolve` — when the target is a
+  `Map<String, Object?>`, the map value wins over any same-named
+  extension. Data beats extensions on conflict (matches the
+  data-first rule established by `IdentifierResolver.resolvePrefixed`
+  in Phase 3a).
+
 ## [0.0.8] — 2026-04-18 — Phase 3a
 
 ### Added
@@ -148,7 +174,8 @@ All notable changes to this project are documented here. Format follows
 - Example app at `example/lib/main.dart` demonstrating the full Phase 1
   feature set.
 
-[Unreleased]: https://github.com/CanArslanDev/rune/compare/v0.0.8...HEAD
+[Unreleased]: https://github.com/CanArslanDev/rune/compare/v0.0.9...HEAD
+[0.0.9]: https://github.com/CanArslanDev/rune/compare/v0.0.8-phase3a...v0.0.9-phase3b
 [0.0.8]: https://github.com/CanArslanDev/rune/compare/v0.0.7-polish...v0.0.8-phase3a
 [0.0.7]: https://github.com/CanArslanDev/rune/compare/v0.0.6-phase2e...v0.0.7-polish
 [0.0.6]: https://github.com/CanArslanDev/rune/compare/v0.0.5-phase2d...v0.0.6-phase2e
