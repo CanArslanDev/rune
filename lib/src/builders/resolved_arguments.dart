@@ -1,8 +1,13 @@
 import 'package:flutter/foundation.dart';
 import 'package:rune/src/core/exceptions.dart';
 
-/// A type-safe wrapper around a builder invocation's resolved positional
-/// and named arguments.
+/// A typed accessor wrapper around a builder invocation's resolved
+/// positional and named arguments.
+///
+/// Callers specify the expected Dart type parameter on each accessor
+/// (e.g. [get], [require]); the resolver is responsible for delivering
+/// values of the requested type. A mismatch surfaces as a `TypeError`
+/// at the cast site, not as a `RuneException`.
 ///
 /// All values have already been resolved — builders receive Dart values
 /// (ints, Widgets, `EdgeInsets`, etc.), never AST nodes.
@@ -36,7 +41,10 @@ final class ResolvedArguments {
   }
 
   /// Reads a required named argument. Throws [ArgumentException] citing
-  /// [source] when missing or null.
+  /// [source] when the argument is absent **or** present with a `null`
+  /// value. Callers that need to accept explicit `null` should use [get]
+  /// and handle absence themselves (Phase 1's builders don't need this
+  /// distinction; a dedicated `present<T>` variant may be added later).
   T require<T extends Object>(String name, {required String source}) {
     final Object? value = named[name];
     if (value == null) {
@@ -56,7 +64,9 @@ final class ResolvedArguments {
   }
 
   /// Reads a required positional argument. Throws [ArgumentException]
-  /// citing [source] when missing or null.
+  /// citing [source] when the index is out of range **or** the value at
+  /// that index is `null`. See [require] for the rationale on treating
+  /// absence and explicit null identically.
   T requirePositional<T extends Object>(
     int index, {
     required String source,

@@ -17,7 +17,7 @@ final class RuneContext {
     this.flutterContext,
   });
 
-  /// Registry of widget builders consulted by [InvocationResolver] when the
+  /// Registry of widget builders consulted by `InvocationResolver` when the
   /// resolved type corresponds to a Flutter widget.
   final WidgetRegistry widgets;
 
