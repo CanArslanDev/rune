@@ -15,7 +15,7 @@ class Registry<T extends Object> {
   void register(String name, T item) {
     if (_items.containsKey(name)) {
       throw StateError(
-        'Registry already contains an entry for "$name". '
+        '$runtimeType already contains an entry for "$name". '
         'Use a distinct name or a purpose-built override API.',
       );
     }
@@ -23,7 +23,8 @@ class Registry<T extends Object> {
   }
 
   /// Convenience: registers every entry in [entries]. Stops at first
-  /// duplicate (see [register]).
+  /// duplicate (see [register]). Entries processed before the duplicate
+  /// remain registered — `registerAll` is not transactional.
   void registerAll(Map<String, T> entries) {
     for (final MapEntry(:key, :value) in entries.entries) {
       register(key, value);
@@ -35,6 +36,11 @@ class Registry<T extends Object> {
 
   /// Returns the item registered under [name]; throws
   /// [UnregisteredBuilderException] citing [source] if absent.
+  ///
+  /// Note: this registry is used exclusively by builder lookups in Phase 1,
+  /// so the exception's `typeName` maps naturally to the registered key. A
+  /// future task may introduce a generic "registry miss" exception when
+  /// non-builder registries are added.
   T require(String name, {required String source}) {
     final T? item = _items[name];
     if (item == null) {

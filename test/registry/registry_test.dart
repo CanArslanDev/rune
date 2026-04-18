@@ -22,10 +22,19 @@ void main() {
       expect(r.contains('a'), isTrue);
     });
 
-    test('register throws StateError on duplicate', () {
+    test('register throws StateError on duplicate and includes key + runtimeType', () {
       final r = Registry<int>();
       r.register('k', 1);
-      expect(() => r.register('k', 2), throwsStateError);
+      expect(
+        () => r.register('k', 2),
+        throwsA(
+          isA<StateError>().having(
+            (e) => e.message,
+            'message',
+            allOf(contains('"k"'), contains('Registry<int>')),
+          ),
+        ),
+      );
     });
 
     test('registerAll adds multiple entries', () {
