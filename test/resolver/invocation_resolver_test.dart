@@ -8,6 +8,7 @@ import 'package:rune/src/parser/dart_parser.dart';
 import 'package:rune/src/registry/value_registry.dart';
 import 'package:rune/src/registry/widget_registry.dart';
 import 'package:rune/src/resolver/expression_resolver.dart';
+import 'package:rune/src/resolver/identifier_resolver.dart';
 import 'package:rune/src/resolver/invocation_resolver.dart';
 import 'package:rune/src/resolver/literal_resolver.dart';
 
@@ -59,7 +60,7 @@ _Pipeline _buildPipeline({
     vr.registerBuilder(b);
   }
   final ctx = testContext(widgets: wr, values: vr);
-  final expr = ExpressionResolver(LiteralResolver());
+  final expr = ExpressionResolver(LiteralResolver(), IdentifierResolver());
   final inv = InvocationResolver(expr);
   expr.bind(inv);
   return (expr: expr, inv: inv, ctx: ctx);

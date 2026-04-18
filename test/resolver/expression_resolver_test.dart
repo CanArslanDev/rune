@@ -1,14 +1,18 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:rune/src/binding/rune_data_context.dart';
 import 'package:rune/src/core/exceptions.dart';
 import 'package:rune/src/parser/dart_parser.dart';
+import 'package:rune/src/registry/constant_registry.dart';
 import 'package:rune/src/resolver/expression_resolver.dart';
+import 'package:rune/src/resolver/identifier_resolver.dart';
 import 'package:rune/src/resolver/literal_resolver.dart';
 
 import '../_helpers/test_context.dart';
 
 void main() {
   final parser = DartParser();
-  ExpressionResolver makeResolver() => ExpressionResolver(LiteralResolver());
+  ExpressionResolver makeResolver() =>
+      ExpressionResolver(LiteralResolver(), IdentifierResolver());
 
   group('ExpressionResolver — dispatch (no InvocationResolver bound)', () {
     test('routes IntegerLiteral → int', () {
@@ -69,6 +73,46 @@ void main() {
         () => r.resolve(parser.parse('1 + 2'), testContext()),
         throwsA(isA<ResolveException>()),
       );
+    });
+
+    test('routes SimpleIdentifier → data context', () {
+      final r = ExpressionResolver(LiteralResolver(), IdentifierResolver());
+      final ctx = testContext(data: RuneDataContext(const {'name': 'Ali'}));
+      expect(r.resolve(parser.parse('name'), ctx), 'Ali');
+    });
+
+    test('routes PrefixedIdentifier → constants', () {
+      final r = ExpressionResolver(LiteralResolver(), IdentifierResolver());
+      final constants = ConstantRegistry()..register('Colors', 'red', 0xFFFF0000);
+      final ctx = testContext(constants: constants);
+      expect(r.resolve(parser.parse('Colors.red'), ctx), 0xFFFF0000);
+    });
+
+    test('resolves SetOrMapLiteral as a Set when element-only', () {
+      final r = ExpressionResolver(LiteralResolver(), IdentifierResolver());
+      expect(r.resolve(parser.parse('{1, 2, 3}'), testContext()), {1, 2, 3});
+    });
+
+    test('resolves SetOrMapLiteral as a Map when entries are present', () {
+      final r = ExpressionResolver(LiteralResolver(), IdentifierResolver());
+      expect(
+        r.resolve(parser.parse("{'a': 1, 'b': 2}"), testContext()),
+        {'a': 1, 'b': 2},
+      );
+    });
+
+    test('resolves StringInterpolation with a literal expression', () {
+      final r = ExpressionResolver(LiteralResolver(), IdentifierResolver());
+      expect(
+        r.resolve(parser.parse(r"'answer: ${42}'"), testContext()),
+        'answer: 42',
+      );
+    });
+
+    test('resolves StringInterpolation with an identifier reference', () {
+      final r = ExpressionResolver(LiteralResolver(), IdentifierResolver());
+      final ctx = testContext(data: RuneDataContext(const {'name': 'Ali'}));
+      expect(r.resolve(parser.parse(r"'hello $name'"), ctx), 'hello Ali');
     });
   });
 }

@@ -1,6 +1,7 @@
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:rune/src/core/exceptions.dart';
 import 'package:rune/src/core/rune_context.dart';
+import 'package:rune/src/resolver/identifier_resolver.dart';
 import 'package:rune/src/resolver/literal_resolver.dart';
 
 /// Contract for the invocation resolver injected via [ExpressionResolver.bind].
@@ -22,27 +23,35 @@ abstract interface class InvocationResolverContract {
 /// injected via [bind] to break the circular dependency between it and
 /// this class.
 final class ExpressionResolver {
-  /// Constructs an [ExpressionResolver] wired to a [LiteralResolver]. The
-  /// invocation resolver is injected later via [bind].
-  ExpressionResolver(this._literal);
+  /// Constructs an [ExpressionResolver] wired to a [LiteralResolver] and
+  /// [IdentifierResolver]. The invocation resolver is injected later via
+  /// [bind].
+  ExpressionResolver(this._literal, this._identifier);
 
   final LiteralResolver _literal;
+  final IdentifierResolver _identifier;
   InvocationResolverContract? _invocation;
 
   /// Installs the invocation resolver. Must be called exactly once before
-  /// any `InstanceCreationExpression` or `MethodInvocation` is resolved.
+  /// any [InstanceCreationExpression] or [MethodInvocation] is resolved.
   void bind(InvocationResolverContract invocation) {
     _invocation = invocation;
   }
 
   /// Resolves [expr] within [ctx] and returns the Dart value it denotes.
   ///
-  /// Pattern-match order matters: [ListLiteral] is a [Literal] subtype, so
-  /// it must be tested before the broad `Literal()` arm.
+  /// Pattern-match order: [StringInterpolation], [ListLiteral], and
+  /// [SetOrMapLiteral] are all [Literal] subtypes, so they must be tested
+  /// before the broad `Literal()` arm. [PrefixedIdentifier] must be
+  /// tested before [SimpleIdentifier] because it extends it.
   Object? resolve(Expression expr, RuneContext ctx) {
     return switch (expr) {
+      StringInterpolation() => _resolveInterpolation(expr, ctx),
       ListLiteral() => _resolveList(expr, ctx),
+      SetOrMapLiteral() => _resolveSetOrMap(expr, ctx),
       Literal() => _literal.resolve(expr),
+      PrefixedIdentifier() => _identifier.resolvePrefixed(expr, ctx),
+      SimpleIdentifier() => _identifier.resolveSimple(expr, ctx),
       NamedExpression(:final expression) => resolve(expression, ctx),
       ParenthesizedExpression(:final expression) => resolve(expression, ctx),
       InstanceCreationExpression() || MethodInvocation() =>
@@ -52,6 +61,24 @@ final class ExpressionResolver {
           'Unsupported expression: ${expr.runtimeType}',
         ),
     };
+  }
+
+  String _resolveInterpolation(StringInterpolation node, RuneContext ctx) {
+    final buffer = StringBuffer();
+    for (final element in node.elements) {
+      if (element is InterpolationString) {
+        buffer.write(element.value);
+      } else if (element is InterpolationExpression) {
+        final Object? value = resolve(element.expression, ctx);
+        buffer.write(value?.toString() ?? '');
+      } else {
+        throw ResolveException(
+          element.toSource(),
+          'Unsupported interpolation element: ${element.runtimeType}',
+        );
+      }
+    }
+    return buffer.toString();
   }
 
   List<Object?> _resolveList(ListLiteral node, RuneContext ctx) {
@@ -67,6 +94,38 @@ final class ExpressionResolver {
       }
     }
     return List<Object?>.unmodifiable(result);
+  }
+
+  Object _resolveSetOrMap(SetOrMapLiteral node, RuneContext ctx) {
+    final hasMapEntry = node.elements.any((e) => e is MapLiteralEntry);
+    if (hasMapEntry) {
+      final result = <Object?, Object?>{};
+      for (final element in node.elements) {
+        if (element is MapLiteralEntry) {
+          final key = resolve(element.key, ctx);
+          final value = resolve(element.value, ctx);
+          result[key] = value;
+        } else {
+          throw ResolveException(
+            element.toSource(),
+            'Mixed Set/Map literal is not supported',
+          );
+        }
+      }
+      return Map<Object?, Object?>.unmodifiable(result);
+    }
+    final result = <Object?>{};
+    for (final element in node.elements) {
+      if (element is Expression) {
+        result.add(resolve(element, ctx));
+      } else {
+        throw ResolveException(
+          element.toSource(),
+          'Unsupported set element: ${element.runtimeType}',
+        );
+      }
+    }
+    return Set<Object?>.unmodifiable(result);
   }
 
   InvocationResolverContract _requireInvocation() {

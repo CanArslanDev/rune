@@ -9,6 +9,7 @@ import 'package:rune/src/core/rune_context.dart';
 import 'package:rune/src/parser/ast_cache.dart';
 import 'package:rune/src/parser/dart_parser.dart';
 import 'package:rune/src/resolver/expression_resolver.dart';
+import 'package:rune/src/resolver/identifier_resolver.dart';
 import 'package:rune/src/resolver/invocation_resolver.dart';
 import 'package:rune/src/resolver/literal_resolver.dart';
 
@@ -64,7 +65,7 @@ class _RuneViewState extends State<RuneView> {
     super.initState();
     _parser = DartParser();
     _cache = AstCache();
-    _expr = ExpressionResolver(LiteralResolver());
+    _expr = ExpressionResolver(LiteralResolver(), IdentifierResolver());
     _invocation = InvocationResolver(_expr);
     _expr.bind(_invocation);
   }
