@@ -6,6 +6,30 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [0.0.8] — 2026-04-18 — Phase 3a
+
+### Added
+- `ExtensionRegistry` — property-name-keyed registry of
+  `(target, ctx) => Object?` handlers. Used by the new
+  `PropertyResolver` to evaluate receiver-style property access like
+  `10.px`, `(5).doubled`.
+- `RuneBridge` — single-method contract (`void registerInto(RuneConfig)`)
+  that third-party packages implement to bundle widget/value/constant/
+  extension contributions. Applied via `RuneConfig.withBridges([...])`.
+- `PropertyResolver` — dispatcher arm for `PropertyAccess` AST nodes;
+  resolves target via the expression resolver then delegates to
+  `ctx.extensions`.
+- `RuneContext.extensions` field (required); `RuneConfig.extensions`
+  field + `withBridges(List<RuneBridge>)` fluent method.
+- Architecture-test rule gating the new `src/bridges/` layer.
+
+### Changed
+- `IdentifierResolver.resolvePrefixed` now checks `ctx.data` before
+  `ctx.constants`. `user.name` (where `user` is a `Map` in data)
+  resolves to `data['user']['name']`; `Colors.red` still falls through
+  to the constants registry. Non-`Map` data values at the prefix raise
+  `ResolveException` with a type-mismatch message.
+
 ## [0.0.7] — 2026-04-18
 
 ### Changed
@@ -124,7 +148,8 @@ All notable changes to this project are documented here. Format follows
 - Example app at `example/lib/main.dart` demonstrating the full Phase 1
   feature set.
 
-[Unreleased]: https://github.com/CanArslanDev/rune/compare/v0.0.7...HEAD
+[Unreleased]: https://github.com/CanArslanDev/rune/compare/v0.0.8...HEAD
+[0.0.8]: https://github.com/CanArslanDev/rune/compare/v0.0.7-polish...v0.0.8-phase3a
 [0.0.7]: https://github.com/CanArslanDev/rune/compare/v0.0.6-phase2e...v0.0.7-polish
 [0.0.6]: https://github.com/CanArslanDev/rune/compare/v0.0.5-phase2d...v0.0.6-phase2e
 [0.0.5]: https://github.com/CanArslanDev/rune/compare/v0.0.4-phase2c...v0.0.5-phase2d
