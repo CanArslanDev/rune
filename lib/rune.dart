@@ -5,3 +5,4 @@
 library rune;
 
 // Public exports are added incrementally as Phase 1 tasks land.
+export 'src/core/exceptions.dart';
