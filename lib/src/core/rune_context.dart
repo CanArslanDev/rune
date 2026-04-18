@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:rune/src/binding/rune_data_context.dart';
 import 'package:rune/src/binding/rune_event_dispatcher.dart';
+import 'package:rune/src/registry/constant_registry.dart';
 import 'package:rune/src/registry/value_registry.dart';
 import 'package:rune/src/registry/widget_registry.dart';
 
@@ -10,6 +11,7 @@ import 'package:rune/src/registry/widget_registry.dart';
 /// - [widgets] / [values] to dispatch instance-creation expressions,
 /// - [data] to resolve free identifiers (e.g. `Text(userName)`),
 /// - [events] to wire named-event handlers (e.g. `onPressed: "submit"`),
+/// - [constants] to resolve prefixed static constants (e.g. `Colors.red`),
 /// - [flutterContext] to access `MediaQuery`, `Theme`, etc. when needed.
 ///
 /// [flutterContext] is nullable because pure resolver/builder unit tests
@@ -18,16 +20,18 @@ import 'package:rune/src/registry/widget_registry.dart';
 ///
 /// The [@immutable] annotation guarantees every field of this class is
 /// final — not that reachable state is deep-immutable. The registries
-/// themselves (`widgets`, `values`) remain mutable internally; callers
-/// are expected to freeze their contents by convention.
+/// themselves (`widgets`, `values`, `constants`) remain mutable internally;
+/// callers are expected to freeze their contents by convention.
 @immutable
 final class RuneContext {
-  /// Constructs a [RuneContext] with the given registries, data, and events.
+  /// Constructs a [RuneContext] with the given registries, data, events,
+  /// and constants.
   const RuneContext({
     required this.widgets,
     required this.values,
     required this.data,
     required this.events,
+    required this.constants,
     this.flutterContext,
   });
 
@@ -45,6 +49,10 @@ final class RuneContext {
   /// Dispatcher for named events emitted from Rune-built widgets (e.g.
   /// `onPressed: "submit"`).
   final RuneEventDispatcher events;
+
+  /// Registry of named static constants consulted by `IdentifierResolver`
+  /// when resolving `PrefixedIdentifier` expressions like `Colors.red`.
+  final ConstantRegistry constants;
 
   /// The enclosing Flutter `BuildContext`, used by builders that need
   /// `MediaQuery`, `Theme`, etc. `null` during non-widget-pumping unit
@@ -64,6 +72,7 @@ final class RuneContext {
     ValueRegistry? values,
     RuneDataContext? data,
     RuneEventDispatcher? events,
+    ConstantRegistry? constants,
     BuildContext? flutterContext,
   }) {
     return RuneContext(
@@ -71,6 +80,7 @@ final class RuneContext {
       values: values ?? this.values,
       data: data ?? this.data,
       events: events ?? this.events,
+      constants: constants ?? this.constants,
       flutterContext: flutterContext ?? this.flutterContext,
     );
   }
