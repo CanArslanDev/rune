@@ -98,11 +98,18 @@ class _RuneViewState extends State<RuneView> {
   }
 
   RuneContext _buildContext(BuildContext flutterCtx) {
+    final events = RuneEventDispatcher();
+    final onEvent = widget.onEvent;
+    if (onEvent != null) {
+      events.setCatchAllHandler((name, args) {
+        onEvent(name, args);
+      });
+    }
     return RuneContext(
       widgets: widget.config.widgets,
       values: widget.config.values,
       data: RuneDataContext(widget.data ?? const <String, Object?>{}),
-      events: RuneEventDispatcher(),
+      events: events,
       constants: widget.config.constants,
       flutterContext: flutterCtx,
     );
