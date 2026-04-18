@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rune/src/binding/rune_data_context.dart';
 import 'package:rune/src/binding/rune_event_dispatcher.dart';
@@ -53,6 +54,31 @@ void main() {
       expect(copy.data, same(ctx.data));
       expect(copy.events, same(ctx.events));
       expect(copy.flutterContext, same(ctx.flutterContext));
+    });
+
+    testWidgets('flutterContext is retained when supplied', (tester) async {
+      late BuildContext captured;
+      await tester.pumpWidget(
+        Directionality(
+          textDirection: TextDirection.ltr,
+          child: Builder(
+            builder: (ctx) {
+              captured = ctx;
+              return const SizedBox.shrink();
+            },
+          ),
+        ),
+      );
+
+      final runeCtx = RuneContext(
+        widgets: WidgetRegistry(),
+        values: ValueRegistry(),
+        data: RuneDataContext.empty,
+        events: RuneEventDispatcher(),
+        flutterContext: captured,
+      );
+
+      expect(runeCtx.flutterContext, same(captured));
     });
   });
 }

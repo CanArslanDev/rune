@@ -15,6 +15,11 @@ import 'package:rune/src/registry/widget_registry.dart';
 /// [flutterContext] is nullable because pure resolver/builder unit tests
 /// never need it. Builders that require it should throw a
 /// `ResolveException` when it is `null`.
+///
+/// The [@immutable] annotation guarantees every field of this class is
+/// final — not that reachable state is deep-immutable. The registries
+/// themselves (`widgets`, `values`) remain mutable internally; callers
+/// are expected to freeze their contents by convention.
 @immutable
 final class RuneContext {
   /// Constructs a [RuneContext] with the given registries, data, and events.
@@ -48,6 +53,12 @@ final class RuneContext {
 
   /// Returns a copy of this context with any of the provided fields
   /// replaced.
+  ///
+  /// Limitation: passing an explicit `null` for [flutterContext] will NOT
+  /// clear the existing value — it is indistinguishable from passing no
+  /// argument. Callers needing a null [flutterContext] should construct a
+  /// new [RuneContext] directly. This matches Phase 1 usage; a sentinel
+  /// pattern can replace it later if a live call path needs that capability.
   RuneContext copyWith({
     WidgetRegistry? widgets,
     ValueRegistry? values,
