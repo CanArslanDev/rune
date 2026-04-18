@@ -3,6 +3,7 @@ import 'package:rune/src/core/exceptions.dart';
 import 'package:rune/src/core/rune_context.dart';
 import 'package:rune/src/resolver/identifier_resolver.dart';
 import 'package:rune/src/resolver/literal_resolver.dart';
+import 'package:rune/src/resolver/property_resolver.dart';
 
 /// Contract for the invocation resolver injected via [ExpressionResolver.bind].
 ///
@@ -32,6 +33,7 @@ final class ExpressionResolver {
   final LiteralResolver _literal;
   final IdentifierResolver _identifier;
   InvocationResolverContract? _invocation;
+  PropertyResolver? _property;
 
   /// Installs the invocation resolver. Must be called exactly once before
   /// any [InstanceCreationExpression] or [MethodInvocation] is resolved.
@@ -39,18 +41,28 @@ final class ExpressionResolver {
     _invocation = invocation;
   }
 
+  /// Installs the property resolver for `PropertyAccess` dispatch. Must
+  /// be called before any `PropertyAccess` expression is resolved.
+  void bindProperty(PropertyResolver property) {
+    _property = property;
+  }
+
   /// Resolves [expr] within [ctx] and returns the Dart value it denotes.
   ///
   /// Pattern-match order: [StringInterpolation], [ListLiteral], and
   /// [SetOrMapLiteral] are all [Literal] subtypes, so they must be tested
-  /// before the broad `Literal()` arm. [PrefixedIdentifier] must be
-  /// tested before [SimpleIdentifier] because it extends it.
+  /// before the broad `Literal()` arm. [PropertyAccess] must be tested
+  /// before [PrefixedIdentifier] so receiver-style property access on
+  /// non-identifier targets (e.g. `10.px`, `(5).doubled`) routes through
+  /// the extension registry. [PrefixedIdentifier] must be tested before
+  /// [SimpleIdentifier] because it extends it.
   Object? resolve(Expression expr, RuneContext ctx) {
     return switch (expr) {
       StringInterpolation() => _resolveInterpolation(expr, ctx),
       ListLiteral() => _resolveList(expr, ctx),
       SetOrMapLiteral() => _resolveSetOrMap(expr, ctx),
       Literal() => _literal.resolve(expr),
+      PropertyAccess() => _requireProperty().resolve(expr, ctx),
       PrefixedIdentifier() => _identifier.resolvePrefixed(expr, ctx),
       SimpleIdentifier() => _identifier.resolveSimple(expr, ctx),
       NamedExpression(:final expression) => resolve(expression, ctx),
@@ -127,6 +139,17 @@ final class ExpressionResolver {
       }
     }
     return Set<Object?>.unmodifiable(result);
+  }
+
+  PropertyResolver _requireProperty() {
+    final prop = _property;
+    if (prop == null) {
+      throw StateError(
+        'ExpressionResolver.bindProperty() was not called — '
+        'cannot resolve PropertyAccess.',
+      );
+    }
+    return prop;
   }
 
   InvocationResolverContract _requireInvocation() {

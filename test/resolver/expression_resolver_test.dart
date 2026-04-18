@@ -3,9 +3,11 @@ import 'package:rune/src/binding/rune_data_context.dart';
 import 'package:rune/src/core/exceptions.dart';
 import 'package:rune/src/parser/dart_parser.dart';
 import 'package:rune/src/registry/constant_registry.dart';
+import 'package:rune/src/registry/extension_registry.dart';
 import 'package:rune/src/resolver/expression_resolver.dart';
 import 'package:rune/src/resolver/identifier_resolver.dart';
 import 'package:rune/src/resolver/literal_resolver.dart';
+import 'package:rune/src/resolver/property_resolver.dart';
 
 import '../_helpers/test_context.dart';
 
@@ -114,6 +116,25 @@ void main() {
       final r = ExpressionResolver(LiteralResolver(), IdentifierResolver());
       final ctx = testContext(data: RuneDataContext(const {'name': 'Ali'}));
       expect(r.resolve(parser.parse(r"'hello $name'"), ctx), 'hello Ali');
+    });
+
+    test('routes PropertyAccess → PropertyResolver', () {
+      final shared =
+          ExpressionResolver(LiteralResolver(), IdentifierResolver());
+      final prop = PropertyResolver(shared);
+      shared.bindProperty(prop);
+      final extensions = ExtensionRegistry()
+        ..register('pct', (t, c) => (t! as num) / 100);
+      final ctx = testContext(extensions: extensions);
+      expect(shared.resolve(parser.parse('(50).pct'), ctx), 0.5);
+    });
+
+    test('PropertyAccess without bindProperty throws', () {
+      final r = ExpressionResolver(LiteralResolver(), IdentifierResolver());
+      expect(
+        () => r.resolve(parser.parse('(1).x'), testContext()),
+        throwsA(anyOf(isA<StateError>(), isA<ResolveException>())),
+      );
     });
   });
 }

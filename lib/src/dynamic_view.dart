@@ -13,6 +13,7 @@ import 'package:rune/src/resolver/expression_resolver.dart';
 import 'package:rune/src/resolver/identifier_resolver.dart';
 import 'package:rune/src/resolver/invocation_resolver.dart';
 import 'package:rune/src/resolver/literal_resolver.dart';
+import 'package:rune/src/resolver/property_resolver.dart';
 
 /// The public widget that turns a Dart widget-construction source string
 /// into a live Flutter widget tree.
@@ -69,6 +70,8 @@ class _RuneViewState extends State<RuneView> {
     _expr = ExpressionResolver(LiteralResolver(), IdentifierResolver());
     _invocation = InvocationResolver(_expr);
     _expr.bind(_invocation);
+    final property = PropertyResolver(_expr);
+    _expr.bindProperty(property);
   }
 
   @override
