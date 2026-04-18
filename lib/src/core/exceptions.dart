@@ -17,7 +17,7 @@ sealed class RuneException implements Exception {
   String toString() => '$runtimeType: $message (source: "$source")';
 }
 
-/// Raised when [DartParser] cannot produce an AST from the input.
+/// Raised when `DartParser` cannot produce an AST from the input.
 final class ParseException extends RuneException {
   const ParseException(super.source, super.message);
 }
@@ -44,7 +44,7 @@ final class ArgumentException extends RuneException {
 }
 
 /// Raised when data or event binding cannot be satisfied (e.g. a data key
-/// the source refers to is not present in [DataContext]).
+/// the source refers to is not present in `DataContext`).
 final class BindingException extends RuneException {
   const BindingException(super.source, super.message);
 }
