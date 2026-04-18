@@ -159,6 +159,19 @@ void main() {
       },
     );
 
+    test('src/bridges/ only imports config (not resolver/defaults/view)', () {
+      _forbid(
+        'bridges',
+        _dartFilesUnder('lib/src/bridges'),
+        const [
+          'package:rune/src/parser/',
+          'package:rune/src/resolver/',
+          'package:rune/src/defaults/',
+          'package:rune/src/dynamic_view.dart',
+        ],
+      );
+    });
+
     test('src/config.dart does not import dynamic_view', () {
       _forbid(
         'config',
