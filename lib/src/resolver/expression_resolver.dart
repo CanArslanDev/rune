@@ -99,16 +99,58 @@ final class ExpressionResolver {
   List<Object?> _resolveList(ListLiteral node, RuneContext ctx) {
     final result = <Object?>[];
     for (final element in node.elements) {
-      if (element is Expression) {
-        result.add(resolve(element, ctx));
-      } else {
-        throw ResolveException(
-          element.toSource(),
-          'Unsupported list element: ${element.runtimeType}',
-        );
-      }
+      _collectListElement(element, result, ctx);
     }
     return List<Object?>.unmodifiable(result);
+  }
+
+  void _collectListElement(
+    CollectionElement element,
+    List<Object?> result,
+    RuneContext ctx,
+  ) {
+    if (element is Expression) {
+      result.add(resolve(element, ctx));
+      return;
+    }
+    if (element is ForElement) {
+      _collectForElement(element, result, ctx);
+      return;
+    }
+    throw ResolveException(
+      element.toSource(),
+      'Unsupported list element: ${element.runtimeType}',
+    );
+  }
+
+  void _collectForElement(
+    ForElement node,
+    List<Object?> result,
+    RuneContext ctx,
+  ) {
+    final parts = node.forLoopParts;
+    if (parts is! ForEachPartsWithDeclaration) {
+      throw ResolveException(
+        node.toSource(),
+        'Only for-each with declaration is supported '
+        '(for (final x in items)); got ${parts.runtimeType}',
+      );
+    }
+    final varName = parts.loopVariable.name.lexeme;
+    final iterable = resolve(parts.iterable, ctx);
+    if (iterable is! Iterable<Object?>) {
+      throw ResolveException(
+        node.toSource(),
+        'for-element iterable must be Iterable, got '
+        '${iterable.runtimeType}',
+      );
+    }
+    for (final item in iterable) {
+      final scopedCtx = ctx.copyWith(
+        data: ctx.data.extend(<String, Object?>{varName: item}),
+      );
+      _collectListElement(node.body, result, scopedCtx);
+    }
   }
 
   Object _resolveSetOrMap(SetOrMapLiteral node, RuneContext ctx) {

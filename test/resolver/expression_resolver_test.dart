@@ -206,5 +206,102 @@ void main() {
         throwsA(isA<ResolveException>()),
       );
     });
+
+    test('for-element expands over an iterable', () {
+      final r =
+          ExpressionResolver(LiteralResolver(), IdentifierResolver());
+      final ctx = testContext(
+        data: RuneDataContext(const {
+          'items': ['a', 'b', 'c'],
+        }),
+      );
+      expect(
+        r.resolve(parser.parse('[for (final x in items) x]'), ctx),
+        ['a', 'b', 'c'],
+      );
+    });
+
+    test('for-element binds the loop variable into data context', () {
+      final shared = ExpressionResolver(
+        LiteralResolver(),
+        IdentifierResolver(),
+      );
+      shared.bindProperty(PropertyResolver(shared));
+      final ctx = testContext(
+        data: RuneDataContext(const {
+          'items': [
+            {'title': 'first'},
+            {'title': 'second'},
+          ],
+        }),
+      );
+      expect(
+        shared.resolve(
+          parser.parse('[for (final item in items) item.title]'),
+          ctx,
+        ),
+        ['first', 'second'],
+      );
+    });
+
+    test('for-element iterable of wrong type throws', () {
+      final r =
+          ExpressionResolver(LiteralResolver(), IdentifierResolver());
+      final ctx = testContext(
+        data: RuneDataContext(const {'notIterable': 42}),
+      );
+      expect(
+        () => r.resolve(
+          parser.parse('[for (final x in notIterable) x]'),
+          ctx,
+        ),
+        throwsA(
+          isA<ResolveException>().having(
+            (e) => e.message,
+            'message',
+            contains('Iterable'),
+          ),
+        ),
+      );
+    });
+
+    test('for-element preserves static elements around it', () {
+      final r =
+          ExpressionResolver(LiteralResolver(), IdentifierResolver());
+      final ctx = testContext(
+        data: RuneDataContext(const {
+          'items': [1, 2],
+        }),
+      );
+      expect(
+        r.resolve(
+          parser.parse('[0, for (final x in items) x, 99]'),
+          ctx,
+        ),
+        [0, 1, 2, 99],
+      );
+    });
+
+    test('nested for-elements compose', () {
+      final r =
+          ExpressionResolver(LiteralResolver(), IdentifierResolver());
+      final ctx = testContext(
+        data: RuneDataContext(const {
+          'rows': [
+            [1, 2],
+            [3, 4],
+          ],
+        }),
+      );
+      expect(
+        r.resolve(
+          parser.parse(
+            '[for (final row in rows) for (final cell in row) cell]',
+          ),
+          ctx,
+        ),
+        [1, 2, 3, 4],
+      );
+    });
   });
 }
