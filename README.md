@@ -245,7 +245,7 @@ flutter test
 flutter analyze
 ```
 
-Three hundred and sixty-seven tests cover every resolver, every builder, every registry, the architecture invariants, and end-to-end `RuneView` renders for each phase. Main is kept green at all times; every commit passes both gates under `very_good_analysis`.
+Three hundred and seventy-two tests cover every resolver, every builder, every registry, the architecture invariants, and end-to-end `RuneView` renders for each phase. Main is kept green at all times; every commit passes both gates under `very_good_analysis`.
 
 ## Example
 

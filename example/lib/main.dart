@@ -4,11 +4,12 @@ import 'package:rune/rune.dart';
 void main() => runApp(const RuneExampleApp());
 
 /// Root of the Rune demo app. Renders a single source string through
-/// [RuneView] that exercises the current (Phase 3b) feature surface:
-/// Phase 1 widgets, Phase 2b value builders (TextStyle, Color,
-/// BoxDecoration, BorderRadius), Phase 2c layout/chrome widgets
-/// (Scaffold, AppBar, Card), Phase 2d buttons + events, Phase 2a
-/// string interpolation, and Phase 3b deep dot-path + for-elements.
+/// [RuneView] that exercises the v0.1.0 feature surface: Scaffold +
+/// AppBar chrome, Column/Row/Padding/SizedBox layout, Text with
+/// string interpolation including deep dot-path (`${user.profile.tier}`),
+/// for-elements iterating `cart.items`, nested Card/Padding/Row tiles,
+/// TextButton and ElevatedButton with named events, and BoxDecoration
+/// with BorderRadius, TextStyle, and hex `Color` value builders.
 class RuneExampleApp extends StatefulWidget {
   /// Creates the demo app.
   const RuneExampleApp({super.key});
@@ -31,7 +32,7 @@ class _RuneExampleAppState extends State<RuneExampleApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Rune — Phase 3b Demo',
+      title: 'Rune v0.1.0 Demo',
       theme: ThemeData(colorSchemeSeed: Colors.indigo, useMaterial3: true),
       home: RuneView(
         source: _source,
