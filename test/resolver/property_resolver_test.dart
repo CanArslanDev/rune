@@ -1,5 +1,6 @@
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:rune/src/binding/rune_data_context.dart';
 import 'package:rune/src/core/exceptions.dart';
 import 'package:rune/src/parser/dart_parser.dart';
 import 'package:rune/src/registry/extension_registry.dart';
@@ -14,7 +15,10 @@ void main() {
   final parser = DartParser();
 
   ExpressionResolver buildExprResolver() {
-    return ExpressionResolver(LiteralResolver(), IdentifierResolver());
+    final expr = ExpressionResolver(LiteralResolver(), IdentifierResolver());
+    final prop = PropertyResolver(expr);
+    expr.bindProperty(prop);
+    return expr;
   }
 
   group('PropertyResolver', () {
@@ -75,6 +79,66 @@ void main() {
               .having((e) => e.source, 'source', '(1).nope')
               .having((e) => e.message, 'message', contains('nope')),
         ),
+      );
+    });
+
+    test('map target: resolves key from data map', () {
+      final exprResolver = buildExprResolver();
+      final resolver = PropertyResolver(exprResolver);
+      final ctx = testContext(
+        data: RuneDataContext(const {
+          'user': {
+            'profile': {'name': 'Ali', 'age': 30},
+          },
+        }),
+      );
+      final node = parser.parse('user.profile.name') as PropertyAccess;
+      expect(resolver.resolve(node, ctx), 'Ali');
+    });
+
+    test('map target: missing key returns null (no exception)', () {
+      final exprResolver = buildExprResolver();
+      final resolver = PropertyResolver(exprResolver);
+      final ctx = testContext(
+        data: RuneDataContext(const {
+          'user': {
+            'profile': {'name': 'Ali'},
+          },
+        }),
+      );
+      final node = parser.parse('user.profile.age') as PropertyAccess;
+      expect(resolver.resolve(node, ctx), isNull);
+    });
+
+    test('map target wins over extension of the same name', () {
+      final exprResolver = buildExprResolver();
+      final resolver = PropertyResolver(exprResolver);
+      final extensions = ExtensionRegistry()
+        ..register('name', (t, c) => 'from-extension');
+      final ctx = testContext(
+        data: RuneDataContext(const {
+          'user': {
+            'profile': {'name': 'from-data'},
+          },
+        }),
+        extensions: extensions,
+      );
+      final node = parser.parse('user.profile.name') as PropertyAccess;
+      expect(
+        resolver.resolve(node, ctx),
+        'from-data',
+        reason: 'map wins on conflict; data always beats extensions',
+      );
+    });
+
+    test('non-map target with unknown extension still throws', () {
+      final exprResolver = buildExprResolver();
+      final resolver = PropertyResolver(exprResolver);
+      final ctx = testContext();
+      final node = parser.parse('(1).nope') as PropertyAccess;
+      expect(
+        () => resolver.resolve(node, ctx),
+        throwsA(isA<ResolveException>()),
       );
     });
   });
