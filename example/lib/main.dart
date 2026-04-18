@@ -67,7 +67,7 @@ class _RuneExampleAppState extends State<RuneExampleApp> {
   static const String _source = r"""
     Scaffold(
       appBar: AppBar(
-        title: Text('Rune Phase 3b Demo'),
+        title: Text('Rune v0.1.0 Demo'),
         backgroundColor: Color(0xFF3F51B5),
       ),
       body: Padding(

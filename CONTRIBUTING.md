@@ -38,8 +38,8 @@ dynamic_view -> config -> registries -> resolver -> parser -> analyzer
 
 The architecture test in `test/architecture/import_flow_test.dart` enforces
 these boundaries — extending with a new layer requires extending the test.
-Read `CLAUDE.md` (local reference, not committed) or trace through
-`lib/src/dynamic_view.dart` to see how a `RuneView` renders end-to-end.
+Trace through `lib/src/dynamic_view.dart` to see how a `RuneView` renders
+end-to-end.
 
 ## Adding a widget builder
 
