@@ -3,8 +3,8 @@ import 'package:rune/rune.dart';
 
 void main() => runApp(const RuneExampleApp());
 
-/// Root of the Phase 1 demo app. Renders the [_source] string through a
-/// [RuneView] with the default Rune configuration.
+/// Root of the Phase 2a demo app. Renders a string through [RuneView] with
+/// data binding, constants, and string interpolation all live.
 class RuneExampleApp extends StatelessWidget {
   /// Creates the demo app.
   const RuneExampleApp({super.key});
@@ -12,14 +12,18 @@ class RuneExampleApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Rune — Phase 1 Demo',
+      title: 'Rune — Phase 2a Demo',
       home: Scaffold(
-        appBar: AppBar(title: const Text('Rune — Phase 1 Demo')),
+        appBar: AppBar(title: const Text('Rune — Phase 2a Demo')),
         body: Padding(
           padding: const EdgeInsets.all(16),
           child: RuneView(
             source: _source,
             config: RuneConfig.defaults(),
+            data: const {
+              'userName': 'Ali',
+              'itemCount': 7,
+            },
             fallback: const Text('Failed to render'),
             onError: (error, _) => debugPrint('Rune error: $error'),
           ),
@@ -28,20 +32,26 @@ class RuneExampleApp extends StatelessWidget {
     );
   }
 
-  static const String _source = """
-    Column(children: [
-      Text('Hello from a string'),
-      SizedBox(height: 12),
-      Container(
-        padding: EdgeInsets.all(12),
-        child: Text('I am inside a padded Container'),
-      ),
-      SizedBox(height: 12),
-      Row(children: [
-        Text('Left'),
-        SizedBox(width: 20),
-        Text('Right'),
-      ]),
-    ])
+  static const String _source = r"""
+    Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Hello, $userName!'),
+        SizedBox(height: 12),
+        Container(
+          padding: EdgeInsets.all(12),
+          child: Text('You have ${itemCount} items in your cart.'),
+        ),
+        SizedBox(height: 12),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('Left aligned'),
+            Text('Right aligned'),
+          ],
+        ),
+      ],
+    )
   """;
 }
