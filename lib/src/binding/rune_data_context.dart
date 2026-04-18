@@ -1,7 +1,8 @@
 import 'package:flutter/foundation.dart';
 
 /// An immutable bag of runtime data that can be referenced from a Rune
-/// source (e.g. `Text(userName)` → looked up via `DataContext.get('userName')`).
+/// source (e.g. `Text(userName)` → looked up via
+/// `RuneDataContext.get('userName')`).
 ///
 /// The constructor wraps the incoming map with `Map.unmodifiable` so callers
 /// cannot mutate the internal state after construction.
@@ -9,17 +10,18 @@ import 'package:flutter/foundation.dart';
 /// Phase 1 supports only flat string keys. Dot-notation (`user.name`) and
 /// nested object traversal are introduced in Phase 3.
 @immutable
-final class DataContext {
-  /// Constructs a [DataContext] wrapping a defensive copy of [data].
+final class RuneDataContext {
+  /// Constructs a [RuneDataContext] wrapping a defensive copy of [data].
   ///
   /// The stored map is `Map.unmodifiable`, so even if the caller retains
-  /// a reference to [data] and mutates it, the [DataContext] remains
+  /// a reference to [data] and mutates it, the [RuneDataContext] remains
   /// consistent.
-  DataContext(Map<String, Object?> data)
+  RuneDataContext(Map<String, Object?> data)
       : _data = Map<String, Object?>.unmodifiable(data);
 
   /// The empty singleton. Initialized lazily on first access.
-  static final DataContext empty = DataContext(const <String, Object?>{});
+  static final RuneDataContext empty =
+      RuneDataContext(const <String, Object?>{});
 
   final Map<String, Object?> _data;
 
@@ -33,11 +35,12 @@ final class DataContext {
   /// Whether a value — possibly `null` — exists for [key].
   bool has(String key) => _data.containsKey(key);
 
-  /// Returns a new [DataContext] with [additions] merged on top of this one.
+  /// Returns a new [RuneDataContext] with [additions] merged on top of this
+  /// one.
   ///
   /// Non-mutating: the receiver is unchanged. Useful when builders introduce
   /// scoped variables (e.g. list-iteration bindings).
-  DataContext extend(Map<String, Object?> additions) {
-    return DataContext(<String, Object?>{..._data, ...additions});
+  RuneDataContext extend(Map<String, Object?> additions) {
+    return RuneDataContext(<String, Object?>{..._data, ...additions});
   }
 }
