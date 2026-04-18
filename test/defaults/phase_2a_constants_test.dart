@@ -97,5 +97,12 @@ void main() {
       expect(r.resolve('BoxShape', 'rectangle'), BoxShape.rectangle);
       expect(r.resolve('BoxShape', 'circle'), BoxShape.circle);
     });
+
+    test('seeds FlexFit', () {
+      final r = ConstantRegistry();
+      registerPhase2aConstants(r);
+      expect(r.resolve('FlexFit', 'tight'), FlexFit.tight);
+      expect(r.resolve('FlexFit', 'loose'), FlexFit.loose);
+    });
   });
 }

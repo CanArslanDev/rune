@@ -6,7 +6,7 @@ import 'package:rune/src/registry/constant_registry.dart';
 ///   base tone of each `MaterialColor`, which is itself a `Color`).
 /// - All enum values in: `MainAxisAlignment`, `CrossAxisAlignment`,
 ///   `MainAxisSize`, `TextAlign`, `BoxFit`, `StackFit`, `Axis`,
-///   `TextOverflow`, `BoxShape`.
+///   `TextOverflow`, `BoxShape`, `FlexFit`.
 /// - The nine aligned-singleton `Alignment` values.
 /// - The `FontWeight` weights `w100..w900`, `normal`, and `bold`.
 /// - `EdgeInsets.zero`.
@@ -26,6 +26,7 @@ void registerPhase2aConstants(ConstantRegistry registry) {
   _registerAxis(registry);
   _registerFontWeight(registry);
   _registerBoxShape(registry); // Phase 2b addition
+  _registerFlexFit(registry);
   _registerEdgeInsetsSingletons(registry);
 }
 
@@ -179,6 +180,13 @@ void _registerFontWeight(ConstantRegistry r) {
 void _registerBoxShape(ConstantRegistry r) {
   r.registerAll('BoxShape', <String, Object?>{
     for (final v in BoxShape.values) v.name: v,
+  });
+}
+
+// Registers all FlexFit enum values by name.
+void _registerFlexFit(ConstantRegistry r) {
+  r.registerAll('FlexFit', <String, Object?>{
+    for (final v in FlexFit.values) v.name: v,
   });
 }
 
