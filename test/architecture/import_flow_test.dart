@@ -172,6 +172,25 @@ void main() {
       );
     });
 
+    test('src/dev/ only imports Flutter (no internal rune layers)', () {
+      _forbid(
+        'dev',
+        _dartFilesUnder('lib/src/dev'),
+        const [
+          'package:rune/src/parser/',
+          'package:rune/src/resolver/',
+          'package:rune/src/registry/',
+          'package:rune/src/builders/',
+          'package:rune/src/core/',
+          'package:rune/src/binding/',
+          'package:rune/src/defaults/',
+          'package:rune/src/bridges/',
+          'package:rune/src/config.dart',
+          'package:rune/src/dynamic_view.dart',
+        ],
+      );
+    });
+
     test('src/config.dart does not import dynamic_view', () {
       _forbid(
         'config',
