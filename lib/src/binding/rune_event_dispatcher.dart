@@ -49,7 +49,7 @@ final class RuneEventDispatcher {
   /// argument-count mismatches — is caught and logged; [dispatch] never
   /// rethrows.
   void dispatch(String name, [List<Object?>? args]) {
-    final List<Object?> argsList = args ?? const <Object?>[];
+    final argsList = args ?? const <Object?>[];
     final catchAll = _catchAll;
     if (catchAll != null) {
       try {
@@ -60,7 +60,7 @@ final class RuneEventDispatcher {
         );
       }
     }
-    final Function? handler = _handlers[name];
+    final handler = _handlers[name];
     if (handler == null) {
       if (catchAll == null) {
         debugPrint('[rune] No handler registered for event "$name"');

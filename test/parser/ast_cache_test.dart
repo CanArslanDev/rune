@@ -19,28 +19,28 @@ void main() {
     });
 
     test('repeated put updates LRU order, size stays 1', () {
-      final cache = AstCache();
-      cache.put('42', parser.parse('42'));
-      cache.put('42', parser.parse('42'));
+      final cache = AstCache()
+        ..put('42', parser.parse('42'))
+        ..put('42', parser.parse('42'));
       expect(cache.size, 1);
     });
 
     test('evicts least-recently-used when over maxSize', () {
-      final cache = AstCache(maxSize: 2);
-      cache.put('a', parser.parse("'a'"));
-      cache.put('b', parser.parse("'b'"));
-      cache.get('a'); // touch 'a' → 'b' is now LRU
-      cache.put('c', parser.parse("'c'"));
+      final cache = AstCache(maxSize: 2)
+        ..put('a', parser.parse("'a'"))
+        ..put('b', parser.parse("'b'"))
+        ..get('a') // touch 'a' → 'b' is now LRU
+        ..put('c', parser.parse("'c'"));
       expect(cache.get('b'), isNull); // evicted
       expect(cache.get('a'), isNotNull);
       expect(cache.get('c'), isNotNull);
     });
 
     test('clear empties the cache', () {
-      final cache = AstCache();
-      cache.put('a', parser.parse('1'));
-      cache.put('b', parser.parse('2'));
-      cache.clear();
+      final cache = AstCache()
+        ..put('a', parser.parse('1'))
+        ..put('b', parser.parse('2'))
+        ..clear();
       expect(cache.size, 0);
       expect(cache.get('a'), isNull);
     });

@@ -38,7 +38,7 @@ void main() {
 
     test('missing child throws ArgumentException', () {
       expect(
-        () => b.build(const ResolvedArguments(), testContext()),
+        () => b.build(ResolvedArguments.empty, testContext()),
         throwsA(isA<ArgumentException>()),
       );
     });

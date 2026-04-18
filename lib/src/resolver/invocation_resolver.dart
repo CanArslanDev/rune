@@ -14,8 +14,8 @@ import 'package:rune/src/resolver/expression_resolver.dart';
 /// happens to ship a same-named value builder.
 final class InvocationResolver implements InvocationResolverContract {
   /// Constructs an [InvocationResolver] that delegates argument resolution
-  /// back to [_expr]. The expression resolver must already exist — wire
-  /// the back-pointer via [ExpressionResolver.bind] immediately after
+  /// back to [ExpressionResolver]. The expression resolver must already
+  /// exist — call [ExpressionResolver.bind] on it immediately after
   /// constructing both.
   InvocationResolver(this._expr);
 
@@ -103,7 +103,7 @@ final class InvocationResolver implements InvocationResolverContract {
   }) {
     final widgetBuilder = ctx.widgets.find(typeName);
     if (widgetBuilder != null) {
-      final ResolvedArguments args = _resolveArguments(argumentList, ctx);
+      final args = _resolveArguments(argumentList, ctx);
       return widgetBuilder.build(args, ctx);
     }
     final valueBuilder = ctx.values.findValue(
@@ -111,7 +111,7 @@ final class InvocationResolver implements InvocationResolverContract {
       constructorName: constructorName,
     );
     if (valueBuilder != null) {
-      final ResolvedArguments args = _resolveArguments(argumentList, ctx);
+      final args = _resolveArguments(argumentList, ctx);
       return valueBuilder.build(args, ctx);
     }
     throw UnregisteredBuilderException(source, typeName);

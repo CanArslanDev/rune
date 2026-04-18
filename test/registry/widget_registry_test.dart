@@ -17,15 +17,14 @@ final class _FakeBuilder implements RuneWidgetBuilder {
 void main() {
   group('WidgetRegistry', () {
     test('registerBuilder uses builder.typeName as key', () {
-      final r = WidgetRegistry();
       const b = _FakeBuilder('Foo');
-      r.registerBuilder(b);
+      final r = WidgetRegistry()..registerBuilder(b);
       expect(r.find('Foo'), same(b));
     });
 
     test('registerBuilder throws on duplicate type name', () {
-      final r = WidgetRegistry();
-      r.registerBuilder(const _FakeBuilder('Foo'));
+      final r = WidgetRegistry()
+        ..registerBuilder(const _FakeBuilder('Foo'));
       expect(
         () => r.registerBuilder(const _FakeBuilder('Foo')),
         throwsStateError,

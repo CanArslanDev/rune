@@ -5,8 +5,7 @@ import 'package:rune/src/registry/constant_registry.dart';
 void main() {
   group('ConstantRegistry', () {
     test('register + resolve returns the stored value', () {
-      final r = ConstantRegistry();
-      r.register('Colors', 'red', 0xFFFF0000);
+      final r = ConstantRegistry()..register('Colors', 'red', 0xFFFF0000);
       expect(r.resolve('Colors', 'red'), 0xFFFF0000);
     });
 
@@ -16,8 +15,7 @@ void main() {
     });
 
     test('resolve returns null for missing member', () {
-      final r = ConstantRegistry();
-      r.register('Colors', 'red', 0xFFFF0000);
+      final r = ConstantRegistry()..register('Colors', 'red', 0xFFFF0000);
       expect(r.resolve('Colors', 'purple'), isNull);
     });
 
@@ -29,8 +27,7 @@ void main() {
     });
 
     test('require returns value when present', () {
-      final r = ConstantRegistry();
-      r.register('Axis', 'horizontal', 0);
+      final r = ConstantRegistry()..register('Axis', 'horizontal', 0);
       expect(r.require('Axis', 'horizontal', source: 'Axis.horizontal'), 0);
     });
 
@@ -47,22 +44,20 @@ void main() {
     });
 
     test('register throws StateError on duplicate', () {
-      final r = ConstantRegistry();
-      r.register('X', 'a', 1);
+      final r = ConstantRegistry()..register('X', 'a', 1);
       expect(() => r.register('X', 'a', 2), throwsStateError);
     });
 
     test('registerAll seeds every entry', () {
-      final r = ConstantRegistry();
-      r.registerAll('Colors', const {'red': 0xFFFF0000, 'blue': 0xFF0000FF});
+      final r = ConstantRegistry()
+        ..registerAll('Colors', const {'red': 0xFFFF0000, 'blue': 0xFF0000FF});
       expect(r.resolve('Colors', 'red'), 0xFFFF0000);
       expect(r.resolve('Colors', 'blue'), 0xFF0000FF);
     });
 
     test('registerAll retains pre-duplicate entries when later entry throws',
         () {
-      final r = ConstantRegistry();
-      r.register('X', 'a', 1);
+      final r = ConstantRegistry()..register('X', 'a', 1);
       expect(
         () => r.registerAll('X', const {'b': 2, 'a': 99, 'c': 3}),
         throwsStateError,
@@ -74,8 +69,7 @@ void main() {
     });
 
     test('contains returns true when registered value is null', () {
-      final r = ConstantRegistry();
-      r.register('X', 'y', null);
+      final r = ConstantRegistry()..register('X', 'y', null);
       expect(r.contains('X', 'y'), isTrue);
       expect(r.resolve('X', 'y'), isNull);
     });
@@ -83,8 +77,9 @@ void main() {
     test('size counts total members across all types', () {
       final r = ConstantRegistry();
       expect(r.size, 0);
-      r.registerAll('Colors', const {'red': 0xFFFF0000, 'blue': 0xFF0000FF});
-      r.register('Axis', 'horizontal', 0);
+      r
+        ..registerAll('Colors', const {'red': 0xFFFF0000, 'blue': 0xFF0000FF})
+        ..register('Axis', 'horizontal', 0);
       expect(r.size, 3);
     });
   });

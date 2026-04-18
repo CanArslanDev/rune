@@ -36,7 +36,7 @@ void main() {
 
     test('missing padding throws ArgumentException', () {
       expect(
-        () => b.build(const ResolvedArguments(), testContext()),
+        () => b.build(ResolvedArguments.empty, testContext()),
         throwsA(isA<ArgumentException>()),
       );
     });

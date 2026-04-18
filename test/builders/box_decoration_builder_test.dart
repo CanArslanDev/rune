@@ -15,12 +15,12 @@ void main() {
     });
 
     test('builds empty decoration when no args', () {
-      final result = b.build(const ResolvedArguments(), testContext());
+      final result = b.build(ResolvedArguments.empty, testContext());
       expect(result, const BoxDecoration());
     });
 
     test('applies color + borderRadius', () {
-      final BoxDecoration result = b.build(
+      final result = b.build(
         ResolvedArguments(
           named: {
             'color': const Color(0xFF0000FF),
@@ -34,13 +34,13 @@ void main() {
     });
 
     test('applies shape default rectangle when omitted', () {
-      final BoxDecoration result =
-          b.build(const ResolvedArguments(), testContext());
+      final result =
+          b.build(ResolvedArguments.empty, testContext());
       expect(result.shape, BoxShape.rectangle);
     });
 
     test('applies circle shape when supplied', () {
-      final BoxDecoration result = b.build(
+      final result = b.build(
         const ResolvedArguments(named: {'shape': BoxShape.circle}),
         testContext(),
       );

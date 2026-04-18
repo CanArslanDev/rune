@@ -14,7 +14,7 @@ void main() {
     });
 
     test('bare Center with no args', () {
-      final w = b.build(const ResolvedArguments(), testContext()) as Center;
+      final w = b.build(ResolvedArguments.empty, testContext()) as Center;
       expect(w.child, isNull);
       expect(w.heightFactor, isNull);
       expect(w.widthFactor, isNull);

@@ -8,13 +8,13 @@ void main() {
     final parser = DartParser();
 
     test('parses an integer literal', () {
-      final Expression e = parser.parse('42');
+      final e = parser.parse('42');
       expect(e, isA<IntegerLiteral>());
       expect((e as IntegerLiteral).value, 42);
     });
 
     test('parses a string literal', () {
-      final Expression e = parser.parse("'hello'");
+      final e = parser.parse("'hello'");
       expect(e, isA<SimpleStringLiteral>());
       expect((e as SimpleStringLiteral).value, 'hello');
     });
@@ -22,7 +22,7 @@ void main() {
     test('parses a simple instance creation', () {
       // Without type resolution, Text('hi') is parsed as a MethodInvocation.
       // Use `new` to force InstanceCreationExpression.
-      final Expression e = parser.parse("new Text('hi')");
+      final e = parser.parse("new Text('hi')");
       expect(e, isA<InstanceCreationExpression>());
       final ic = e as InstanceCreationExpression;
       expect(ic.constructorName.type.name2.lexeme, 'Text');
@@ -35,7 +35,7 @@ void main() {
       // Use `new` to force InstanceCreationExpression.
       // The parser (without resolution) treats `EdgeInsets` as an
       // ImportPrefixReference and `all` as the NamedType.name2.
-      final Expression e = parser.parse('new EdgeInsets.all(16)');
+      final e = parser.parse('new EdgeInsets.all(16)');
       expect(e, isA<InstanceCreationExpression>());
       final ic = e as InstanceCreationExpression;
       final namedType = ic.constructorName.type;
@@ -45,15 +45,16 @@ void main() {
     });
 
     test('parses a nested tree (unresolved → MethodInvocation)', () {
-      // Without type resolution, call-syntax constructors are MethodInvocations.
-      final Expression e = parser.parse(
+      // Without type resolution, call-syntax constructors are
+      // MethodInvocations.
+      final e = parser.parse(
         "Column(children: [Text('a'), Text('b')])",
       );
       expect(e, isA<MethodInvocation>());
     });
 
     test('parses a bare constructor call as MethodInvocation (no `new`)', () {
-      final Expression e = parser.parse("Text('hi')");
+      final e = parser.parse("Text('hi')");
       expect(e, isA<MethodInvocation>());
       final m = e as MethodInvocation;
       expect(m.target, isNull);
@@ -63,7 +64,7 @@ void main() {
     });
 
     test('parses a bare named constructor call as MethodInvocation', () {
-      final Expression e = parser.parse('EdgeInsets.all(16)');
+      final e = parser.parse('EdgeInsets.all(16)');
       expect(e, isA<MethodInvocation>());
       final m = e as MethodInvocation;
       expect(m.target, isA<SimpleIdentifier>());

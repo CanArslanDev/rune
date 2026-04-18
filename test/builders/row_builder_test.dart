@@ -26,7 +26,7 @@ void main() {
     });
 
     test('builds empty Row when no children arg', () {
-      final w = b.build(const ResolvedArguments(), testContext()) as Row;
+      final w = b.build(ResolvedArguments.empty, testContext()) as Row;
       expect(w.children, isEmpty);
     });
 

@@ -31,7 +31,7 @@ void main() {
     });
 
     test('all-missing produces EdgeInsets.zero-equivalent', () {
-      final result = b.build(const ResolvedArguments(), testContext());
+      final result = b.build(ResolvedArguments.empty, testContext());
       expect(result, EdgeInsets.zero);
     });
 

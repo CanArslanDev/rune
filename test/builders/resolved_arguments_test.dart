@@ -29,7 +29,7 @@ void main() {
     });
 
     test('require<T> throws ArgumentException when absent', () {
-      const args = ResolvedArguments();
+      const args = ResolvedArguments.empty;
       expect(
         () => args.require<String>('x', source: 'Foo()'),
         throwsA(
@@ -56,7 +56,7 @@ void main() {
     });
 
     test('requirePositional<T> throws on out-of-range', () {
-      const args = ResolvedArguments();
+      const args = ResolvedArguments.empty;
       expect(
         () => args.requirePositional<int>(0, source: 'Foo()'),
         throwsA(isA<ArgumentException>()),

@@ -36,7 +36,7 @@ void main() {
     });
 
     test('no args produces zero insets', () {
-      final result = b.build(const ResolvedArguments(), testContext());
+      final result = b.build(ResolvedArguments.empty, testContext());
       expect(result, EdgeInsets.zero);
     });
 

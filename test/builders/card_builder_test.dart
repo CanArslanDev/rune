@@ -14,7 +14,7 @@ void main() {
     });
 
     test('bare Card with no args', () {
-      final w = b.build(const ResolvedArguments(), testContext());
+      final w = b.build(ResolvedArguments.empty, testContext());
       expect(w, isA<Card>());
     });
 

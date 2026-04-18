@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:rune/src/builders/widgets/icon_builder.dart' show IconBuilder;
 import 'package:rune/src/registry/constant_registry.dart';
 
 /// Seeds [registry] with ~60 common `Icons.*` constants used by the

@@ -49,7 +49,7 @@ void main() {
 
     test('missing icon throws ArgumentException', () {
       expect(
-        () => b.build(const ResolvedArguments(), testContext()),
+        () => b.build(ResolvedArguments.empty, testContext()),
         throwsA(isA<ArgumentException>()),
       );
     });

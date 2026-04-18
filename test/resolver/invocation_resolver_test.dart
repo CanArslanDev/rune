@@ -70,7 +70,7 @@ void main() {
   final parser = DartParser();
 
   group('InvocationResolver — MethodInvocation shape (bare calls, no new)', () {
-    test('resolves bare Text(\'hi\') → widget registry', () {
+    test("resolves bare Text('hi') → widget registry", () {
       final widget = _RecordingWidget('Text');
       final p = _buildPipeline(widgets: [widget]);
       p.expr.resolve(parser.parse("Text('hi')"), p.ctx);
@@ -105,7 +105,7 @@ void main() {
   });
 
   group('InvocationResolver — InstanceCreationExpression shape (with new)', () {
-    test('resolves new Text(\'hi\') → widget registry', () {
+    test("resolves new Text('hi') → widget registry", () {
       final widget = _RecordingWidget('Text');
       final p = _buildPipeline(widgets: [widget]);
       p.expr.resolve(parser.parse("new Text('hi')"), p.ctx);
@@ -132,19 +132,22 @@ void main() {
       );
     });
 
-    test('unsupported MethodInvocation target shape raises ResolveException', () {
-      final p = _buildPipeline();
-      // `a.b.c()` — target is a PrefixedIdentifier, not SimpleIdentifier.
-      expect(
-        () => p.expr.resolve(parser.parse('a.b.c()'), p.ctx),
-        throwsA(isA<ResolveException>()
-            .having(
-              (e) => e.message,
-              'message',
-              contains('MethodInvocation target'),
-            ),),
-      );
-    });
+    test(
+      'unsupported MethodInvocation target shape raises ResolveException',
+      () {
+        final p = _buildPipeline();
+        // `a.b.c()` — target is a PrefixedIdentifier, not SimpleIdentifier.
+        expect(
+          () => p.expr.resolve(parser.parse('a.b.c()'), p.ctx),
+          throwsA(isA<ResolveException>()
+              .having(
+                (e) => e.message,
+                'message',
+                contains('MethodInvocation target'),
+              ),),
+        );
+      },
+    );
 
     test('resolves new Foo.bar(...) via importPrefix path', () {
       final b = _RecordingValue('Widgets', 'fancy', 'RESULT');
@@ -157,21 +160,25 @@ void main() {
       expect(b.lastArgs?.positional, [1]);
     });
 
-    test('unregistered builder does not invoke nested builders (fail-fast)', () {
-      final inner = _RecordingWidget('Inner');
-      final p = _buildPipeline(widgets: [inner]);
-      // `Outer` is NOT registered. If the dispatcher resolved args eagerly,
-      // `Inner()` would fire and record invocation. With fail-fast, it must not.
-      expect(
-        () => p.expr.resolve(parser.parse('Outer(child: Inner())'), p.ctx),
-        throwsA(isA<UnregisteredBuilderException>()
-            .having((e) => e.typeName, 'typeName', 'Outer',),),
-      );
-      expect(
-        inner.lastArgs,
-        isNull,
-        reason: 'Inner must not be built when Outer is unregistered',
-      );
-    });
+    test(
+      'unregistered builder does not invoke nested builders (fail-fast)',
+      () {
+        final inner = _RecordingWidget('Inner');
+        final p = _buildPipeline(widgets: [inner]);
+        // `Outer` is NOT registered. If the dispatcher resolved args
+        // eagerly, `Inner()` would fire and record invocation. With
+        // fail-fast, it must not.
+        expect(
+          () => p.expr.resolve(parser.parse('Outer(child: Inner())'), p.ctx),
+          throwsA(isA<UnregisteredBuilderException>()
+              .having((e) => e.typeName, 'typeName', 'Outer',),),
+        );
+        expect(
+          inner.lastArgs,
+          isNull,
+          reason: 'Inner must not be built when Outer is unregistered',
+        );
+      },
+    );
   });
 }

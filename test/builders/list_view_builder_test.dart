@@ -14,7 +14,7 @@ void main() {
     });
 
     test('defaults: vertical, no reverse, no shrink, no padding, empty', () {
-      final w = b.build(const ResolvedArguments(), testContext())
+      final w = b.build(ResolvedArguments.empty, testContext())
           as ListView;
       expect(w.scrollDirection, Axis.vertical);
       expect(w.reverse, isFalse);

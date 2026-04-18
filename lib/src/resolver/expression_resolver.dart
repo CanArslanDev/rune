@@ -9,6 +9,7 @@ import 'package:rune/src/resolver/literal_resolver.dart';
 /// Implemented by `InvocationResolver` (Task 15). Declared here (rather than
 /// importing the concrete class) so this file does not participate in the
 /// circular dependency between the two resolvers.
+// ignore: one_member_abstracts
 abstract interface class InvocationResolverContract {
   /// Resolves a constructor-call expression — either a [MethodInvocation]
   /// (bare `Text('hi')`) or an [InstanceCreationExpression] (explicit
@@ -69,7 +70,7 @@ final class ExpressionResolver {
       if (element is InterpolationString) {
         buffer.write(element.value);
       } else if (element is InterpolationExpression) {
-        final Object? value = resolve(element.expression, ctx);
+        final value = resolve(element.expression, ctx);
         buffer.write(value?.toString() ?? '');
       } else {
         throw ResolveException(
@@ -129,7 +130,7 @@ final class ExpressionResolver {
   }
 
   InvocationResolverContract _requireInvocation() {
-    final InvocationResolverContract? inv = _invocation;
+    final inv = _invocation;
     if (inv == null) {
       throw StateError(
         'ExpressionResolver.bind() was not called — '

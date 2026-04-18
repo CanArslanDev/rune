@@ -7,19 +7,21 @@ void main() {
     test('dispatch invokes registered handler', () {
       final d = RuneEventDispatcher();
       var count = 0;
-      d.register('click', () => count++);
-      d.dispatch('click');
-      d.dispatch('click');
+      d
+        ..register('click', () => count++)
+        ..dispatch('click')
+        ..dispatch('click');
       expect(count, 2);
     });
 
     test('dispatch passes positional args', () {
       final d = RuneEventDispatcher();
       final captured = <Object?>[];
-      d.register('submit', (String value, int n) {
-        captured.addAll([value, n]);
-      });
-      d.dispatch('submit', ['hello', 42]);
+      d
+        ..register('submit', (String value, int n) {
+          captured.addAll([value, n]);
+        })
+        ..dispatch('submit', ['hello', 42]);
       expect(captured, ['hello', 42]);
     });
 
@@ -44,15 +46,15 @@ void main() {
     test('register overwrites existing handler', () {
       final d = RuneEventDispatcher();
       var which = '';
-      d.register('e', () => which = 'a');
-      d.register('e', () => which = 'b');
-      d.dispatch('e');
+      d
+        ..register('e', () => which = 'a')
+        ..register('e', () => which = 'b')
+        ..dispatch('e');
       expect(which, 'b');
     });
 
     test('arity mismatch is caught and logged, not rethrown', () {
-      final d = RuneEventDispatcher();
-      d.register('oops', () => 1);
+      final d = RuneEventDispatcher()..register('oops', () => 1);
       final logs = <String?>[];
       final previous = debugPrint;
       debugPrint = (String? msg, {int? wrapWidth}) => logs.add(msg);
@@ -69,8 +71,8 @@ void main() {
     });
 
     test('handler-thrown exception is caught and logged, not rethrown', () {
-      final d = RuneEventDispatcher();
-      d.register('boom', () => throw StateError('intentional'));
+      final d = RuneEventDispatcher()
+        ..register('boom', () => throw StateError('intentional'));
       final logs = <String?>[];
       final previous = debugPrint;
       debugPrint = (String? msg, {int? wrapWidth}) => logs.add(msg);
@@ -87,18 +89,20 @@ void main() {
     test('catch-all handler fires for every dispatch', () {
       final d = RuneEventDispatcher();
       final captured = <String>[];
-      d.setCatchAllHandler((name, args) => captured.add(name));
-      d.dispatch('one');
-      d.dispatch('two');
-      d.dispatch('three');
+      d
+        ..setCatchAllHandler((name, args) => captured.add(name))
+        ..dispatch('one')
+        ..dispatch('two')
+        ..dispatch('three');
       expect(captured, ['one', 'two', 'three']);
     });
 
     test('catch-all receives forwarded positional args', () {
       final d = RuneEventDispatcher();
       List<Object?>? captured;
-      d.setCatchAllHandler((name, args) => captured = args);
-      d.dispatch('submit', ['hello', 42]);
+      d
+        ..setCatchAllHandler((name, args) => captured = args)
+        ..dispatch('submit', ['hello', 42]);
       expect(captured, ['hello', 42]);
     });
 
@@ -106,9 +110,10 @@ void main() {
       final d = RuneEventDispatcher();
       var catchCount = 0;
       var namedCount = 0;
-      d.setCatchAllHandler((name, args) => catchCount++);
-      d.register('click', () => namedCount++);
-      d.dispatch('click');
+      d
+        ..setCatchAllHandler((name, args) => catchCount++)
+        ..register('click', () => namedCount++)
+        ..dispatch('click');
       expect(catchCount, 1);
       expect(namedCount, 1);
     });
@@ -116,16 +121,17 @@ void main() {
     test('setCatchAllHandler(null) clears the bridge', () {
       final d = RuneEventDispatcher();
       var count = 0;
-      d.setCatchAllHandler((_, __) => count++);
-      d.dispatch('a');
-      d.setCatchAllHandler(null);
-      d.dispatch('b');
+      d
+        ..setCatchAllHandler((_, __) => count++)
+        ..dispatch('a')
+        ..setCatchAllHandler(null)
+        ..dispatch('b');
       expect(count, 1);
     });
 
     test('catch-all error is caught and logged, not rethrown', () {
-      final d = RuneEventDispatcher();
-      d.setCatchAllHandler((_, __) => throw StateError('boom-catch'));
+      final d = RuneEventDispatcher()
+        ..setCatchAllHandler((_, __) => throw StateError('boom-catch'));
       final logs = <String?>[];
       final previous = debugPrint;
       debugPrint = (String? msg, {int? wrapWidth}) => logs.add(msg);
@@ -139,8 +145,7 @@ void main() {
 
     test('dispatching unknown event with catch-all set does NOT emit the '
         'no-handler warning', () {
-      final d = RuneEventDispatcher();
-      d.setCatchAllHandler((_, __) {});
+      final d = RuneEventDispatcher()..setCatchAllHandler((_, __) {});
       final logs = <String?>[];
       final previous = debugPrint;
       debugPrint = (String? msg, {int? wrapWidth}) => logs.add(msg);

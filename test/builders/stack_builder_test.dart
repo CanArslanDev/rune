@@ -14,7 +14,7 @@ void main() {
     });
 
     test('builds empty Stack with defaults', () {
-      final w = b.build(const ResolvedArguments(), testContext()) as Stack;
+      final w = b.build(ResolvedArguments.empty, testContext()) as Stack;
       expect(w.children, isEmpty);
       expect(w.alignment, AlignmentDirectional.topStart);
       expect(w.fit, StackFit.loose);

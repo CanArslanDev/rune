@@ -73,9 +73,9 @@ class _RuneViewState extends State<RuneView> {
   @override
   Widget build(BuildContext context) {
     try {
-      final Expression ast = _parseOrCached(widget.source);
-      final RuneContext ctx = _buildContext(context);
-      final Object? result = _expr.resolve(ast, ctx);
+      final ast = _parseOrCached(widget.source);
+      final ctx = _buildContext(context);
+      final result = _expr.resolve(ast, ctx);
       if (result is! Widget) {
         throw ResolveException(
           widget.source,
@@ -90,9 +90,9 @@ class _RuneViewState extends State<RuneView> {
   }
 
   Expression _parseOrCached(String source) {
-    final Expression? cached = _cache.get(source);
+    final cached = _cache.get(source);
     if (cached != null) return cached;
-    final Expression parsed = _parser.parse(source);
+    final parsed = _parser.parse(source);
     _cache.put(source, parsed);
     return parsed;
   }
@@ -101,9 +101,7 @@ class _RuneViewState extends State<RuneView> {
     final events = RuneEventDispatcher();
     final onEvent = widget.onEvent;
     if (onEvent != null) {
-      events.setCatchAllHandler((name, args) {
-        onEvent(name, args);
-      });
+      events.setCatchAllHandler(onEvent);
     }
     return RuneContext(
       widgets: widget.config.widgets,

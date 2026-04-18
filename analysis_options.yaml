@@ -1,4 +1,4 @@
-include: package:flutter_lints/flutter.yaml
+include: package:very_good_analysis/analysis_options.yaml
 
 analyzer:
   language:
@@ -26,3 +26,4 @@ linter:
     sort_pub_dependencies: true
     unawaited_futures: true
     unnecessary_late: true
+    use_setters_to_change_properties: false

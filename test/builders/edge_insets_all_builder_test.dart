@@ -33,7 +33,7 @@ void main() {
 
     test('throws on missing positional', () {
       expect(
-        () => b.build(const ResolvedArguments(), testContext()),
+        () => b.build(ResolvedArguments.empty, testContext()),
         throwsA(isA<ArgumentException>()),
       );
     });

@@ -36,7 +36,7 @@ final class ResolvedArguments {
   /// Reads the named argument [name] as type [T], returning [fallback]
   /// when absent or null.
   T getOr<T extends Object>(String name, T fallback) {
-    final Object? value = named[name];
+    final value = named[name];
     return (value ?? fallback) as T;
   }
 
@@ -46,7 +46,7 @@ final class ResolvedArguments {
   /// and handle absence themselves (Phase 1's builders don't need this
   /// distinction; a dedicated `present<T>` variant may be added later).
   T require<T extends Object>(String name, {required String source}) {
-    final Object? value = named[name];
+    final value = named[name];
     if (value == null) {
       throw ArgumentException(
         source,
@@ -77,7 +77,7 @@ final class ResolvedArguments {
         'Missing positional argument at index $index',
       );
     }
-    final Object? value = positional[index];
+    final value = positional[index];
     if (value == null) {
       throw ArgumentException(
         source,

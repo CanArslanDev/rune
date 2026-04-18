@@ -37,7 +37,7 @@ void main() {
 
     test('throws ArgumentException when positional missing', () {
       expect(
-        () => builder.build(const ResolvedArguments(), testContext()),
+        () => builder.build(ResolvedArguments.empty, testContext()),
         throwsA(isA<ArgumentException>()),
       );
     });

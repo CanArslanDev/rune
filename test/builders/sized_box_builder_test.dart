@@ -14,7 +14,7 @@ void main() {
     });
 
     test('builds empty SizedBox when no args', () {
-      final w = b.build(const ResolvedArguments(), testContext()) as SizedBox;
+      final w = b.build(ResolvedArguments.empty, testContext()) as SizedBox;
       expect(w.width, isNull);
       expect(w.height, isNull);
       expect(w.child, isNull);

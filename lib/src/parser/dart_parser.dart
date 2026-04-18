@@ -19,12 +19,12 @@ final class DartParser {
   /// Throws [ParseException] on empty input, syntactically invalid input,
   /// or any unexpected analyzer structure.
   Expression parse(String source) {
-    final String cleaned = _cleanSource(source);
+    final cleaned = _cleanSource(source);
     if (cleaned.isEmpty) {
       throw ParseException(source, 'Source is empty after trimming');
     }
 
-    final String wrapped = 'dynamic __rune__ = $cleaned;';
+    final wrapped = 'dynamic __rune__ = $cleaned;';
 
     final ParseStringResult result;
     try {
@@ -54,7 +54,7 @@ final class DartParser {
     if (decl.variables.variables.length != 1) {
       throw ParseException(source, 'Expected exactly one variable in wrapper');
     }
-    final Expression? initializer = decl.variables.variables.first.initializer;
+    final initializer = decl.variables.variables.first.initializer;
     if (initializer == null) {
       throw ParseException(source, 'Wrapped variable had no initializer');
     }
@@ -64,7 +64,7 @@ final class DartParser {
   /// Trims surrounding whitespace and strips any trailing semicolons from
   /// [source], returning the cleaned string.
   static String _cleanSource(String source) {
-    String s = source.trim();
+    var s = source.trim();
     while (s.endsWith(';')) {
       s = s.substring(0, s.length - 1).trimRight();
     }

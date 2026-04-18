@@ -41,7 +41,7 @@ void main() {
 
     test('missing path throws ArgumentException', () {
       expect(
-        () => b.build(const ResolvedArguments(), testContext()),
+        () => b.build(ResolvedArguments.empty, testContext()),
         throwsA(isA<ArgumentException>()),
       );
     });

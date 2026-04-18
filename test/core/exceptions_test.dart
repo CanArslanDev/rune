@@ -20,14 +20,17 @@ void main() {
       expect(e, isA<RuneException>());
     });
 
-    test('UnregisteredBuilderException exposes typeName and carries source', () {
-      const e = UnregisteredBuilderException('FooBar()', 'FooBar');
-      expect(e.source, 'FooBar()');
-      expect(e.typeName, 'FooBar');
-      expect(e.message, contains('FooBar'));
-      expect(e, isA<RuneException>());
-      expect(e.toString(), contains('FooBar'));
-    });
+    test(
+      'UnregisteredBuilderException exposes typeName and carries source',
+      () {
+        const e = UnregisteredBuilderException('FooBar()', 'FooBar');
+        expect(e.source, 'FooBar()');
+        expect(e.typeName, 'FooBar');
+        expect(e.message, contains('FooBar'));
+        expect(e, isA<RuneException>());
+        expect(e.toString(), contains('FooBar'));
+      },
+    );
 
     test('ArgumentException carries source and message', () {
       const e = ArgumentException('Text()', 'missing "data"');

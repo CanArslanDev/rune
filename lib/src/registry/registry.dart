@@ -42,7 +42,7 @@ class Registry<T extends Object> {
   /// future task may introduce a generic "registry miss" exception when
   /// non-builder registries are added.
   T require(String name, {required String source}) {
-    final T? item = _items[name];
+    final item = _items[name];
     if (item == null) {
       throw UnregisteredBuilderException(source, name);
     }

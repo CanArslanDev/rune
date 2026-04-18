@@ -38,8 +38,9 @@ void main() {
       final r = ValueRegistry();
       const a = _FakeValue('X', null, 1);
       const b = _FakeValue('X', 'foo', 2);
-      r.registerBuilder(a);
-      r.registerBuilder(b);
+      r
+        ..registerBuilder(a)
+        ..registerBuilder(b);
       expect(r.findValue('X'), same(a));
       expect(r.findValue('X', constructorName: 'foo'), same(b));
     });

@@ -20,7 +20,7 @@ final class AstCache {
   /// Returns the cached expression for [source], or `null` on miss.
   /// Touches the entry so it becomes the most-recently-used.
   Expression? get(String source) {
-    final Expression? expr = _entries.remove(source);
+    final expr = _entries.remove(source);
     if (expr != null) {
       _entries[source] = expr;
     }

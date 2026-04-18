@@ -83,7 +83,8 @@ void main() {
 
     test('routes PrefixedIdentifier → constants', () {
       final r = ExpressionResolver(LiteralResolver(), IdentifierResolver());
-      final constants = ConstantRegistry()..register('Colors', 'red', 0xFFFF0000);
+      final constants = ConstantRegistry()
+        ..register('Colors', 'red', 0xFFFF0000);
       final ctx = testContext(constants: constants);
       expect(r.resolve(parser.parse('Colors.red'), ctx), 0xFFFF0000);
     });

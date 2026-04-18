@@ -5,8 +5,7 @@ import 'package:rune/src/registry/registry.dart';
 void main() {
   group('Registry<T>', () {
     test('register + find returns the stored item', () {
-      final r = Registry<String>();
-      r.register('foo', 'bar');
+      final r = Registry<String>()..register('foo', 'bar');
       expect(r.find('foo'), 'bar');
     });
 
@@ -22,24 +21,25 @@ void main() {
       expect(r.contains('a'), isTrue);
     });
 
-    test('register throws StateError on duplicate and includes key + runtimeType', () {
-      final r = Registry<int>();
-      r.register('k', 1);
-      expect(
-        () => r.register('k', 2),
-        throwsA(
-          isA<StateError>().having(
-            (e) => e.message,
-            'message',
-            allOf(contains('"k"'), contains('Registry<int>')),
+    test(
+      'register throws StateError on duplicate and includes key + runtimeType',
+      () {
+        final r = Registry<int>()..register('k', 1);
+        expect(
+          () => r.register('k', 2),
+          throwsA(
+            isA<StateError>().having(
+              (e) => e.message,
+              'message',
+              allOf(contains('"k"'), contains('Registry<int>')),
+            ),
           ),
-        ),
-      );
-    });
+        );
+      },
+    );
 
     test('registerAll adds multiple entries', () {
-      final r = Registry<int>();
-      r.registerAll({'a': 1, 'b': 2});
+      final r = Registry<int>()..registerAll({'a': 1, 'b': 2});
       expect(r.find('a'), 1);
       expect(r.find('b'), 2);
     });
@@ -62,8 +62,9 @@ void main() {
     test('size reflects entry count', () {
       final r = Registry<int>();
       expect(r.size, 0);
-      r.register('a', 1);
-      r.register('b', 2);
+      r
+        ..register('a', 1)
+        ..register('b', 2);
       expect(r.size, 2);
     });
   });

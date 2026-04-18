@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:rune/src/builders/builder.dart';
 import 'package:rune/src/builders/resolved_arguments.dart';
+import 'package:rune/src/builders/widgets/column_builder.dart' show ColumnBuilder;
 import 'package:rune/src/core/rune_context.dart';
 
 /// Builds [Row]. Mirrors [ColumnBuilder]'s children-filter behaviour —

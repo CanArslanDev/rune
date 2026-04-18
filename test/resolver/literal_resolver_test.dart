@@ -38,7 +38,7 @@ void main() {
 
     test('StringInterpolation throws ResolveException in Phase 1', () {
       expect(
-        () => resolver.resolve(parseLit("'\$name'")),
+        () => resolver.resolve(parseLit(r"'$name'")),
         throwsA(isA<ResolveException>()),
       );
     });

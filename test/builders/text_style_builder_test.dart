@@ -15,12 +15,12 @@ void main() {
     });
 
     test('builds empty TextStyle when no args', () {
-      final result = b.build(const ResolvedArguments(), testContext());
+      final result = b.build(ResolvedArguments.empty, testContext());
       expect(result, const TextStyle());
     });
 
     test('applies fontSize/color/fontWeight', () {
-      final TextStyle result = b.build(
+      final result = b.build(
         const ResolvedArguments(
           named: {
             'fontSize': 16,
@@ -36,7 +36,7 @@ void main() {
     });
 
     test('applies fontFamily + letterSpacing + height + fontStyle', () {
-      final TextStyle result = b.build(
+      final result = b.build(
         const ResolvedArguments(
           named: {
             'fontFamily': 'Roboto',
@@ -54,7 +54,7 @@ void main() {
     });
 
     test('int fontSize coerces to double', () {
-      final TextStyle result = b.build(
+      final result = b.build(
         const ResolvedArguments(named: {'fontSize': 20}),
         testContext(),
       );
