@@ -76,5 +76,57 @@ void main() {
         ),
       );
     });
+
+    test('data-prefix traversal: user.name (user is Map in data)', () {
+      final ctx = testContext(
+        data: RuneDataContext(const {
+          'user': {'name': 'Ali', 'age': 30},
+        }),
+      );
+      final e = parser.parse('user.name') as PrefixedIdentifier;
+      expect(resolver.resolvePrefixed(e, ctx), 'Ali');
+    });
+
+    test('data-prefix missing member returns null', () {
+      final ctx = testContext(
+        data: RuneDataContext(const {
+          'user': {'name': 'Ali'},
+        }),
+      );
+      final e = parser.parse('user.age') as PrefixedIdentifier;
+      expect(resolver.resolvePrefixed(e, ctx), isNull);
+    });
+
+    test('data-prefix with non-Map target throws ResolveException', () {
+      final ctx = testContext(
+        data: RuneDataContext(const {'user': 'not a map'}),
+      );
+      final e = parser.parse('user.name') as PrefixedIdentifier;
+      expect(
+        () => resolver.resolvePrefixed(e, ctx),
+        throwsA(
+          isA<ResolveException>()
+              .having((err) => err.source, 'source', 'user.name')
+              .having((err) => err.message, 'message', contains('Map')),
+        ),
+      );
+    });
+
+    test('data-prefix takes precedence over constants', () {
+      final constants = ConstantRegistry()
+        ..register('Colors', 'red', 0xFFFF0000);
+      final ctx = testContext(
+        data: RuneDataContext(const {
+          'Colors': {'red': 'shadowed-from-data'},
+        }),
+        constants: constants,
+      );
+      final e = parser.parse('Colors.red') as PrefixedIdentifier;
+      expect(
+        resolver.resolvePrefixed(e, ctx),
+        'shadowed-from-data',
+        reason: 'data wins on conflict; users rarely name data "Colors"',
+      );
+    });
   });
 }
