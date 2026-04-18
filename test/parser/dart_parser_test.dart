@@ -52,6 +52,26 @@ void main() {
       expect(e, isA<MethodInvocation>());
     });
 
+    test('parses a bare constructor call as MethodInvocation (no `new`)', () {
+      final Expression e = parser.parse("Text('hi')");
+      expect(e, isA<MethodInvocation>());
+      final m = e as MethodInvocation;
+      expect(m.target, isNull);
+      expect(m.methodName.name, 'Text');
+      expect(m.argumentList.arguments, hasLength(1));
+      expect(m.argumentList.arguments.first, isA<SimpleStringLiteral>());
+    });
+
+    test('parses a bare named constructor call as MethodInvocation', () {
+      final Expression e = parser.parse('EdgeInsets.all(16)');
+      expect(e, isA<MethodInvocation>());
+      final m = e as MethodInvocation;
+      expect(m.target, isA<SimpleIdentifier>());
+      expect((m.target! as SimpleIdentifier).name, 'EdgeInsets');
+      expect(m.methodName.name, 'all');
+      expect(m.argumentList.arguments, hasLength(1));
+    });
+
     test('tolerates trailing semicolon', () {
       expect(() => parser.parse('42;'), returnsNormally);
     });
