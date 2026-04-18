@@ -26,5 +26,25 @@ void main() {
       expect(c.widgets.size, 0);
       expect(c.values.size, 0);
     });
+
+    test('exposes a constants registry', () {
+      final c = RuneConfig.defaults();
+      expect(c.constants, isNotNull);
+    });
+
+    test('seeds Colors.red in defaults', () {
+      final c = RuneConfig.defaults();
+      expect(c.constants.contains('Colors', 'red'), isTrue);
+    });
+
+    test('seeds MainAxisAlignment.center', () {
+      final c = RuneConfig.defaults();
+      expect(c.constants.contains('MainAxisAlignment', 'center'), isTrue);
+    });
+
+    test('empty config has empty constants registry', () {
+      final c = RuneConfig();
+      expect(c.constants.size, 0);
+    });
   });
 }

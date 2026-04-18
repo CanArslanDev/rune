@@ -13,6 +13,7 @@ export 'src/config.dart' show RuneConfig;
 export 'src/core/exceptions.dart';
 export 'src/core/rune_context.dart' show RuneContext;
 export 'src/dynamic_view.dart' show RuneView;
+export 'src/registry/constant_registry.dart' show ConstantRegistry;
 export 'src/registry/registry.dart' show Registry;
 export 'src/registry/value_registry.dart' show ValueRegistry;
 export 'src/registry/widget_registry.dart' show WidgetRegistry;

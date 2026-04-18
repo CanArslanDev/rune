@@ -4,27 +4,32 @@ import 'package:rune/src/builders/widgets/container_builder.dart';
 import 'package:rune/src/builders/widgets/row_builder.dart';
 import 'package:rune/src/builders/widgets/sized_box_builder.dart';
 import 'package:rune/src/builders/widgets/text_builder.dart';
+import 'package:rune/src/defaults/phase_2a_constants.dart';
+import 'package:rune/src/registry/constant_registry.dart';
 import 'package:rune/src/registry/value_registry.dart';
 import 'package:rune/src/registry/widget_registry.dart';
 
-/// Top-level configuration handed to a [RuneView]. Bundles the widget and
-/// value registries that the resolver consults during a render.
+/// Top-level configuration handed to a [RuneView]. Bundles the widget,
+/// value, and constants registries that the resolver consults during a
+/// render.
 ///
 /// Immutable by convention in Phase 1: registries are expected to be
 /// populated at construction and left alone afterward. Phase 2 may tighten
 /// this with a `freeze()` step.
 final class RuneConfig {
-  /// Creates a configuration. Both registries default to empty if not
+  /// Creates a configuration. Each registry defaults to empty if not
   /// supplied.
   RuneConfig({
     WidgetRegistry? widgets,
     ValueRegistry? values,
+    ConstantRegistry? constants,
   })  : widgets = widgets ?? WidgetRegistry(),
-        values = values ?? ValueRegistry();
+        values = values ?? ValueRegistry(),
+        constants = constants ?? ConstantRegistry();
 
-  /// Creates a configuration with the Phase-1 widget and value builders
-  /// pre-registered: `Text`, `SizedBox`, `Container`, `Column`, `Row`, and
-  /// `EdgeInsets.all`.
+  /// Creates a configuration with the Phase-1 widget/value builders plus
+  /// the Phase-2a constants (Colors, axis/alignment/size/fit enums,
+  /// FontWeight, EdgeInsets.zero) pre-registered.
   factory RuneConfig.defaults() {
     final config = RuneConfig();
     config.widgets
@@ -34,6 +39,7 @@ final class RuneConfig {
       ..registerBuilder(const ColumnBuilder())
       ..registerBuilder(const RowBuilder());
     config.values.registerBuilder(const EdgeInsetsAllBuilder());
+    registerPhase2aConstants(config.constants);
     return config;
   }
 
@@ -42,4 +48,8 @@ final class RuneConfig {
 
   /// Registry of value builders consulted for non-widget constructor calls.
   final ValueRegistry values;
+
+  /// Registry of named static constants consulted by `IdentifierResolver`
+  /// when resolving `PrefixedIdentifier` expressions like `Colors.red`.
+  final ConstantRegistry constants;
 }
