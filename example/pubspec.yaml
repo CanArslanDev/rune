@@ -1,0 +1,22 @@
+name: rune_example
+description: Phase 1 demo app for the rune package.
+publish_to: 'none'
+version: 0.0.1
+
+environment:
+  sdk: ^3.4.0
+  flutter: ">=3.22.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  rune:
+    path: ../
+
+dev_dependencies:
+  flutter_lints: ^4.0.0
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
