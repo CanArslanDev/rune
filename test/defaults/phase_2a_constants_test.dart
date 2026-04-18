@@ -1,0 +1,94 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:rune/src/defaults/phase_2a_constants.dart';
+import 'package:rune/src/registry/constant_registry.dart';
+
+void main() {
+  group('registerPhase2aConstants', () {
+    test('seeds a handful of Colors', () {
+      final r = ConstantRegistry();
+      registerPhase2aConstants(r);
+      expect(r.resolve('Colors', 'red'), Colors.red);
+      expect(r.resolve('Colors', 'blue'), Colors.blue);
+      expect(r.resolve('Colors', 'transparent'), Colors.transparent);
+      expect(r.resolve('Colors', 'white'), Colors.white);
+      expect(r.resolve('Colors', 'black'), Colors.black);
+    });
+
+    test('seeds MainAxisAlignment', () {
+      final r = ConstantRegistry();
+      registerPhase2aConstants(r);
+      expect(r.resolve('MainAxisAlignment', 'start'),
+          MainAxisAlignment.start,);
+      expect(r.resolve('MainAxisAlignment', 'center'),
+          MainAxisAlignment.center,);
+      expect(r.resolve('MainAxisAlignment', 'end'),
+          MainAxisAlignment.end,);
+      expect(r.resolve('MainAxisAlignment', 'spaceBetween'),
+          MainAxisAlignment.spaceBetween,);
+      expect(r.resolve('MainAxisAlignment', 'spaceAround'),
+          MainAxisAlignment.spaceAround,);
+      expect(r.resolve('MainAxisAlignment', 'spaceEvenly'),
+          MainAxisAlignment.spaceEvenly,);
+    });
+
+    test('seeds CrossAxisAlignment + MainAxisSize', () {
+      final r = ConstantRegistry();
+      registerPhase2aConstants(r);
+      expect(r.resolve('CrossAxisAlignment', 'start'),
+          CrossAxisAlignment.start,);
+      expect(r.resolve('CrossAxisAlignment', 'stretch'),
+          CrossAxisAlignment.stretch,);
+      expect(r.resolve('MainAxisSize', 'max'), MainAxisSize.max);
+      expect(r.resolve('MainAxisSize', 'min'), MainAxisSize.min);
+    });
+
+    test('seeds TextAlign and TextOverflow', () {
+      final r = ConstantRegistry();
+      registerPhase2aConstants(r);
+      expect(r.resolve('TextAlign', 'left'), TextAlign.left);
+      expect(r.resolve('TextAlign', 'center'), TextAlign.center);
+      expect(r.resolve('TextOverflow', 'ellipsis'), TextOverflow.ellipsis);
+      expect(r.resolve('TextOverflow', 'fade'), TextOverflow.fade);
+    });
+
+    test('seeds Alignment singletons', () {
+      final r = ConstantRegistry();
+      registerPhase2aConstants(r);
+      expect(r.resolve('Alignment', 'topLeft'), Alignment.topLeft);
+      expect(r.resolve('Alignment', 'center'), Alignment.center);
+      expect(r.resolve('Alignment', 'bottomRight'), Alignment.bottomRight);
+    });
+
+    test('seeds BoxFit + StackFit + Axis', () {
+      final r = ConstantRegistry();
+      registerPhase2aConstants(r);
+      expect(r.resolve('BoxFit', 'cover'), BoxFit.cover);
+      expect(r.resolve('BoxFit', 'contain'), BoxFit.contain);
+      expect(r.resolve('StackFit', 'expand'), StackFit.expand);
+      expect(r.resolve('Axis', 'horizontal'), Axis.horizontal);
+      expect(r.resolve('Axis', 'vertical'), Axis.vertical);
+    });
+
+    test('seeds FontWeight', () {
+      final r = ConstantRegistry();
+      registerPhase2aConstants(r);
+      expect(r.resolve('FontWeight', 'normal'), FontWeight.normal);
+      expect(r.resolve('FontWeight', 'bold'), FontWeight.bold);
+      expect(r.resolve('FontWeight', 'w400'), FontWeight.w400);
+      expect(r.resolve('FontWeight', 'w700'), FontWeight.w700);
+    });
+
+    test('seeds EdgeInsets.zero', () {
+      final r = ConstantRegistry();
+      registerPhase2aConstants(r);
+      expect(r.resolve('EdgeInsets', 'zero'), EdgeInsets.zero);
+    });
+
+    test('register twice over the same registry throws', () {
+      final r = ConstantRegistry();
+      registerPhase2aConstants(r);
+      expect(() => registerPhase2aConstants(r), throwsStateError);
+    });
+  });
+}
