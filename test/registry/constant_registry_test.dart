@@ -52,11 +52,32 @@ void main() {
       expect(() => r.register('X', 'a', 2), throwsStateError);
     });
 
-    test('registerAll seeds many entries atomically', () {
+    test('registerAll seeds every entry', () {
       final r = ConstantRegistry();
       r.registerAll('Colors', const {'red': 0xFFFF0000, 'blue': 0xFF0000FF});
       expect(r.resolve('Colors', 'red'), 0xFFFF0000);
       expect(r.resolve('Colors', 'blue'), 0xFF0000FF);
+    });
+
+    test('registerAll retains pre-duplicate entries when later entry throws',
+        () {
+      final r = ConstantRegistry();
+      r.register('X', 'a', 1);
+      expect(
+        () => r.registerAll('X', const {'b': 2, 'a': 99, 'c': 3}),
+        throwsStateError,
+      );
+      // `b` landed before the duplicate `a` fired; `c` did not.
+      expect(r.resolve('X', 'b'), 2);
+      expect(r.resolve('X', 'a'), 1, reason: 'pre-existing value untouched');
+      expect(r.contains('X', 'c'), isFalse);
+    });
+
+    test('contains returns true when registered value is null', () {
+      final r = ConstantRegistry();
+      r.register('X', 'y', null);
+      expect(r.contains('X', 'y'), isTrue);
+      expect(r.resolve('X', 'y'), isNull);
     });
 
     test('size counts total members across all types', () {

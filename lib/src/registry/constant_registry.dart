@@ -29,7 +29,11 @@ final class ConstantRegistry {
   }
 
   /// Convenience: registers every entry in [members] under [typeName].
-  /// Stops at the first duplicate (see [register]).
+  ///
+  /// Not transactional: entries inserted before a duplicate key is hit are
+  /// retained, and the throw from [register] aborts the rest. Callers that
+  /// need rollback-on-failure should pre-validate with [contains] or use
+  /// the single-entry [register] in a try/catch.
   void registerAll(String typeName, Map<String, Object?> members) {
     for (final MapEntry(:key, :value) in members.entries) {
       register(typeName, key, value);
@@ -38,6 +42,10 @@ final class ConstantRegistry {
 
   /// Returns the value registered under [typeName]/[memberName], or `null`
   /// if either half is missing.
+  ///
+  /// A `null` return is ambiguous when nullable constants are in play: it
+  /// may signal absence **or** a legitimately-registered `null` value. Use
+  /// [contains] to distinguish the two cases.
   Object? resolve(String typeName, String memberName) {
     return _members[typeName]?[memberName];
   }
