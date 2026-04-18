@@ -136,5 +136,75 @@ void main() {
         throwsA(anyOf(isA<StateError>(), isA<ResolveException>())),
       );
     });
+
+    test('IndexExpression on List returns the indexed element', () {
+      final r =
+          ExpressionResolver(LiteralResolver(), IdentifierResolver());
+      final ctx = testContext(
+        data: RuneDataContext(const {
+          'items': ['a', 'b', 'c'],
+        }),
+      );
+      expect(r.resolve(parser.parse('items[0]'), ctx), 'a');
+      expect(r.resolve(parser.parse('items[2]'), ctx), 'c');
+    });
+
+    test('IndexExpression with nested Map element', () {
+      final r =
+          ExpressionResolver(LiteralResolver(), IdentifierResolver());
+      final ctx = testContext(
+        data: RuneDataContext(const {
+          'items': [
+            {'title': 'first'},
+            {'title': 'second'},
+          ],
+        }),
+      );
+      expect(
+        r.resolve(parser.parse('items[1]'), ctx),
+        const {'title': 'second'},
+      );
+    });
+
+    test('IndexExpression on Map returns the keyed value', () {
+      final r =
+          ExpressionResolver(LiteralResolver(), IdentifierResolver());
+      final ctx = testContext(
+        data: RuneDataContext(const {
+          'prices': {'apple': 1, 'banana': 2},
+        }),
+      );
+      expect(r.resolve(parser.parse("prices['apple']"), ctx), 1);
+      expect(r.resolve(parser.parse("prices['banana']"), ctx), 2);
+    });
+
+    test('IndexExpression on List with out-of-range index throws', () {
+      final r =
+          ExpressionResolver(LiteralResolver(), IdentifierResolver());
+      final ctx = testContext(
+        data: RuneDataContext(const {
+          'items': ['a'],
+        }),
+      );
+      expect(
+        () => r.resolve(parser.parse('items[5]'), ctx),
+        throwsA(
+          isA<ResolveException>()
+              .having((e) => e.message, 'message', contains('range')),
+        ),
+      );
+    });
+
+    test('IndexExpression on non-list/map throws', () {
+      final r =
+          ExpressionResolver(LiteralResolver(), IdentifierResolver());
+      final ctx = testContext(
+        data: RuneDataContext(const {'scalar': 42}),
+      );
+      expect(
+        () => r.resolve(parser.parse('scalar[0]'), ctx),
+        throwsA(isA<ResolveException>()),
+      );
+    });
   });
 }

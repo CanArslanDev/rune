@@ -61,12 +61,14 @@ final class ExpressionResolver {
       StringInterpolation() => _resolveInterpolation(expr, ctx),
       ListLiteral() => _resolveList(expr, ctx),
       SetOrMapLiteral() => _resolveSetOrMap(expr, ctx),
+      IndexExpression() => _resolveIndex(expr, ctx),
       Literal() => _literal.resolve(expr),
       PropertyAccess() => _requireProperty().resolve(expr, ctx),
       PrefixedIdentifier() => _identifier.resolvePrefixed(expr, ctx),
       SimpleIdentifier() => _identifier.resolveSimple(expr, ctx),
       NamedExpression(:final expression) => resolve(expression, ctx),
-      ParenthesizedExpression(:final expression) => resolve(expression, ctx),
+      ParenthesizedExpression(:final expression) =>
+        resolve(expression, ctx),
       InstanceCreationExpression() || MethodInvocation() =>
         _requireInvocation().resolveInvocation(expr, ctx),
       _ => throw ResolveException(
@@ -139,6 +141,43 @@ final class ExpressionResolver {
       }
     }
     return Set<Object?>.unmodifiable(result);
+  }
+
+  Object? _resolveIndex(IndexExpression node, RuneContext ctx) {
+    final targetExpr = node.target;
+    if (targetExpr == null) {
+      throw ResolveException(
+        node.toSource(),
+        'Cascade index expressions are not supported',
+      );
+    }
+    final target = resolve(targetExpr, ctx);
+    final index = resolve(node.index, ctx);
+
+    if (target is List<Object?>) {
+      if (index is! int) {
+        throw ResolveException(
+          node.toSource(),
+          'List index must be an int, got ${index.runtimeType}',
+        );
+      }
+      if (index < 0 || index >= target.length) {
+        throw ResolveException(
+          node.toSource(),
+          'Index $index out of range for list of length ${target.length}',
+        );
+      }
+      return target[index];
+    }
+
+    if (target is Map<Object?, Object?>) {
+      return target[index];
+    }
+
+    throw ResolveException(
+      node.toSource(),
+      'Cannot index into ${target.runtimeType}',
+    );
   }
 
   PropertyResolver _requireProperty() {
