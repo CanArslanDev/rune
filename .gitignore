@@ -65,3 +65,8 @@ app.*.map.json
 /ios/.flutter-plugins/
 /ios/.flutter-plugins-dependencies/
 /ios/Podfile.lock
+
+# Project-internal files — kept local, never committed
+/docs/
+/idea.md
+/CLAUDE.md
