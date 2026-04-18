@@ -1,23 +1,37 @@
+import 'package:rune/src/core/source_span.dart';
+
 /// The sealed base of all Rune-originated exceptions.
 ///
 /// Every concrete variant carries:
 /// - [source]: the offending input string (either the full widget source
 ///   or a sub-expression's `toSource()`).
 /// - [message]: a human-readable explanation.
+/// - [location]: an optional [SourceSpan] pointing into the Rune source
+///   where the error originates. `null` for throw sites that do not yet
+///   thread location information.
 sealed class RuneException implements Exception {
-  const RuneException(this.source, this.message);
+  /// Constructs a [RuneException] with the offending [source] and
+  /// [message]. [location] is optional and defaults to `null`.
+  const RuneException(this.source, this.message, {this.location});
 
   /// The input string that triggered the failure.
   final String source;
 
   /// Human-readable failure message.
   final String message;
+
+  /// Optional pointer to where the error originates in the Rune source.
+  /// Threaded through automatically by parser/resolver throw sites
+  /// (Task B.2). `null` for throw sites that haven't been upgraded, for
+  /// test-constructed instances, and for exceptions raised outside a
+  /// known source location.
+  final SourceSpan? location;
 }
 
 /// Raised when `DartParser` cannot produce an AST from the input.
 final class ParseException extends RuneException {
   /// Creates a [ParseException] with the offending [source] and a [message].
-  const ParseException(super.source, super.message);
+  const ParseException(super.source, super.message, {super.location});
 
   @override
   String toString() => 'ParseException: $message (source: "$source")';
@@ -27,7 +41,7 @@ final class ParseException extends RuneException {
 /// (e.g. a language construct outside Rune's supported subset).
 final class ResolveException extends RuneException {
   /// Creates a [ResolveException] with the offending [source] and a [message].
-  const ResolveException(super.source, super.message);
+  const ResolveException(super.source, super.message, {super.location});
 
   @override
   String toString() => 'ResolveException: $message (source: "$source")';
@@ -37,8 +51,15 @@ final class ResolveException extends RuneException {
 final class UnregisteredBuilderException extends RuneException {
   /// Creates an [UnregisteredBuilderException] for the given [typeName]
   /// found at [source].
-  const UnregisteredBuilderException(String source, this.typeName)
-      : super(source, 'No builder registered for type "$typeName"');
+  const UnregisteredBuilderException(
+    String source,
+    this.typeName, {
+    SourceSpan? location,
+  }) : super(
+          source,
+          'No builder registered for type "$typeName"',
+          location: location,
+        );
 
   /// The missing type's name (e.g. `"FooWidget"`).
   final String typeName;
@@ -53,7 +74,7 @@ final class UnregisteredBuilderException extends RuneException {
 final class ArgumentException extends RuneException {
   /// Creates an [ArgumentException] with the offending [source] and a
   /// [message].
-  const ArgumentException(super.source, super.message);
+  const ArgumentException(super.source, super.message, {super.location});
 
   @override
   String toString() => 'ArgumentException: $message (source: "$source")';
@@ -63,7 +84,7 @@ final class ArgumentException extends RuneException {
 /// the source refers to is not present in `RuneDataContext`).
 final class BindingException extends RuneException {
   /// Creates a [BindingException] with the offending [source] and a [message].
-  const BindingException(super.source, super.message);
+  const BindingException(super.source, super.message, {super.location});
 
   @override
   String toString() => 'BindingException: $message (source: "$source")';
