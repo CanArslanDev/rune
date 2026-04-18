@@ -45,5 +45,27 @@ void main() {
       ),),);
       expect(captured, isNotNull);
     });
+
+    testWidgets(
+      'reassemble() is a no-op-safe hot-reload hook that re-renders',
+      (tester) async {
+        await tester.pumpWidget(_wrap(RuneView(
+          source: "Text('before-reload')",
+          config: RuneConfig.defaults(),
+        ),),);
+        expect(find.text('before-reload'), findsOneWidget);
+
+        // Trigger Flutter's hot-reload lifecycle. The RuneView state
+        // override clears the private AST cache so the next build
+        // re-parses the source from scratch — internal state, not
+        // observable here, so the test is a smoke-level assertion
+        // that the call doesn't crash and the widget still renders.
+        // ignore: invalid_use_of_protected_member
+        tester.state<State<RuneView>>(find.byType(RuneView)).reassemble();
+        await tester.pump();
+
+        expect(find.text('before-reload'), findsOneWidget);
+      },
+    );
   });
 }

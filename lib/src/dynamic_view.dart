@@ -100,6 +100,16 @@ class _RuneViewState extends State<RuneView> {
     return parsed;
   }
 
+  @override
+  void reassemble() {
+    super.reassemble();
+    // Hot-reload hook: clear the per-instance AST cache so source
+    // edits in the host app's Dart code are re-parsed on the next
+    // build. Without this override, a cached parsed AST would keep
+    // serving the previous source.
+    _cache.clear();
+  }
+
   RuneContext _buildContext(BuildContext flutterCtx) {
     final events = RuneEventDispatcher();
     final onEvent = widget.onEvent;
