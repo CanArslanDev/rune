@@ -57,5 +57,34 @@ void main() {
       expect(c.values.contains('BorderRadius.circular'), isTrue);
       expect(c.values.contains('BoxDecoration'), isTrue);
     });
+
+    test('registers Phase 2c widget builders', () {
+      final c = RuneConfig.defaults();
+      for (final name in const [
+        'Padding',
+        'Center',
+        'Stack',
+        'Expanded',
+        'Flexible',
+        'Card',
+        'Icon',
+        'ListView',
+        'AppBar',
+        'Scaffold',
+      ]) {
+        expect(c.widgets.contains(name), isTrue, reason: 'missing $name');
+      }
+    });
+
+    test('registers Phase 2c Image value builders', () {
+      final c = RuneConfig.defaults();
+      expect(c.values.contains('Image.network'), isTrue);
+      expect(c.values.contains('Image.asset'), isTrue);
+    });
+
+    test('seeds Phase 2c Icons.home', () {
+      final c = RuneConfig.defaults();
+      expect(c.constants.contains('Icons', 'home'), isTrue);
+    });
   });
 }

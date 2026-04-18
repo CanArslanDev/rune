@@ -6,12 +6,25 @@ import 'package:rune/src/builders/values/edge_insets_ltrb_builder.dart';
 import 'package:rune/src/builders/values/edge_insets_only_builder.dart';
 import 'package:rune/src/builders/values/edge_insets_symmetric_builder.dart';
 import 'package:rune/src/builders/values/text_style_builder.dart';
+import 'package:rune/src/builders/widgets/app_bar_builder.dart';
+import 'package:rune/src/builders/widgets/card_builder.dart';
+import 'package:rune/src/builders/widgets/center_builder.dart';
 import 'package:rune/src/builders/widgets/column_builder.dart';
 import 'package:rune/src/builders/widgets/container_builder.dart';
+import 'package:rune/src/builders/widgets/expanded_builder.dart';
+import 'package:rune/src/builders/widgets/flexible_builder.dart';
+import 'package:rune/src/builders/widgets/icon_builder.dart';
+import 'package:rune/src/builders/widgets/image_asset_builder.dart';
+import 'package:rune/src/builders/widgets/image_network_builder.dart';
+import 'package:rune/src/builders/widgets/list_view_builder.dart';
+import 'package:rune/src/builders/widgets/padding_builder.dart';
 import 'package:rune/src/builders/widgets/row_builder.dart';
+import 'package:rune/src/builders/widgets/scaffold_builder.dart';
 import 'package:rune/src/builders/widgets/sized_box_builder.dart';
+import 'package:rune/src/builders/widgets/stack_builder.dart';
 import 'package:rune/src/builders/widgets/text_builder.dart';
 import 'package:rune/src/defaults/phase_2a_constants.dart';
+import 'package:rune/src/defaults/phase_2c_icons.dart';
 import 'package:rune/src/registry/constant_registry.dart';
 import 'package:rune/src/registry/value_registry.dart';
 import 'package:rune/src/registry/widget_registry.dart';
@@ -39,6 +52,9 @@ final class RuneConfig {
   /// FontWeight, EdgeInsets.zero) pre-registered. Phase 2b value builders
   /// (EdgeInsets.symmetric/.only/.fromLTRB, Color, TextStyle,
   /// BorderRadius.circular, BoxDecoration) are also pre-registered.
+  /// Phase 2c adds ten widget builders (Padding, Center, Stack, Expanded,
+  /// Flexible, Card, Icon, ListView, AppBar, Scaffold), two Image value
+  /// builders (Image.network, Image.asset), and ~60 Icons.* constants.
   factory RuneConfig.defaults() {
     final config = RuneConfig();
     config.widgets
@@ -46,7 +62,17 @@ final class RuneConfig {
       ..registerBuilder(const SizedBoxBuilder())
       ..registerBuilder(const ContainerBuilder())
       ..registerBuilder(const ColumnBuilder())
-      ..registerBuilder(const RowBuilder());
+      ..registerBuilder(const RowBuilder())
+      ..registerBuilder(const PaddingBuilder())
+      ..registerBuilder(const CenterBuilder())
+      ..registerBuilder(const StackBuilder())
+      ..registerBuilder(const ExpandedBuilder())
+      ..registerBuilder(const FlexibleBuilder())
+      ..registerBuilder(const CardBuilder())
+      ..registerBuilder(const IconBuilder())
+      ..registerBuilder(const ListViewBuilder())
+      ..registerBuilder(const AppBarBuilder())
+      ..registerBuilder(const ScaffoldBuilder());
     config.values
       ..registerBuilder(const EdgeInsetsAllBuilder())
       ..registerBuilder(const EdgeInsetsSymmetricBuilder())
@@ -55,8 +81,11 @@ final class RuneConfig {
       ..registerBuilder(const ColorBuilder())
       ..registerBuilder(const TextStyleBuilder())
       ..registerBuilder(const BorderRadiusCircularBuilder())
-      ..registerBuilder(const BoxDecorationBuilder());
+      ..registerBuilder(const BoxDecorationBuilder())
+      ..registerBuilder(const ImageNetworkBuilder())
+      ..registerBuilder(const ImageAssetBuilder());
     registerPhase2aConstants(config.constants);
+    registerPhase2cIcons(config.constants);
     return config;
   }
 
