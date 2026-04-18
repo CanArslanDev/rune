@@ -21,18 +21,21 @@ Deliver UI from a server, a CMS, or a designer tool without shipping a new app b
 - **Layered and open/closed.** Adding a new widget is one builder file, one registration, one test — no core change.
 - **Strict typing.** Dart 3 sealed exceptions, pattern matching, `final class`, `@immutable`. `dynamic` is banned outside the parser boundary.
 - **Single runtime dependency** besides Flutter: `analyzer`. All other integrations (responsive scaling, state management, routing, ...) live in separate bridge packages.
-- **Data binding.** Free identifiers in the source (`userName`, `itemCount`) resolve against a `Map<String, Object?>` you supply.
+- **Rich data binding.** Free identifiers (`userName`), deep dot-path (`user.profile.name`), list/map indexing (`items[0].title`), and data-driven widget lists (`for (final item in items) ...`) — all resolved against a `Map<String, Object?>` you supply.
 - **String interpolation.** `'Hello, $name!'` and `'Count: ${n}'` substitute data-context values into literal strings.
-- **Typed error surface.** Every failure raises a `RuneException` subtype carrying both the offending source substring and a human-readable message.
+- **Named events.** `ElevatedButton(onPressed: "submit")` routes taps through `RuneView.onEvent(name, args)` to the host app.
+- **Extensible.** A `RuneBridge` package registers widget/value/constant/extension handlers with one `registerInto(config)` call. `10.w`, `size.half`, and similar receiver-style property access go through `PropertyResolver` → `ExtensionRegistry`.
+- **Typed error surface.** Every failure raises a `RuneException` subtype carrying the offending source substring plus a human-readable message. `RuneView.fallback` + `onError` make failures non-fatal.
+- **`very_good_analysis`-strict.** The whole package passes the strict lint floor with zero ignores beyond two documented exceptions.
 
 ## Install
 
 ```yaml
 dependencies:
-  rune: ^0.0.2
+  rune: ^0.0.9
 ```
 
-The package is pre-publication; use a `git:` or `path:` dependency until a tagged `pub.dev` release lands.
+The package is pre-publication; use a `git:` or `path:` dependency until a tagged `pub.dev` release lands. `dart pub publish --dry-run` currently reports 0 errors / 0 warnings.
 
 ## Quickstart
 
@@ -45,27 +48,44 @@ void main() {
     MaterialApp(
       home: Scaffold(
         appBar: AppBar(title: const Text('Rune Demo')),
-        body: Padding(
-          padding: const EdgeInsets.all(16),
-          child: RuneView(
-            source: r"""
-              Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text('Hello, $userName!'),
-                  SizedBox(height: 8),
-                  Container(
-                    padding: EdgeInsets.all(12),
-                    child: Text('You have ${itemCount} items in your cart.'),
+        body: RuneView(
+          source: r"""
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text('Hello, $userName!'),
+                SizedBox(height: 8),
+                Text('You have ${cart.itemCount} items.'),
+                SizedBox(height: 16),
+                for (final item in cart.items)
+                  Card(
+                    child: ListTile(
+                      title: Text(item.title),
+                      subtitle: Text(item.subtitle),
+                    ),
                   ),
-                ],
-              )
-            """,
-            config: RuneConfig.defaults(),
-            data: const {'userName': 'Ali', 'itemCount': 7},
-            fallback: const Text('Failed to render.'),
-            onError: (error, stack) => debugPrint('Rune error: $error'),
-          ),
+                ElevatedButton(
+                  onPressed: 'checkout',
+                  child: Text('Checkout'),
+                ),
+              ],
+            )
+          """,
+          config: RuneConfig.defaults(),
+          data: const {
+            'userName': 'Ali',
+            'cart': {
+              'itemCount': 3,
+              'items': [
+                {'title': 'Mouse', 'subtitle': '\$19'},
+                {'title': 'Keyboard', 'subtitle': '\$79'},
+                {'title': 'Monitor', 'subtitle': '\$299'},
+              ],
+            },
+          },
+          onEvent: (name, [args]) => debugPrint('event: $name'),
+          fallback: const Text('Failed to render.'),
+          onError: (error, stack) => debugPrint('Rune error: $error'),
         ),
       ),
     ),
@@ -73,22 +93,28 @@ void main() {
 }
 ```
 
+> Note: `ListTile` is Flutter's convenience tile — it is not yet in the default builder set and would need registration. The snippet above is illustrative of the syntax shape; swap to `Padding(padding: EdgeInsets.all(8), child: Text(...))` if you want to run it verbatim against the stock defaults.
+
 A runnable version lives in [`example/`](example/).
 
 ## Supported source syntax
 
-Current release (Phase 2a) supports:
+Current release: **Phase 3b (`v0.0.9-phase3b`)**.
 
-| Category      | Elements                                                                                                                                                    |
-| ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Widgets       | `Text`, `SizedBox`, `Container`, `Column`, `Row`                                                                                                            |
-| Values        | `EdgeInsets.all(n)`, `EdgeInsets.zero`                                                                                                                      |
-| Constants     | `Colors.*`, `MainAxisAlignment.*`, `CrossAxisAlignment.*`, `MainAxisSize.*`, `TextAlign.*`, `TextOverflow.*`, `Alignment.*`, `BoxFit.*`, `StackFit.*`, `Axis.*`, `FontWeight.*` |
-| Literals      | int, double, bool, null, string, list `[...]`, set/map `{...}`, adjacent string concat                                                                      |
-| Interpolation | `'Hello $name'`, `'Count: ${n}'` — expressions resolve against `data` and the constants registry                                                            |
-| Identifiers   | Bare `name` → `data['name']`; `TypeName.member` → constants registry                                                                                        |
+| Category              | Elements                                                                                                                                                                                                     |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Widgets               | `Text`, `SizedBox`, `Container`, `Column`, `Row`, `Padding`, `Center`, `Stack`, `Expanded`, `Flexible`, `Card`, `Icon`, `ListView`, `AppBar`, `Scaffold`, `ElevatedButton`, `TextButton`, `IconButton`        |
+| Value ctors           | `EdgeInsets.all/symmetric/only/fromLTRB/zero`, `Color(hex)`, `TextStyle(...)`, `BorderRadius.circular(n)`, `BoxDecoration(...)`, `Image.network(url)`, `Image.asset(path)`                                   |
+| Constants             | `Colors.*`, `MainAxisAlignment.*`, `CrossAxisAlignment.*`, `MainAxisSize.*`, `TextAlign.*`, `TextOverflow.*`, `Alignment.*`, `BoxFit.*`, `StackFit.*`, `Axis.*`, `FontWeight.*`, `BoxShape.*`, `FlexFit.*`, ~60 common `Icons.*` |
+| Literals              | int, double, bool, null, string, list `[...]`, set/map `{...}`, adjacent string concat                                                                                                                       |
+| Interpolation         | `'Hello $name'`, `'Count: ${n}'` — expressions resolve against data + constants                                                                                                                              |
+| Identifiers           | Bare `name` → `data['name']`; `Type.member` → data `Map` traversal OR constants registry                                                                                                                     |
+| Deep data paths       | `user.profile.name`, `items[0].title` — any depth of nested maps + list/map indexing                                                                                                                         |
+| Collections           | `[for (final item in items) Text(item.title)]` — data-driven widget lists, nested for-elements, static + for elements interleaved                                                                            |
+| Events                | `ElevatedButton(onPressed: 'submit', ...)` → `RuneView.onEvent('submit', [])`                                                                                                                                |
+| Property extensions   | `10.w`, `size.half` — via `RuneBridge` packages registering handlers                                                                                                                                         |
 
-Anything outside this surface raises a `RuneException` (parse, resolve, or unregistered-builder variant). The roadmap in `docs/superpowers/plans/` enumerates the phases that expand this set.
+Anything outside this surface raises a `RuneException` (parse, resolve, or unregistered-builder variant). The plans in `docs/superpowers/plans/` enumerate the phases that built this set.
 
 ## Architecture
 
@@ -99,30 +125,34 @@ RuneView (StatefulWidget)
   │
   ▼
 RuneConfig
-  ├─ WidgetRegistry
-  ├─ ValueRegistry
-  └─ ConstantRegistry
+  ├─ WidgetRegistry        — Phase 1-2d widget builders
+  ├─ ValueRegistry         — Phase 1-2c value ctors
+  ├─ ConstantRegistry      — Colors, enums, Icons
+  └─ ExtensionRegistry     — Phase 3a .w/.px/.half handlers
+  (+ withBridges([...])    — RuneBridge-packaged third-party contributions)
   │
   ▼
-RuneContext  (carries data, events, registries, optional Flutter BuildContext)
+RuneContext  (carries data, events, all four registries, optional Flutter BuildContext)
   │
   ▼
 DartParser ─────────▶ AstCache (LRU)
   │
   ▼
-ExpressionResolver (dispatcher)
-  ├─ LiteralResolver      — literals
-  ├─ IdentifierResolver   — data + constants
-  └─ InvocationResolver   — MethodInvocation / InstanceCreationExpression
+ExpressionResolver (dispatcher on Expression AST subtype)
+  ├─ LiteralResolver       — literals + adjacent-string concat
+  ├─ IdentifierResolver    — SimpleIdentifier / PrefixedIdentifier (data-first, constants fallback)
+  ├─ PropertyResolver      — PropertyAccess (Map-first for deep paths, extensions for scalars)
+  ├─ InvocationResolver    — MethodInvocation / InstanceCreationExpression
+  └─ (inline)              — ListLiteral + ForElement, SetOrMapLiteral, IndexExpression, StringInterpolation
                               │
                               ▼
-                        Registered builder (widget or value)
+                        Registered widget/value builder
                               │
                               ▼
                         Real Flutter Widget
 ```
 
-Every resolver returns already-resolved Dart values. Builders receive `ResolvedArguments` (type-safe positional + named accessors) and produce exactly one widget or value.
+Architecture invariants (imports flow only downward) are enforced by `test/architecture/import_flow_test.dart`.
 
 ## Extending
 
@@ -158,16 +188,53 @@ config.constants
 
 Source strings can then use `Container(color: BrandTheme.primary, ...)`.
 
+### Register a property extension
+
+```dart
+config.extensions.register('pct', (target, ctx) {
+  if (target is num) return target / 100;
+  throw ArgumentError('Expected num for .pct');
+});
+```
+
+Source strings can then use `SizedBox(width: (50).pct * MediaQuery.of(...))` — or, more realistically, a bridge that uses `ctx.flutterContext` to do proper responsive math.
+
+### Ship a reusable bundle as a bridge
+
+```dart
+final class BrandBridge implements RuneBridge {
+  const BrandBridge();
+
+  @override
+  void registerInto(RuneConfig config) {
+    config.widgets.registerBuilder(const BrandButtonBuilder());
+    config.constants
+      ..register('BrandTheme', 'primary', const Color(0xFF0088FF))
+      ..register('BrandTheme', 'accent', const Color(0xFFFF6B35));
+    config.extensions.register('spacing', (t, c) {
+      if (t is num) return t * 8.0; // 8-pt grid
+      throw ArgumentError('spacing expects num');
+    });
+  }
+}
+
+final config = RuneConfig.defaults()
+    .withBridges(const [BrandBridge(), OtherBridge()]);
+```
+
+The `RuneDefaults` helper exposes the same surface internally: `RuneDefaults.registerWidgets(registry)` / `registerValues` / `registerConstants` / `registerAll(config)`. Handy for custom configs that want only a subset of defaults.
+
 ## Error handling
 
 - `RuneException` is a `sealed class` with five variants:
   - `ParseException` — `analyzer` could not produce an AST.
-  - `ResolveException` — a resolver encountered an unsupported shape.
+  - `ResolveException` — a resolver encountered an unsupported shape or missing extension.
   - `UnregisteredBuilderException` — a type name has no matching builder (exposes `typeName`).
   - `ArgumentException` — a required builder argument was missing or of the wrong type.
   - `BindingException` — an identifier referenced a key that is not present in `RuneDataContext`.
 - Every exception carries the offending `source` substring plus a human-readable `message`.
 - `RuneView` catches all exceptions, calls the optional `onError` callback, then renders `fallback`. In debug builds with no `fallback`, Flutter's red-screen `ErrorWidget` is shown; in release builds the view silently collapses to an empty `SizedBox`.
+- `RuneEventDispatcher.dispatch` is crash-safe: handler throws (including arity mismatches) are caught and `debugPrint`-logged; they never escape into the render pipeline.
 
 ## Testing
 
@@ -176,22 +243,25 @@ flutter test
 flutter analyze
 ```
 
-The repo's test suite covers every resolver, every builder, every registry, and end-to-end `RuneView` renders. Main is kept green at all times; every commit passes both gates.
+Three hundred and sixty-seven tests cover every resolver, every builder, every registry, the architecture invariants, and end-to-end `RuneView` renders for each phase. Main is kept green at all times; every commit passes both gates under `very_good_analysis`.
 
 ## Roadmap
 
 - [x] **Phase 1** — parse → resolve → build pipeline with five MVP widgets and `EdgeInsets.all`. Tagged `v0.0.1-phase1`.
-- [x] **Phase 2a** — named constants, data binding, string interpolation, compound literals. Tagged `v0.0.2-phase2a`.
-- [ ] **Phase 2b** — remaining value builders (`EdgeInsets.symmetric/only/fromLTRB`, `TextStyle`, `Color(hex)`, `BorderRadius`, `BoxDecoration`).
-- [ ] **Phase 2c** — remaining widget builders (`Padding`, `Stack`, `Card`, `Image`, buttons, `Scaffold`, `ListView`, `AppBar`, ...).
-- [ ] **Phase 2d** — button events wired through `RuneView.onEvent`.
-- [ ] **Phase 2e** — `RuneDefaults` helper, architecture test, `pub.dev` publish.
-- [ ] **Phase 3** — `PropertyResolver` + `ExtensionRegistry`, `RuneBridge` contract, dot-path data access.
-- [ ] **Phase 4** — performance benchmarks, dev overlay, hot-reload cache invalidation, `0.1.0` release.
+- [x] **Phase 2a** — named constants, shallow data binding, string interpolation, compound literals. Tagged `v0.0.2-phase2a`.
+- [x] **Phase 2b** — value builders (`EdgeInsets.symmetric/only/fromLTRB`, `TextStyle`, `Color(hex)`, `BorderRadius.circular`, `BoxDecoration`). Tagged `v0.0.3-phase2b`.
+- [x] **Phase 2c** — layout/chrome widget builders (`Padding`, `Stack`, `Card`, `Image.network/.asset`, `Icon`, `ListView`, `AppBar`, `Scaffold`, and more). Tagged `v0.0.4-phase2c`.
+- [x] **Phase 2d** — button widgets (`ElevatedButton`, `TextButton`, `IconButton`) + `RuneView.onEvent` catch-all event bridge. Tagged `v0.0.5-phase2d`.
+- [x] **Phase 2e** — `RuneDefaults` helper, architecture test, pub-readiness. Tagged `v0.0.6-phase2e`.
+- [x] **Polish** — `very_good_analysis ^5.1.0` migration, `CHANGELOG.md`, pub metadata. Tagged `v0.0.7-polish`.
+- [x] **Phase 3a** — `PropertyResolver` + `ExtensionRegistry` + `RuneBridge` contract + shallow data-prefix traversal. Tagged `v0.0.8-phase3a`.
+- [x] **Phase 3b** — deep dot-path (`user.profile.name`), index access (`items[0]`), list `for`-elements. Tagged `v0.0.9-phase3b`.
+- [ ] **Phase 3c** — sibling `rune_responsive_sizer` demo package (`.w`/`.h`/`.sp` via MediaQuery).
+- [ ] **Phase 4** — performance benchmarks, dev overlay, hot-reload cache invalidation, `0.1.0` release + `pub.dev` publish.
 
 ## Example
 
-See [`example/`](example/) for a runnable demo that exercises the full Phase 2a feature set.
+See [`example/`](example/) for a runnable demo that exercises the full current feature set.
 
 ## License
 

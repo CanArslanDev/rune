@@ -3,55 +3,151 @@ import 'package:rune/rune.dart';
 
 void main() => runApp(const RuneExampleApp());
 
-/// Root of the Phase 2a demo app. Renders a string through [RuneView] with
-/// data binding, constants, and string interpolation all live.
-class RuneExampleApp extends StatelessWidget {
+/// Root of the Rune demo app. Renders a single source string through
+/// [RuneView] that exercises the current (Phase 3b) feature surface:
+/// Phase 1 widgets, Phase 2b value builders (TextStyle, Color,
+/// BoxDecoration, BorderRadius), Phase 2c layout/chrome widgets
+/// (Scaffold, AppBar, Card), Phase 2d buttons + events, Phase 2a
+/// string interpolation, and Phase 3b deep dot-path + for-elements.
+class RuneExampleApp extends StatefulWidget {
   /// Creates the demo app.
   const RuneExampleApp({super.key});
 
   @override
+  State<RuneExampleApp> createState() => _RuneExampleAppState();
+}
+
+class _RuneExampleAppState extends State<RuneExampleApp> {
+  final List<String> _log = <String>[];
+
+  void _handleEvent(String name, [List<Object?>? args]) {
+    setState(() {
+      _log.insert(0, 'event: $name');
+      if (_log.length > 5) _log.removeLast();
+    });
+    debugPrint('Rune event: $name  args=$args');
+  }
+
+  @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Rune — Phase 2a Demo',
-      home: Scaffold(
-        appBar: AppBar(title: const Text('Rune — Phase 2a Demo')),
-        body: Padding(
-          padding: const EdgeInsets.all(16),
-          child: RuneView(
-            source: _source,
-            config: RuneConfig.defaults(),
-            data: const {
-              'userName': 'Ali',
-              'itemCount': 7,
+      title: 'Rune — Phase 3b Demo',
+      theme: ThemeData(colorSchemeSeed: Colors.indigo, useMaterial3: true),
+      home: RuneView(
+        source: _source,
+        config: RuneConfig.defaults(),
+        data: <String, Object?>{
+          'user': const <String, Object?>{
+            'name': 'Ali',
+            'profile': <String, Object?>{
+              'tier': 'Gold',
             },
-            fallback: const Text('Failed to render'),
-            onError: (error, _) => debugPrint('Rune error: $error'),
-          ),
+          },
+          'cart': const <String, Object?>{
+            'items': <Map<String, Object?>>[
+              <String, Object?>{'title': 'Wireless Mouse', 'price': 19},
+              <String, Object?>{'title': 'Mechanical Keyboard', 'price': 129},
+              <String, Object?>{'title': '27" Monitor', 'price': 349},
+            ],
+          },
+          'log': _log,
+        },
+        onEvent: _handleEvent,
+        fallback: const Scaffold(
+          body: Center(child: Text('Failed to render')),
         ),
+        onError: (Object error, StackTrace _) {
+          debugPrint('Rune error: $error');
+        },
       ),
     );
   }
 
   static const String _source = r"""
-    Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('Hello, $userName!'),
-        SizedBox(height: 12),
-        Container(
-          padding: EdgeInsets.all(12),
-          child: Text('You have ${itemCount} items in your cart.'),
-        ),
-        SizedBox(height: 12),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    Scaffold(
+      appBar: AppBar(
+        title: Text('Rune Phase 3b Demo'),
+        backgroundColor: Color(0xFF3F51B5),
+      ),
+      body: Padding(
+        padding: EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text('Left aligned'),
-            Text('Right aligned'),
+            Text(
+              'Hello, ${user.name}!',
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF1A237E),
+              ),
+            ),
+            SizedBox(height: 4),
+            Text(
+              'Membership tier: ${user.profile.tier}',
+              style: TextStyle(color: Color(0xFF424242)),
+            ),
+            SizedBox(height: 16),
+            Text(
+              'Your cart',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+            ),
+            SizedBox(height: 8),
+            for (final item in cart.items)
+              Card(
+                elevation: 2,
+                margin: EdgeInsets.symmetric(vertical: 4),
+                child: Padding(
+                  padding: EdgeInsets.all(12),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(item.title),
+                      Text(
+                        '\$${item.price}',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton(
+                  onPressed: 'clear',
+                  child: Text('Clear'),
+                ),
+                SizedBox(width: 8),
+                ElevatedButton(
+                  onPressed: 'checkout',
+                  child: Text('Checkout'),
+                ),
+              ],
+            ),
+            SizedBox(height: 24),
+            Container(
+              padding: EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Color(0xFFF5F5F5),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Event log',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 4),
+                  for (final entry in log) Text(entry),
+                ],
+              ),
+            ),
           ],
         ),
-      ],
+      ),
     )
   """;
 }
