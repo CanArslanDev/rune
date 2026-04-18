@@ -15,8 +15,8 @@ final class ContainerBuilder implements RuneWidgetBuilder {
   String get typeName => 'Container';
 
   /// Builds a [Container]. All arguments are optional. `width` and `height`
-  /// accept any [num] value and are converted to [double]. `color` and
-  /// `alignment` are wired for Phase 2.
+  /// accept any [num] value and are converted to [double]. `color`,
+  /// `alignment`, and `decoration` are wired for Phase 2.
   @override
   Widget build(ResolvedArguments args, RuneContext ctx) {
     return Container(
@@ -25,6 +25,7 @@ final class ContainerBuilder implements RuneWidgetBuilder {
       width: args.get<num>('width')?.toDouble(),
       height: args.get<num>('height')?.toDouble(),
       color: args.get<Color>('color'),
+      decoration: args.get<Decoration>('decoration'),
       alignment: args.get<AlignmentGeometry>('alignment'),
       child: args.get<Widget>('child'),
     );
