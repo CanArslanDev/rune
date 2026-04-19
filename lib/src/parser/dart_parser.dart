@@ -4,12 +4,6 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:rune/src/core/exceptions.dart';
 import 'package:rune/src/core/source_span.dart';
 
-/// Length of the `'dynamic __rune__ = '` prefix prepended to every cleaned
-/// source before handing it to the analyzer. Analyzer diagnostic offsets
-/// are reported into this wrapped string; subtracting this constant
-/// rebases them into the cleaned (user-facing) source.
-const int _wrapperPrefixLength = 19; // 'dynamic __rune__ = '.length
-
 /// Wraps `package:analyzer`'s `parseString` to turn a raw Dart expression
 /// string into an [Expression] AST node.
 ///
@@ -52,16 +46,8 @@ final class DartParser {
 
     if (result.errors.isNotEmpty) {
       final err = result.errors.first;
-      final rawOffset = err.offset - _wrapperPrefixLength;
-      SourceSpan? location;
-      if (rawOffset >= 0) {
-        // Analyzer may report offsets one past the end of [cleaned] (they
-        // land on the wrapper's trailing `;`). Clamp to [cleaned.length]
-        // so EOF-shaped diagnostics still produce a usable span at the
-        // end of the user input.
-        final clamped = rawOffset > cleaned.length ? cleaned.length : rawOffset;
-        location = SourceSpan.fromOffset(cleaned, clamped, err.length);
-      }
+      final location =
+          SourceSpan.fromAstOffset(cleaned, err.offset, err.length);
       throw ParseException(source, err.message, location: location);
     }
 

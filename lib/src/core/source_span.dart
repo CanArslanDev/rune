@@ -25,6 +25,43 @@ final class SourceSpan {
     required this.excerpt,
   });
 
+  /// Builds a [SourceSpan] from an analyzer-reported AST offset and length
+  /// that refer to the wrapped source (`'dynamic __rune__ = <cleaned>;'`).
+  ///
+  /// Rebases [astOffset] into the user-visible [source] by subtracting the
+  /// wrapper prefix length, then clamps into `[0, source.length]` so the
+  /// common EOF-shaped diagnostic (analyzer reports one past end when the
+  /// last token is unclosed) still produces a usable span at the end of
+  /// the source. When [source] is empty (unit-test contexts that don't
+  /// care about diagnostics) returns a zero-length span at the origin.
+  ///
+  /// This is the single source of truth for AST-offset → [SourceSpan]
+  /// conversion. Both `DartParser` and the resolver layer use it.
+  factory SourceSpan.fromAstOffset(
+    String source,
+    int astOffset,
+    int astLength,
+  ) {
+    const wrapperPrefixLength = 19; // 'dynamic __rune__ = '.length
+
+    if (source.isEmpty) {
+      return SourceSpan.fromOffset('', 0, 0);
+    }
+    final rebased = astOffset - wrapperPrefixLength;
+    if (rebased < 0) {
+      // AST offset preceded the wrapper prefix — shouldn't happen in
+      // real parses; defensive fallback for pathological inputs.
+      return SourceSpan.fromOffset(source, 0, 0);
+    }
+    // Analyzer can report offsets one past [source.length] (EOF-shaped
+    // diagnostics land on the wrapper's trailing `;`). Clamp so the span
+    // points at the end of user input rather than failing.
+    final clampedOffset = rebased > source.length ? source.length : rebased;
+    final maxLength = source.length - clampedOffset;
+    final clampedLength = astLength > maxLength ? maxLength : astLength;
+    return SourceSpan.fromOffset(source, clampedOffset, clampedLength);
+  }
+
   /// Computes a [SourceSpan] from [source] at [offset] covering [length]
   /// code units.
   ///

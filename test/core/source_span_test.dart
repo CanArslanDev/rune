@@ -211,6 +211,60 @@ void main() {
     });
   });
 
+  group('SourceSpan.fromAstOffset', () {
+    test('empty source returns zero-length span at origin', () {
+      final span = SourceSpan.fromAstOffset('', 19, 5);
+      expect(span.offset, 0);
+      expect(span.length, 0);
+      expect(span.line, 1);
+      expect(span.column, 1);
+      expect(span.excerpt, '');
+    });
+
+    test('pre-wrapper AST offset falls back to origin zero-length span', () {
+      // astOffset 10 < wrapperPrefixLength 19 → pre-wrapper fallback.
+      final span = SourceSpan.fromAstOffset('Text()', 10, 5);
+      expect(span.offset, 0);
+      expect(span.length, 0);
+    });
+
+    test(
+      'normal rebased offset matches SourceSpan.fromOffset directly',
+      () {
+        final viaFactory = SourceSpan.fromAstOffset('Text()', 19 + 2, 3);
+        final direct = SourceSpan.fromOffset('Text()', 2, 3);
+        expect(viaFactory, equals(direct));
+      },
+    );
+
+    test('EOF-shaped AST offset clamps to source length (length trims)', () {
+      // Unclosed paren: analyzer reports offset past end by one.
+      // 'Text(' length 5; astOffset 19 + 6 rebases to 6, clamped to 5.
+      // Length 1 then clamps to max 0 (source.length - 5 == 0).
+      final span = SourceSpan.fromAstOffset('Text(', 19 + 6, 1);
+      expect(span.offset, 5);
+      expect(span.length, 0);
+    });
+
+    test('length overflow clamps to source.length - offset', () {
+      // 'abc' length 3; astOffset 19 + 1 rebases to 1; length 10 clamps to 2.
+      final span = SourceSpan.fromAstOffset('abc', 19 + 1, 10);
+      expect(span.offset, 1);
+      expect(span.length, 2);
+    });
+
+    test('multi-line rebasing preserves line, column, and excerpt', () {
+      // 'abc\ndef' (length 7); astOffset 19 + 5 rebases to 5 → on 'def' at
+      // line 2, column 2. Length 1 fits.
+      final span = SourceSpan.fromAstOffset('abc\ndef', 19 + 5, 1);
+      expect(span.offset, 5);
+      expect(span.length, 1);
+      expect(span.line, 2);
+      expect(span.column, 2);
+      expect(span.excerpt, 'def');
+    });
+  });
+
   group('SourceSpan.toString', () {
     test('contains line, column, offset, and length in deterministic form', () {
       const span = SourceSpan(
