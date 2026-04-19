@@ -6,38 +6,43 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [0.5.0] — 2026-04-19 — animations + navigation + dropdown
+
 ### Added
-- **Navigation widgets** — `BottomNavigationBar` (with required
-  `items: List<BottomNavigationBarItem>`, `currentIndex: int`,
-  optional `onTap: String` event dispatching `(name, [newIndex])`
-  and theming via `type/selectedItemColor/unselectedItemColor/
-  backgroundColor`), plus `TabBar` and `Tab` widget builders for
-  tab-based navigation. `TabBar` assumes a `DefaultTabController`
-  ancestor provided host-side — Rune source doesn't construct the
-  controller. `BottomNavigationBarItem` is a value builder for
-  declaring the items list. `BottomNavigationBarType.fixed` and
-  `.shifting` join the constants table.
-- **Dropdown select** — `DropdownButton` with `DropdownMenuItem`
-  completes the form-input set. Both parametric on `Object?` so
-  item values can be any runtime type (int, String, enum-ish keys).
-  Required `items: List<DropdownMenuItem<Object?>>`; optional
-  `value` (absent OR explicit null renders the hint), `onChanged`
-  event (`(name, [newValue])`), `hint`, `disabledHint`,
-  `isExpanded`. `DropdownMenuItem` requires `value` + `child`;
-  like Radio, it distinguishes absent-value (ArgumentException)
-  from explicit `value: null` (legitimate).
-- **Animated widgets and Duration support** —
-  `AnimatedContainer`, `AnimatedOpacity`, and `AnimatedPositioned`
-  join the default widget registry. Each takes a required
-  `duration: Duration(...)` and an optional `curve` (defaulting to
-  `Curves.linear`); when the host rebuilds `RuneView` with new
+- **Animated widgets and Duration support** — `AnimatedContainer`,
+  `AnimatedOpacity`, `AnimatedPositioned`. Each takes a required
+  `duration: Duration(...)` and optional `curve` (defaulting to
+  `Curves.linear`). When the host rebuilds `RuneView` with new
   values for any tweenable slot (dimensions, colour, opacity,
-  position), Flutter animates between the old and new values
-  automatically. `Duration(milliseconds: n)` is now a default value
-  builder; nine canonical `Curves.*` instances (`linear`, `easeIn`,
-  `easeOut`, `easeInOut`, `bounceIn/Out`, `elasticIn/Out`,
-  `fastOutSlowIn`) join the constants table so source can reference
-  them directly.
+  position), Flutter animates between old and new automatically.
+  `Duration(milliseconds: n)` is a new default value builder; nine
+  canonical `Curves.*` instances (`linear`, `easeIn/Out/InOut`,
+  `bounceIn/Out`, `elasticIn/Out`, `fastOutSlowIn`) join the
+  constants table.
+- **Navigation widgets** — `BottomNavigationBar` (required `items`
+  + `currentIndex`, optional `onTap` dispatching `(name, [newIndex])`,
+  theming via `type/selectedItemColor/unselectedItemColor/
+  backgroundColor`), `TabBar` + `Tab` (assume a host-side
+  `DefaultTabController` ancestor), plus `BottomNavigationBarItem`
+  as a value builder. `BottomNavigationBarType.fixed` /
+  `.shifting` join the constants table.
+- **Dropdown select** — `DropdownButton` with `DropdownMenuItem`.
+  Both parametric on `Object?` so item values can be any runtime
+  type. Required `items: List<DropdownMenuItem<Object?>>`; optional
+  `value` (absent or explicit null renders the hint),
+  `onChanged: String` event name, `hint`, `disabledHint`,
+  `isExpanded`. A null `onChanged` disables the dropdown, matching
+  the Switch / Checkbox / Slider / Radio pattern.
+
+### Changed
+- **Event-callback helpers** extracted. Fourteen call sites across
+  ten builders duplicated the same
+  `eventName == null ? null : () => ctx.events.dispatch(...)`
+  pattern (and the value-carrying variant). Consolidated into two
+  shared helpers in `lib/src/builders/event_callback.dart`:
+  `voidEventCallback(name, events)` and
+  `valueEventCallback<T>(name, events)`. Every existing builder
+  test continues to pass unchanged — pure refactor.
 
 ## [0.4.0] — 2026-04-19 — interactive + layout polish
 
@@ -396,7 +401,8 @@ All notable changes to this project are documented here. Format follows
 - Example app at `example/lib/main.dart` demonstrating the full Phase 1
   feature set.
 
-[Unreleased]: https://github.com/CanArslanDev/rune/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/CanArslanDev/rune/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/CanArslanDev/rune/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/CanArslanDev/rune/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/CanArslanDev/rune/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/CanArslanDev/rune/compare/v0.1.0...v0.2.0
