@@ -6,6 +6,14 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+### Added
+- **Gesture handlers** — `GestureDetector` and `InkWell` widget
+  builders, each wrapping a child with `onTap`, `onDoubleTap`, and
+  `onLongPress` named-event dispatch. `InkWell` adds Material
+  ink-splash feedback plus an optional `borderRadius` arg to shape
+  the splash to a rounded container. Any widget now becomes
+  tappable in Rune source without having to be a `*Button`.
+
 ## [0.3.0] — 2026-04-19 — runtime-value members + layout helpers
 
 ### Added

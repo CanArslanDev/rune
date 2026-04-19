@@ -16,10 +16,12 @@ import 'package:rune/src/builders/widgets/divider_builder.dart';
 import 'package:rune/src/builders/widgets/elevated_button_builder.dart';
 import 'package:rune/src/builders/widgets/expanded_builder.dart';
 import 'package:rune/src/builders/widgets/flexible_builder.dart';
+import 'package:rune/src/builders/widgets/gesture_detector_builder.dart';
 import 'package:rune/src/builders/widgets/icon_builder.dart';
 import 'package:rune/src/builders/widgets/icon_button_builder.dart';
 import 'package:rune/src/builders/widgets/image_asset_builder.dart';
 import 'package:rune/src/builders/widgets/image_network_builder.dart';
+import 'package:rune/src/builders/widgets/ink_well_builder.dart';
 import 'package:rune/src/builders/widgets/list_tile_builder.dart';
 import 'package:rune/src/builders/widgets/list_view_builder.dart';
 import 'package:rune/src/builders/widgets/padding_builder.dart';
@@ -96,7 +98,10 @@ abstract final class RuneDefaults {
       // Layout helpers + Material tiles.
       ..registerBuilder(const ListTileBuilder())
       ..registerBuilder(const DividerBuilder())
-      ..registerBuilder(const SpacerBuilder());
+      ..registerBuilder(const SpacerBuilder())
+      // Gesture handlers.
+      ..registerBuilder(const GestureDetectorBuilder())
+      ..registerBuilder(const InkWellBuilder());
   }
 
   /// Registers every Phase 1–2c value builder into [registry].
