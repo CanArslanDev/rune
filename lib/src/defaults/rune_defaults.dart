@@ -10,6 +10,8 @@ import 'package:rune/src/builders/values/edge_insets_only_builder.dart';
 import 'package:rune/src/builders/values/edge_insets_symmetric_builder.dart';
 import 'package:rune/src/builders/values/grid_view_count_builder.dart';
 import 'package:rune/src/builders/values/grid_view_extent_builder.dart';
+import 'package:rune/src/builders/values/navigation_destination_builder.dart';
+import 'package:rune/src/builders/values/navigation_rail_destination_builder.dart';
 import 'package:rune/src/builders/values/offset_builder.dart';
 import 'package:rune/src/builders/values/sliver_grid_count_builder.dart';
 import 'package:rune/src/builders/values/sliver_grid_extent_builder.dart';
@@ -63,6 +65,8 @@ import 'package:rune/src/builders/widgets/limited_box_builder.dart';
 import 'package:rune/src/builders/widgets/linear_progress_indicator_builder.dart';
 import 'package:rune/src/builders/widgets/list_tile_builder.dart';
 import 'package:rune/src/builders/widgets/list_view_builder.dart';
+import 'package:rune/src/builders/widgets/navigation_bar_builder.dart';
+import 'package:rune/src/builders/widgets/navigation_rail_builder.dart';
 import 'package:rune/src/builders/widgets/offstage_builder.dart';
 import 'package:rune/src/builders/widgets/opacity_builder.dart';
 import 'package:rune/src/builders/widgets/padding_builder.dart';
@@ -186,6 +190,9 @@ abstract final class RuneDefaults {
       ..registerBuilder(const BottomNavigationBarBuilder())
       ..registerBuilder(const TabBarBuilder())
       ..registerBuilder(const TabBuilder())
+      // Material 3 navigation.
+      ..registerBuilder(const NavigationBarBuilder())
+      ..registerBuilder(const NavigationRailBuilder())
       // Dropdown.
       ..registerBuilder(const DropdownButtonBuilder())
       ..registerBuilder(const DropdownMenuItemBuilder())
@@ -240,6 +247,9 @@ abstract final class RuneDefaults {
       ..registerBuilder(const ImageAssetBuilder())
       ..registerBuilder(const DurationBuilder())
       ..registerBuilder(const BottomNavigationBarItemBuilder())
+      // Material 3 navigation destinations.
+      ..registerBuilder(const NavigationDestinationBuilder())
+      ..registerBuilder(const NavigationRailDestinationBuilder())
       // Grid views (GridView.builder needs closure syntax — deferred).
       ..registerBuilder(const GridViewCountBuilder())
       ..registerBuilder(const GridViewExtentBuilder())

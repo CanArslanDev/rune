@@ -7,6 +7,18 @@ All notable changes to this project are documented here. Format follows
 ## [Unreleased]
 
 ### Added
+- **Material 3 navigation**. `NavigationBar` with
+  `NavigationDestination` replaces the Material 2 pattern
+  (`BottomNavigationBar` / `BottomNavigationBarItem` still ship for
+  consumers that need Material 2 theming). Required `destinations`
+  (at least 2) and `selectedIndex`; optional `onDestinationSelected`
+  event, plus theming via `backgroundColor`, `elevation`, `height`,
+  `indicatorColor`. `NavigationRail` is the landscape / tablet
+  variant with `extended` toggle, optional `labelType`
+  (`NavigationRailLabelType` enum: `none`, `selected`, `all`),
+  `leading`, `trailing`, and sizing (`minWidth`, `elevation`).
+  `NavigationRailDestination` carries `icon` + `label` Widgets plus
+  optional `selectedIcon` and `padding`.
 - **Sizing primitives**. Four constraint-manipulation widgets plus
   one value builder for the constraints themselves.
   `ConstrainedBox` applies arbitrary `BoxConstraints` to its child

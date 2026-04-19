@@ -53,6 +53,8 @@ void main() {
         'AnimatedCrossFade',
         'AnimatedSize',
         'BottomNavigationBar',
+        'NavigationBar',
+        'NavigationRail',
         'TabBar',
         'Tab',
         'DropdownButton',
@@ -105,6 +107,8 @@ void main() {
         'Image.asset',
         'Duration',
         'BottomNavigationBarItem',
+        'NavigationDestination',
+        'NavigationRailDestination',
         'GridView.count',
         'GridView.extent',
         'SliverGrid.count',
@@ -137,8 +141,8 @@ void main() {
       RuneDefaults.registerWidgets(w);
       RuneDefaults.registerValues(v);
       RuneDefaults.registerConstants(c);
-      expect(w.size, greaterThanOrEqualTo(74));
-      expect(v.size, greaterThanOrEqualTo(22));
+      expect(w.size, greaterThanOrEqualTo(76));
+      expect(v.size, greaterThanOrEqualTo(24));
       expect(c.size, greaterThanOrEqualTo(50));
     });
   });

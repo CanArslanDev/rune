@@ -41,6 +41,7 @@ void registerPhase2aConstants(ConstantRegistry registry) {
   _registerClip(registry);
   _registerDecorationPosition(registry);
   _registerListTileControlAffinity(registry);
+  _registerNavigationRailLabelType(registry);
 }
 
 // Registers every Colors member that is a concrete Color value.
@@ -280,5 +281,15 @@ void _registerListTileControlAffinity(ConstantRegistry r) {
     'leading': ListTileControlAffinity.leading,
     'trailing': ListTileControlAffinity.trailing,
     'platform': ListTileControlAffinity.platform,
+  });
+}
+
+// Registers NavigationRailLabelType enum values (none, selected, all) —
+// used by NavigationRail's optional `labelType:` arg.
+void _registerNavigationRailLabelType(ConstantRegistry r) {
+  r.registerAll('NavigationRailLabelType', <String, Object?>{
+    'none': NavigationRailLabelType.none,
+    'selected': NavigationRailLabelType.selected,
+    'all': NavigationRailLabelType.all,
   });
 }

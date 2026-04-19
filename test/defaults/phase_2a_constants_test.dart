@@ -204,5 +204,14 @@ void main() {
         ListTileControlAffinity.platform,
       );
     });
+
+    test('seeds NavigationRailLabelType', () {
+      final r = ConstantRegistry();
+      registerPhase2aConstants(r);
+      expect(
+        r.resolve('NavigationRailLabelType', 'all'),
+        NavigationRailLabelType.all,
+      );
+    });
   });
 }
