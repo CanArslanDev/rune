@@ -15,6 +15,22 @@ All notable changes to this project are documented here. Format follows
   largeSize/isLabelVisible), `CircularProgressIndicator` and
   `LinearProgressIndicator` (both indeterminate by default, set
   `value: 0.0-1.0` for determinate).
+- **Animation expansions** — four more animated widget builders
+  complementing the AnimatedContainer/Opacity/Positioned trio from
+  v0.5.0: `Hero` (cross-route shared-element transitions; required
+  non-null `tag` + `child`, optional `transitionOnUserGestures`),
+  `AnimatedSwitcher` (fade between children when the child's key
+  changes; required `duration`, optional `reverseDuration`/
+  `switchInCurve`/`switchOutCurve`), `AnimatedCrossFade` (fade
+  between two declared children driven by a `CrossFadeState` enum;
+  required `firstChild`/`secondChild`/`crossFadeState`/`duration`
+  plus optional first/second/size curves and alignment), and
+  `AnimatedSize` (animate own size to match child; required
+  `duration` + optional curve/alignment/reverseDuration).
+  `CrossFadeState.showFirst` / `.showSecond` join the constants
+  table. Closure-shaped args (`createRectTween`,
+  `flightShuttleBuilder`, etc.) remain out of scope pending
+  function-literal support in source.
 
 ## [0.5.0] — 2026-04-19 — animations + navigation + dropdown
 

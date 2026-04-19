@@ -45,6 +45,10 @@ void main() {
         'AnimatedContainer',
         'AnimatedOpacity',
         'AnimatedPositioned',
+        'Hero',
+        'AnimatedSwitcher',
+        'AnimatedCrossFade',
+        'AnimatedSize',
         'BottomNavigationBar',
         'TabBar',
         'Tab',
@@ -98,7 +102,7 @@ void main() {
       RuneDefaults.registerWidgets(w);
       RuneDefaults.registerValues(v);
       RuneDefaults.registerConstants(c);
-      expect(w.size, greaterThanOrEqualTo(45));
+      expect(w.size, greaterThanOrEqualTo(49));
       expect(v.size, greaterThanOrEqualTo(12));
       expect(c.size, greaterThanOrEqualTo(50));
     });

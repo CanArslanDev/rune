@@ -37,6 +37,7 @@ void registerPhase2aConstants(ConstantRegistry registry) {
   _registerEdgeInsetsSingletons(registry);
   _registerCurves(registry);
   _registerBottomNavigationBarType(registry);
+  _registerCrossFadeState(registry);
 }
 
 // Registers every Colors member that is a concrete Color value.
@@ -239,5 +240,13 @@ void _registerCurves(ConstantRegistry r) {
 void _registerBottomNavigationBarType(ConstantRegistry r) {
   r.registerAll('BottomNavigationBarType', <String, Object?>{
     for (final v in BottomNavigationBarType.values) v.name: v,
+  });
+}
+
+// Registers CrossFadeState enum values (showFirst, showSecond) —
+// used by AnimatedCrossFade's required `crossFadeState:` arg.
+void _registerCrossFadeState(ConstantRegistry r) {
+  r.registerAll('CrossFadeState', <String, Object?>{
+    for (final v in CrossFadeState.values) v.name: v,
   });
 }

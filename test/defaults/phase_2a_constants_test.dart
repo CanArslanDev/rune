@@ -155,5 +155,18 @@ void main() {
         BottomNavigationBarType.shifting,
       );
     });
+
+    test('seeds CrossFadeState', () {
+      final r = ConstantRegistry();
+      registerPhase2aConstants(r);
+      expect(
+        r.resolve('CrossFadeState', 'showFirst'),
+        CrossFadeState.showFirst,
+      );
+      expect(
+        r.resolve('CrossFadeState', 'showSecond'),
+        CrossFadeState.showSecond,
+      );
+    });
   });
 }

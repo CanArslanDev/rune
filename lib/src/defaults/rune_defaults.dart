@@ -9,8 +9,11 @@ import 'package:rune/src/builders/values/edge_insets_only_builder.dart';
 import 'package:rune/src/builders/values/edge_insets_symmetric_builder.dart';
 import 'package:rune/src/builders/values/text_style_builder.dart';
 import 'package:rune/src/builders/widgets/animated_container_builder.dart';
+import 'package:rune/src/builders/widgets/animated_cross_fade_builder.dart';
 import 'package:rune/src/builders/widgets/animated_opacity_builder.dart';
 import 'package:rune/src/builders/widgets/animated_positioned_builder.dart';
+import 'package:rune/src/builders/widgets/animated_size_builder.dart';
+import 'package:rune/src/builders/widgets/animated_switcher_builder.dart';
 import 'package:rune/src/builders/widgets/app_bar_builder.dart';
 import 'package:rune/src/builders/widgets/aspect_ratio_builder.dart';
 import 'package:rune/src/builders/widgets/badge_builder.dart';
@@ -30,6 +33,7 @@ import 'package:rune/src/builders/widgets/expanded_builder.dart';
 import 'package:rune/src/builders/widgets/flexible_builder.dart';
 import 'package:rune/src/builders/widgets/floating_action_button_builder.dart';
 import 'package:rune/src/builders/widgets/gesture_detector_builder.dart';
+import 'package:rune/src/builders/widgets/hero_builder.dart';
 import 'package:rune/src/builders/widgets/icon_builder.dart';
 import 'package:rune/src/builders/widgets/icon_button_builder.dart';
 import 'package:rune/src/builders/widgets/image_asset_builder.dart';
@@ -135,6 +139,10 @@ abstract final class RuneDefaults {
       ..registerBuilder(const AnimatedContainerBuilder())
       ..registerBuilder(const AnimatedOpacityBuilder())
       ..registerBuilder(const AnimatedPositionedBuilder())
+      ..registerBuilder(const HeroBuilder())
+      ..registerBuilder(const AnimatedSwitcherBuilder())
+      ..registerBuilder(const AnimatedCrossFadeBuilder())
+      ..registerBuilder(const AnimatedSizeBuilder())
       // Navigation.
       ..registerBuilder(const BottomNavigationBarBuilder())
       ..registerBuilder(const TabBarBuilder())
