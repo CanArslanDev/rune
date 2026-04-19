@@ -6,42 +6,44 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-04-19 - closures in source
+
 ### Added
-- **Closures in source (Phase A).** Function literals written inline
-  in Rune source compile into `RuneClosure` values that capture the
-  surrounding data context and are invocable anywhere the language
-  needs a callable. Ships in three layers:
-  - **A.1, `RuneClosure` + `FunctionExpression` dispatch.** The
-    expression resolver learns to route `FunctionExpression` AST
-    nodes through a new arm that builds a `RuneClosure` capturing
-    the formal parameter names, the arrow body, and the current
-    context. Calls re-enter the resolver with an extended data
-    context binding argument values to parameter names. Arrow
-    bodies only in Phase A; block bodies (`(x) { return expr; }`)
-    remain deferred.
-  - **A.2, builder event callbacks accept closures.** The shared
-    `voidEventCallback` / `valueEventCallback` helpers accept a
-    `RuneClosure` alongside the existing named-event string. Every
-    button / switch / slider / dropdown / tab / tile builder now
-    supports both `onPressed: 'submit'` and
-    `onPressed: () => doSomething()` (plus the value-carrying
-    variants such as `onChanged: (v) => v * 2`). Closure-driven
-    callbacks re-enter the resolver on each invocation so the
-    closure body sees the latest captured data.
-  - **A.3, closure-accepting collection methods.** The
-    `invokeBuiltinMethod` whitelist gains eight new arms on
-    `List`: `map`, `where`, `any`, `every`, `firstWhere`, `forEach`
-    (1-arg closures), `fold` (initial value + 2-arg closure), and
-    `reduce` (2-arg closure). `map` and `where` return materialised
-    `List`s; `any`/`every` and the predicates in `where` /
-    `firstWhere` validate the closure's bool return; `firstWhere`
-    propagates Dart's own `StateError` on no-match; `reduce`
-    propagates `StateError` on empty input. With A.3, method
-    chaining with closures is genuinely useful in source:
-    `items.where((i) => i.active).map((i) => Text(i.title))` now
-    renders as expected. `orElse`-flavoured `firstWhere` is
-    deferred until the resolver supports named arguments on
-    runtime methods.
+- **Closures in source (Phase A of the v1.0.0 roadmap).** `(x) => x + 1`
+  now parses as a first-class value. The resolver gains a new
+  `FunctionExpression` arm that produces `RuneClosure`s, captures
+  the enclosing `RuneContext`, and re-enters the expression resolver
+  on each call with the closure's arguments bound alongside the
+  captured data. Arrow-body form only in this release; block-body
+  closures (`(x) { return x; }`) are deferred to a later phase with
+  a clear `ResolveException` message.
+- **Builder callbacks accept closures.** Every event-accepting widget
+  builder now accepts either a `String` event name (existing
+  behavior, unchanged) or a closure. `ElevatedButton(onPressed: () =>
+  state.counter + 1, ...)` routes through the widget's Flutter
+  callback and invokes the closure with the event's arguments.
+  `valueEventCallback<T>` forwards the bool/int/String/etc. value as
+  the single positional argument to the closure; `voidEventCallback`
+  calls the closure with an empty args list.
+- **Collection methods with closures.** `invokeBuiltinMethod` grows
+  eight new closure-accepting methods on `List`: `.map`, `.where`,
+  `.any`, `.every`, `.firstWhere`, `.forEach`, `.fold`, `.reduce`.
+  `.map` and `.where` return materialised `List<Object?>` (not lazy
+  `Iterable`) so downstream builders see concrete lists.
+  `.any/.every/.firstWhere/.where` validate that the closure's
+  return is a `bool`. `.fold` takes an initial value plus a
+  two-parameter combiner. `.reduce` takes a two-parameter combiner;
+  empty lists propagate Dart's own `StateError('No element')`.
+
+### Notes
+
+- Phase A.1, A.2, and A.3 landed as four commits on top of v0.8.0.
+  The architecture test gained a dedicated guard for the new
+  `lib/src/builders/event_callback.dart` to `lib/src/resolver/rune_closure.dart`
+  edge, ensuring future changes cannot silently pull unrelated
+  resolver files into the builders layer.
+- Phase B (block-body closures, local variable declarations, scoped
+  mutation) is next on the v1.0.0 roadmap and ships in v0.10.0.
 
 ## [0.8.0] - 2026-04-19 - pragmatic gaps
 
@@ -578,7 +580,8 @@ All notable changes to this project are documented here. Format follows
 - Example app at `example/lib/main.dart` demonstrating the full Phase 1
   feature set.
 
-[Unreleased]: https://github.com/CanArslanDev/rune/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/CanArslanDev/rune/compare/v0.9.0...HEAD
+[0.9.0]: https://github.com/CanArslanDev/rune/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/CanArslanDev/rune/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/CanArslanDev/rune/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/CanArslanDev/rune/compare/v0.5.0...v0.6.0
