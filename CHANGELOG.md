@@ -6,6 +6,74 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-04-19 - theme access, M3 widgets, date/time pickers
+
+### Added
+
+- **Context accessors.** `Theme.of(context)` and
+  `MediaQuery.of(context)` resolve as well-known `MethodInvocation`
+  shapes at the resolver level. Both return the raw Flutter value
+  (`ThemeData`, `MediaQueryData`), whose property access routes
+  through the built-in property whitelist. Source can now read the
+  active theme's colors, text styles, and device metrics without
+  leaving the string.
+- **Read-only property whitelist for Flutter data types.**
+  `ThemeData.colorScheme`, `.textTheme`, `.brightness`,
+  `.primaryColor`, `.useMaterial3`, `.scaffoldBackgroundColor`,
+  `.cardColor`, `.dividerColor`. `ColorScheme.primary`,
+  `.onPrimary`, `.secondary`, `.onSecondary`, `.tertiary`, `.error`,
+  `.onError`, `.surface`, `.onSurface`,
+  `.surfaceContainerHighest`, `.outline`, `.shadow`, `.brightness`,
+  plus tonal inverse / variant slots. `TextTheme.bodyLarge` through
+  `bodySmall`, `titleLarge/Medium/Small`, `headlineLarge/Medium/Small`,
+  `labelLarge/Medium/Small`. `MediaQueryData.size`, `.orientation`,
+  `.padding`, `.viewInsets`, `.viewPadding`, `.devicePixelRatio`,
+  `.textScaler`, `.platformBrightness`. `Size.width`, `.height`,
+  `.shortestSide`, `.longestSide`, `.aspectRatio`, `.isEmpty`.
+  `EdgeInsets.left`, `.top`, `.right`, `.bottom`, `.horizontal`,
+  `.vertical`.
+- **Material 3 widget builders.** `FilledButton`, `OutlinedButton`,
+  `SegmentedButton` (generic on `Object?` values with
+  `multiSelectionEnabled` and `onSelectionChanged` closure),
+  `SearchBar`, and `SearchAnchor.bar` (a closure-driven
+  `suggestionsBuilder`).
+- **Theme-related value builders.** `ColorScheme.fromSeed(seedColor,
+  brightness?)`, `ThemeData(colorScheme, useMaterial3, brightness,
+  scaffoldBackgroundColor, cardColor, dividerColor)`,
+  `ButtonSegment(value, label, icon, tooltip, enabled)`.
+- **Date / time value builders.** `DateTime(year, month?, day?,
+  hour?, minute?, second?, millisecond?, microsecond?)` positional
+  constructor and `TimeOfDay(hour: int, minute: int)` named
+  constructor. Source can build the bounds for the picker bridges
+  without host pre-computation.
+- **Date / time imperative bridges.** `showDatePicker(context?,
+  initialDate, firstDate, lastDate, helpText?, cancelText?,
+  confirmText?)` and `showTimePicker(context?, initialTime,
+  helpText?, cancelText?, confirmText?)`. Both resolve through
+  `RuneContext.flutterContext`; the returned `Future` is
+  discarded in source and available to the host via custom event
+  handlers.
+- **Constants.** `ThemeMode.light/.dark/.system`, `Brightness.light/
+  .dark`, `MaterialTapTargetSize.padded/.shrinkWrap`.
+
+### Notes
+
+- Widget count 91 to 96; value count 35 to 41. Constants table
+  gains ThemeMode, Brightness, MaterialTapTargetSize.
+- About 68 new tests across the context-accessors resolver path,
+  the new widgets and value builders, the imperative bridges, and
+  integration smokes driving theme-aware containers, FilledButton
+  + OutlinedButton rendering, SegmentedButton multi-select
+  toggling, and a date-picker launch.
+- `FilledButton.tonal` stays deferred; v1.0.0's stability pact
+  holds, existing `.tonal` consumers use `FilledButton` plus a
+  custom style in host code.
+- A mid-cycle dartdoc-reference fix narrowed two CI-blocking
+  `comment_references` findings on `date_time_builder.dart` by
+  rewriting the constructor-signature dartdoc to avoid bracketed
+  optional-param syntax (the CI-pinned analyzer flags `[name]`
+  even inside backtick-quoted code spans).
+
 ## [1.3.0] - 2026-04-19 - dialogs, overlays, imperative bridges
 
 ### Added
@@ -868,7 +936,8 @@ All notable changes to this project are documented here. Format follows
 - Example app at `example/lib/main.dart` demonstrating the full Phase 1
   feature set.
 
-[Unreleased]: https://github.com/CanArslanDev/rune/compare/v1.3.0...HEAD
+[Unreleased]: https://github.com/CanArslanDev/rune/compare/v1.4.0...HEAD
+[1.4.0]: https://github.com/CanArslanDev/rune/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/CanArslanDev/rune/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/CanArslanDev/rune/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/CanArslanDev/rune/compare/v1.0.0...v1.1.0
