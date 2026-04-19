@@ -7,6 +7,13 @@ All notable changes to this project are documented here. Format follows
 ## [Unreleased]
 
 ### Added
+- **Chip variants**. `ChoiceChip` (single-select) and `FilterChip`
+  (multi-select toggle) complement the existing `Chip` info-tag
+  builder. Both require `label` (Widget) and `selected` (bool);
+  optional `onSelected` event name dispatches `(name, [newBool])`
+  on tap plus avatar and colour theming. `FilterChip` also accepts
+  `checkmarkColor` and `showCheckmark` (default true). ActionChip
+  and InputChip remain deferred pending a concrete use case.
 - **Material 3 navigation**. `NavigationBar` with
   `NavigationDestination` replaces the Material 2 pattern
   (`BottomNavigationBar` / `BottomNavigationBarItem` still ship for

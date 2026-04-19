@@ -61,6 +61,8 @@ void main() {
         'DropdownMenuItem',
         'FloatingActionButton',
         'Chip',
+        'ChoiceChip',
+        'FilterChip',
         'Badge',
         'CircularProgressIndicator',
         'LinearProgressIndicator',
@@ -141,7 +143,7 @@ void main() {
       RuneDefaults.registerWidgets(w);
       RuneDefaults.registerValues(v);
       RuneDefaults.registerConstants(c);
-      expect(w.size, greaterThanOrEqualTo(76));
+      expect(w.size, greaterThanOrEqualTo(78));
       expect(v.size, greaterThanOrEqualTo(24));
       expect(c.size, greaterThanOrEqualTo(50));
     });

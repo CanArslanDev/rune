@@ -35,6 +35,7 @@ import 'package:rune/src/builders/widgets/center_builder.dart';
 import 'package:rune/src/builders/widgets/checkbox_builder.dart';
 import 'package:rune/src/builders/widgets/checkbox_list_tile_builder.dart';
 import 'package:rune/src/builders/widgets/chip_builder.dart';
+import 'package:rune/src/builders/widgets/choice_chip_builder.dart';
 import 'package:rune/src/builders/widgets/circular_progress_indicator_builder.dart';
 import 'package:rune/src/builders/widgets/clip_oval_builder.dart';
 import 'package:rune/src/builders/widgets/clip_rrect_builder.dart';
@@ -50,6 +51,7 @@ import 'package:rune/src/builders/widgets/dropdown_button_builder.dart';
 import 'package:rune/src/builders/widgets/dropdown_menu_item_builder.dart';
 import 'package:rune/src/builders/widgets/elevated_button_builder.dart';
 import 'package:rune/src/builders/widgets/expanded_builder.dart';
+import 'package:rune/src/builders/widgets/filter_chip_builder.dart';
 import 'package:rune/src/builders/widgets/fitted_box_builder.dart';
 import 'package:rune/src/builders/widgets/flexible_builder.dart';
 import 'package:rune/src/builders/widgets/floating_action_button_builder.dart';
@@ -199,6 +201,8 @@ abstract final class RuneDefaults {
       // Material widgets — misc.
       ..registerBuilder(const FloatingActionButtonBuilder())
       ..registerBuilder(const ChipBuilder())
+      ..registerBuilder(const ChoiceChipBuilder())
+      ..registerBuilder(const FilterChipBuilder())
       ..registerBuilder(const BadgeBuilder())
       ..registerBuilder(const CircularProgressIndicatorBuilder())
       ..registerBuilder(const LinearProgressIndicatorBuilder())
