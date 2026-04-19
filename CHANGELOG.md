@@ -6,6 +6,26 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+### Added
+- Source-location diagnostics — every `RuneException` now carries an
+  optional `SourceSpan location` (new public value class) pointing to
+  where the error originates in the Rune source. `toString()` renders
+  a caret-pointer block beneath the excerpt when a location is set.
+  Populated by parser diagnostics, every resolver throw site, and
+  bubbled builder argument failures; `null` on defensive invariant
+  checks. See README "Error handling → Source-location diagnostics"
+  for consumer examples.
+- `SourceSpan.fromAstOffset(source, astOffset, astLength)` factory —
+  the single source of truth for AST-offset-to-source-location
+  conversion, rebasing analyzer-wrapper offsets and clamping
+  EOF-shaped diagnostics into usable spans.
+
+### Changed
+- `RuneContext` gained a required `String source` field so resolvers
+  can compute `SourceSpan`s on demand. The test helper defaults it to
+  an empty string; production path (`RuneView` → `_buildContext`)
+  threads `widget.source` through.
+
 ## [0.1.0] — 2026-04-18 — Phase 4
 
 ### Added

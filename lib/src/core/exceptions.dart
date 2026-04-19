@@ -26,6 +26,31 @@ sealed class RuneException implements Exception {
   /// test-constructed instances, and for exceptions raised outside a
   /// known source location.
   final SourceSpan? location;
+
+  /// Returns a formatted pointer block suitable for appending to a
+  /// variant's `toString`. Produces an empty string when [location] is
+  /// `null` so one-line `toString` output is preserved for throw sites
+  /// that don't carry a span.
+  ///
+  /// Shape, when a location is present:
+  ///
+  /// ```
+  ///
+  ///   at line <L>, column <C>:
+  ///     <excerpt line>
+  ///     <indent>^^^
+  /// ```
+  ///
+  /// The excerpt and caret lines come directly from
+  /// [SourceSpan.toPointerString] with a 4-space indent applied so the
+  /// block sits visually beneath the one-line summary.
+  String _locationDetail() {
+    final loc = location;
+    if (loc == null) return '';
+    final indented =
+        loc.toPointerString().split('\n').map((l) => '    $l').join('\n');
+    return '\n  at line ${loc.line}, column ${loc.column}:\n$indented';
+  }
 }
 
 /// Raised when `DartParser` cannot produce an AST from the input.
@@ -34,7 +59,8 @@ final class ParseException extends RuneException {
   const ParseException(super.source, super.message, {super.location});
 
   @override
-  String toString() => 'ParseException: $message (source: "$source")';
+  String toString() =>
+      'ParseException: $message (source: "$source")${_locationDetail()}';
 }
 
 /// Raised when the resolver encounters an expression shape it cannot handle
@@ -44,7 +70,8 @@ final class ResolveException extends RuneException {
   const ResolveException(super.source, super.message, {super.location});
 
   @override
-  String toString() => 'ResolveException: $message (source: "$source")';
+  String toString() =>
+      'ResolveException: $message (source: "$source")${_locationDetail()}';
 }
 
 /// Raised when a type referenced in the source has no registered builder.
@@ -66,7 +93,8 @@ final class UnregisteredBuilderException extends RuneException {
 
   @override
   String toString() =>
-      'UnregisteredBuilderException: $message (source: "$source")';
+      'UnregisteredBuilderException: $message (source: "$source")'
+      '${_locationDetail()}';
 }
 
 /// Raised when resolved arguments are missing a required value or have the
@@ -77,7 +105,8 @@ final class ArgumentException extends RuneException {
   const ArgumentException(super.source, super.message, {super.location});
 
   @override
-  String toString() => 'ArgumentException: $message (source: "$source")';
+  String toString() =>
+      'ArgumentException: $message (source: "$source")${_locationDetail()}';
 }
 
 /// Raised when data or event binding cannot be satisfied (e.g. a data key
@@ -87,5 +116,6 @@ final class BindingException extends RuneException {
   const BindingException(super.source, super.message, {super.location});
 
   @override
-  String toString() => 'BindingException: $message (source: "$source")';
+  String toString() =>
+      'BindingException: $message (source: "$source")${_locationDetail()}';
 }

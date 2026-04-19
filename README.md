@@ -238,6 +238,36 @@ A live working bridge ships at [`packages/rune_responsive_sizer`](packages/rune_
 - `RuneView` catches all exceptions, calls the optional `onError` callback, then renders `fallback`. In debug builds with no `fallback`, Flutter's red-screen `ErrorWidget` is shown; in release builds the view silently collapses to an empty `SizedBox`.
 - `RuneEventDispatcher.dispatch` is crash-safe: handler throws (including arity mismatches) are caught and `debugPrint`-logged; they never escape into the render pipeline.
 
+### Source-location diagnostics
+
+Every `RuneException` carries an optional `location` field — a `SourceSpan` pointing into the `RuneView.source` where the error originates. When present, `toString()` renders a caret pointer beneath the one-line summary:
+
+```
+ResolveException: Unknown identifier "userNmae" (not present in RuneDataContext) (source: "userNmae")
+  at line 2, column 9:
+    Text(userNmae)
+         ^^^^^^^^
+```
+
+Access the structured data programmatically for custom diagnostics UI:
+
+```dart
+RuneView(
+  source: mySource,
+  onError: (error, _) {
+    if (error is RuneException) {
+      final loc = error.location;
+      if (loc != null) {
+        debugPrint('Rune error at L${loc.line}:C${loc.column}: ${error.message}');
+        debugPrint(loc.toPointerString());
+      }
+    }
+  },
+);
+```
+
+Locations are populated for parse errors (analyzer diagnostics with offsets), every resolver throw site (via the AST node's offset/length), and bubbled builder `ArgumentException`s (rewrapped at the invocation). They are `null` for defensive throw sites that have no user-visible offset (e.g., the wrapped-variable-had-no-initializer invariant check inside `DartParser`), so consumers should treat the field as optional.
+
 ## Testing
 
 ```bash

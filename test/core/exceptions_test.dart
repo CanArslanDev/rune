@@ -128,4 +128,128 @@ void main() {
       expect(e.location, same(span));
     });
   });
+
+  group('RuneException.toString with location', () {
+    const span = SourceSpan(
+      offset: 5,
+      length: 4,
+      line: 1,
+      column: 6,
+      excerpt: 'Text(bad)',
+    );
+
+    test(
+      'ParseException without location preserves one-line format',
+      () {
+        expect(
+          const ParseException('Text(', 'unexpected EOF').toString(),
+          'ParseException: unexpected EOF (source: "Text(")',
+        );
+      },
+    );
+
+    test(
+      'ResolveException without location preserves one-line format',
+      () {
+        expect(
+          const ResolveException('foo', 'not supported').toString(),
+          'ResolveException: not supported (source: "foo")',
+        );
+      },
+    );
+
+    test(
+      'UnregisteredBuilderException without location preserves one-line format',
+      () {
+        expect(
+          const UnregisteredBuilderException('FooBar()', 'FooBar').toString(),
+          'UnregisteredBuilderException: No builder registered for type '
+          '"FooBar" (source: "FooBar()")',
+        );
+      },
+    );
+
+    test(
+      'ArgumentException without location preserves one-line format',
+      () {
+        expect(
+          const ArgumentException('Text()', 'missing "data"').toString(),
+          'ArgumentException: missing "data" (source: "Text()")',
+        );
+      },
+    );
+
+    test(
+      'BindingException without location preserves one-line format',
+      () {
+        expect(
+          const BindingException('userName', 'not in data').toString(),
+          'BindingException: not in data (source: "userName")',
+        );
+      },
+    );
+
+    test('ParseException with location renders the pointer block', () {
+      const exc = ParseException('Text(bad)', 'bad', location: span);
+      final str = exc.toString();
+      expect(str, contains('ParseException: bad (source: "Text(bad)")'));
+      expect(str, contains('at line 1, column 6'));
+      expect(str, contains('    Text(bad)'));
+      expect(str, contains('^^^^'));
+    });
+
+    test('pointer block lines are indented by exactly 4 spaces', () {
+      const exc = ParseException('Text(bad)', 'bad', location: span);
+      final lines = exc.toString().split('\n');
+      // Line 0: one-line summary
+      // Line 1: '  at line X, column Y:'
+      // Line 2: '    <excerpt>'
+      // Line 3: '    <indent>^^^^'
+      expect(lines.length, 4);
+      expect(lines[1], '  at line 1, column 6:');
+      expect(lines[2].startsWith('    '), isTrue);
+      expect(lines[2], '    Text(bad)');
+      expect(lines[3].startsWith('    '), isTrue);
+      // Caret line: 4-space base indent + 5 spaces (column-1) + '^^^^'
+      expect(lines[3], '         ^^^^');
+    });
+
+    test('ResolveException with location fires the helper', () {
+      const exc = ResolveException('bar', 'nope', location: span);
+      expect(exc.toString(), contains('at line '));
+    });
+
+    test('UnregisteredBuilderException with location fires the helper', () {
+      const exc =
+          UnregisteredBuilderException('FooBar()', 'FooBar', location: span);
+      expect(exc.toString(), contains('at line '));
+    });
+
+    test('ArgumentException with location fires the helper', () {
+      const exc =
+          ArgumentException('Text()', 'missing "data"', location: span);
+      expect(exc.toString(), contains('at line '));
+    });
+
+    test('BindingException with location fires the helper', () {
+      const exc =
+          BindingException('userName', 'not in data', location: span);
+      expect(exc.toString(), contains('at line '));
+    });
+
+    test(
+      'caret block format matches SourceSpan.toPointerString exactly',
+      () {
+        const exc = ParseException('Text(bad)', 'bad', location: span);
+        final full = exc.toString();
+        final thirdLineOnward = full.split('\n').sublist(2).join('\n');
+        final expectedBlock = span
+            .toPointerString()
+            .split('\n')
+            .map((l) => '    $l')
+            .join('\n');
+        expect(thirdLineOnward, expectedBlock);
+      },
+    );
+  });
 }
