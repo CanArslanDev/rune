@@ -6,31 +6,21 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [0.2.0] — 2026-04-19 — diagnostics + richer source language
+
 ### Added
-- Source-location diagnostics — every `RuneException` now carries an
-  optional `SourceSpan location` (new public value class) pointing to
-  where the error originates in the Rune source. `toString()` renders
-  a caret-pointer block beneath the excerpt when a location is set.
-  Populated by parser diagnostics, every resolver throw site, and
-  bubbled builder argument failures; `null` on defensive invariant
-  checks. See README "Error handling → Source-location diagnostics"
-  for consumer examples.
-- `SourceSpan.fromAstOffset(source, astOffset, astLength)` factory —
-  the single source of truth for AST-offset-to-source-location
-  conversion, rebasing analyzer-wrapper offsets and clamping
-  EOF-shaped diagnostics into usable spans.
-- Binary and prefix expression operators in the resolver. Equality
-  (`==`, `!=`), comparison (`<`, `<=`, `>`, `>=` on num+num or
-  String+String), short-circuit logicals (`&&`, `||`), arithmetic
-  (`+`, `-`, `*`, `/`, `%` on num), logical not (`!` on bool), and
-  unary negation (`-` on num). Out-of-domain operands surface as
-  `ResolveException` with a source-location pointer.
-- Conditional rendering. Ternary (`cond ? a : b`) as an expression
-  arm, and `if`-elements in list literals (`[if (cond) widget]`,
-  `[if (cond) a else b]`). Both short-circuit the un-taken branch,
-  so data keys that are only present in one branch don't need to
-  be defensively populated in the other.
-- Form input widget builders with two-way data binding —
+- **Binary and prefix expression operators.** Equality (`==`, `!=`),
+  comparison (`<`, `<=`, `>`, `>=` on num+num or String+String),
+  short-circuit logicals (`&&`, `||`), arithmetic (`+`, `-`, `*`,
+  `/`, `%` on num), logical not (`!` on bool), and unary negation
+  (`-` on num). Out-of-domain operands surface as `ResolveException`
+  with a source-location pointer.
+- **Conditional rendering.** Ternary (`cond ? a : b`) as an
+  expression arm, and `if`-elements in list literals
+  (`[if (cond) widget]`, `[if (cond) a else b]`). Both short-circuit
+  the un-taken branch, so data keys that are only present in one
+  branch don't need to be defensively populated in the other.
+- **Form input widget builders with two-way data binding** —
   `TextField`, `Switch`, `Checkbox`. Each accepts a `value` (from
   the host's `data` map) and an `onChanged` event name; user
   interactions dispatch the new value as a single-element args list
@@ -38,12 +28,55 @@ All notable changes to this project are documented here. Format follows
   updating state. `TextField` uses a persistent
   `TextEditingController` under the hood so external value updates
   stay cursor-safe.
+- **Source-location diagnostics.** Every `RuneException` now carries
+  an optional `SourceSpan location` (new public value class)
+  pointing to where the error originates in the Rune source.
+  `toString()` renders a caret-pointer block beneath the excerpt
+  when a location is set. Populated by parser diagnostics, every
+  resolver throw site, and bubbled builder argument failures; `null`
+  on defensive invariant checks.
+- **`SourceSpan.fromAstOffset(source, astOffset, astLength)`
+  factory** — the single source of truth for
+  AST-offset-to-source-location conversion, rebasing
+  analyzer-wrapper offsets and clamping EOF-shaped diagnostics into
+  usable spans.
+- **GitHub Actions CI workflow** running `flutter analyze` +
+  `flutter test` on push to `main` and on all PRs, across both the
+  root and sibling packages.
+- **`CONTRIBUTING.md` + GitHub issue/PR templates** establishing
+  contributor flow now that the repo is public.
 
 ### Changed
-- `RuneContext` gained a required `String source` field so resolvers
-  can compute `SourceSpan`s on demand. The test helper defaults it to
-  an empty string; production path (`RuneView` → `_buildContext`)
-  threads `widget.source` through.
+- **`RuneContext` gained a required `String source` field** so
+  resolvers can compute `SourceSpan`s on demand. Production path
+  (`RuneView` → `_buildContext`) threads `widget.source` through;
+  the test helper defaults it to an empty string. See "Breaking
+  changes" below.
+- `Registry.require`, `ConstantRegistry.require`, and
+  `ExtensionRegistry.require` each gained an optional
+  `SourceSpan? location` named parameter, threaded through to the
+  thrown exception. Backwards-compatible — existing callers without
+  location keep working.
+
+### Fixed
+- Internal code in `lib/src/builders/values/` no longer imports
+  `package:rune/rune.dart` — barrel imports are reserved for
+  external consumers, matching the unidirectional layering guarded
+  by `test/architecture/import_flow_test.dart`.
+- Root `flutter analyze` no longer crawls `packages/**` — the
+  sibling package owns its own analyze step with its own
+  `analysis_options.yaml`. Previously, CI failed on root analyze
+  because the sibling's `pub get` hadn't run before root analyze.
+
+### Breaking changes
+- **`RuneContext` constructor** now requires a `source` named
+  parameter (`String`, non-nullable). External code constructing
+  `RuneContext` directly (e.g. custom test harnesses, alternative
+  views) must supply the source string that the AST originates
+  from, or `''` if the context is used in a path where diagnostics
+  aren't needed. Callers going through `RuneView` / `RuneConfig`
+  are unaffected — the production path threads `widget.source`
+  automatically.
 
 ## [0.1.0] — 2026-04-18 — Phase 4
 
@@ -247,7 +280,8 @@ All notable changes to this project are documented here. Format follows
 - Example app at `example/lib/main.dart` demonstrating the full Phase 1
   feature set.
 
-[Unreleased]: https://github.com/CanArslanDev/rune/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/CanArslanDev/rune/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/CanArslanDev/rune/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/CanArslanDev/rune/compare/v0.0.10-phase3c...v0.1.0
 [0.0.10]: https://github.com/CanArslanDev/rune/compare/v0.0.9-phase3b...v0.0.10-phase3c
 [0.0.9]: https://github.com/CanArslanDev/rune/compare/v0.0.8-phase3a...v0.0.9-phase3b
