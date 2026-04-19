@@ -159,6 +159,52 @@ void main() {
       },
     );
 
+    test(
+      'src/builders/ root (excluding widgets/ and values/) may import '
+      'src/resolver/rune_closure.dart only. No other resolver imports.',
+      () {
+        final rootFiles = _dartFilesUnder('lib/src/builders')
+            .where(
+              (path) =>
+                  !path.contains('/builders/widgets/') &&
+                  !path.contains('/builders/values/'),
+            )
+            .toList(growable: false);
+        for (final file in rootFiles) {
+          final imports = _importsOf(file);
+          for (final imp in imports) {
+            if (imp.startsWith('package:rune/src/resolver/')) {
+              expect(
+                imp,
+                'package:rune/src/resolver/rune_closure.dart',
+                reason:
+                    'builders/ root file $file imports $imp; only '
+                    'rune_closure.dart is allowed from the resolver '
+                    'layer (shared closure value type).',
+              );
+            }
+          }
+          for (final forbidden in const [
+            'package:rune/src/parser/',
+            'package:rune/src/registry/',
+            'package:rune/src/defaults/',
+            'package:rune/src/config.dart',
+            'package:rune/src/dynamic_view.dart',
+          ]) {
+            for (final imp in imports) {
+              expect(
+                imp.contains(forbidden),
+                isFalse,
+                reason:
+                    'builders/ root file $file illegally imports "$imp" '
+                    '(forbidden substring: "$forbidden")',
+              );
+            }
+          }
+        }
+      },
+    );
+
     test('src/bridges/ only imports config (not resolver/defaults/view)', () {
       _forbid(
         'bridges',
