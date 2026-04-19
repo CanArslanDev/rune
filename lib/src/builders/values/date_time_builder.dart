@@ -2,9 +2,9 @@ import 'package:rune/src/builders/builder.dart';
 import 'package:rune/src/builders/resolved_arguments.dart';
 import 'package:rune/src/core/rune_context.dart';
 
-/// Builds a `DateTime` from Dart's positional
-/// `DateTime(year, [month, day, hour, minute, second, millisecond,
-/// microsecond])` constructor.
+/// Builds a `DateTime` from Dart's positional constructor
+/// `DateTime(year, month?, day?, hour?, minute?, second?, millisecond?,
+/// microsecond?)`.
 ///
 /// Only positional arguments are accepted: the year slot (index 0) is
 /// required; month and day default to `1`; hour, minute, second,
