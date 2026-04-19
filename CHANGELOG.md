@@ -6,7 +6,34 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [0.7.0] — 2026-04-19 — wrappers, slivers, transforms
+
 ### Added
+- **Wrapper and utility widgets** — seven everyday builders for
+  composition, visibility, and masking: `Drawer` (side menu
+  content for `Scaffold.drawer`; optional `backgroundColor`,
+  `elevation`, `width`), `SafeArea` (system-inset avoidance;
+  per-edge toggles + `minimum`/`maintainBottomViewPadding`),
+  `Visibility` (conditional render with replacement + optional
+  maintainState/Animation/Size), `Opacity` (static non-animated
+  complement to `AnimatedOpacity`), `ClipRRect` (rounded-corner
+  clip with `borderRadius` + `clipBehavior`), `ClipOval` (circular
+  clip), `Tooltip` (message + preferBelow/wait/show durations +
+  padding; `richMessage` deferred). `Clip.none/hardEdge/antiAlias/
+  antiAliasWithSaveLayer` join the constants table for the two
+  clip builders.
+- **Slivers and CustomScrollView** — compose advanced scrollable
+  layouts that plain `ListView` / `GridView` can't express.
+  `CustomScrollView` drives the `slivers` list; sliver primitives
+  include `SliverList` (children-based, closure variant deferred),
+  `SliverGrid.count` and `SliverGrid.extent` (value-builder named
+  ctors), `SliverToBoxAdapter` (wrap any non-sliver widget),
+  `SliverAppBar` (collapsing app bar with `pinned`/`floating`/
+  `snap` + `expandedHeight` + `flexibleSpace`), `SliverPadding`
+  (edge padding around a sliver), `SliverFillRemaining` (fills the
+  rest of the viewport). Closure-param sliver variants
+  (`SliverList.builder`, `SliverGrid.builder`, etc.) stay deferred
+  pending function-literal support in source.
 - **Display wrappers and programmatic transforms** — five
   display-layer widget builders and two Transform value ctors.
   `FittedBox` (scale child to fit; `fit: BoxFit`, `alignment`),
@@ -21,31 +48,6 @@ All notable changes to this project are documented here. Format follows
   `.foreground` join the constants table for DecoratedBox.
   `Transform.translate` is deferred until the Offset value
   builder lands alongside.
-- **Slivers and CustomScrollView** — compose advanced scrollable
-  layouts that plain `ListView` / `GridView` can't express.
-  `CustomScrollView` drives the `slivers` list; sliver primitives
-  include `SliverList` (children-based, closure variant deferred),
-  `SliverGrid.count` and `SliverGrid.extent` (value-builder named
-  ctors), `SliverToBoxAdapter` (wrap any non-sliver widget),
-  `SliverAppBar` (collapsing app bar with `pinned`/`floating`/
-  `snap` + `expandedHeight` + `flexibleSpace`), `SliverPadding`
-  (edge padding around a sliver), `SliverFillRemaining` (fills the
-  rest of the viewport). Closure-param sliver variants
-  (`SliverList.builder`, `SliverGrid.builder`, etc.) stay deferred
-  pending function-literal support in source.
-- **Wrapper and utility widgets** — seven everyday builders for
-  composition, visibility, and masking: `Drawer` (side menu
-  content for `Scaffold.drawer`; optional `backgroundColor`,
-  `elevation`, `width`), `SafeArea` (system-inset avoidance;
-  per-edge toggles + `minimum`/`maintainBottomViewPadding`),
-  `Visibility` (conditional render with replacement + optional
-  maintainState/Animation/Size), `Opacity` (static non-animated
-  complement to `AnimatedOpacity`), `ClipRRect` (rounded-corner
-  clip with `borderRadius` + `clipBehavior`), `ClipOval` (circular
-  clip), `Tooltip` (message + preferBelow/wait/show durations +
-  padding; `richMessage` deferred). `Clip.none/hardEdge/antiAlias/
-  antiAliasWithSaveLayer` join the constants table for the two
-  clip builders.
 
 ## [0.6.0] — 2026-04-19 — widget breadth (Material, animations, grids)
 
@@ -478,7 +480,8 @@ All notable changes to this project are documented here. Format follows
 - Example app at `example/lib/main.dart` demonstrating the full Phase 1
   feature set.
 
-[Unreleased]: https://github.com/CanArslanDev/rune/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/CanArslanDev/rune/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/CanArslanDev/rune/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/CanArslanDev/rune/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/CanArslanDev/rune/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/CanArslanDev/rune/compare/v0.3.0...v0.4.0
