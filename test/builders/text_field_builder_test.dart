@@ -243,6 +243,19 @@ void main() {
       },
     );
 
+    testWidgets('external focusNode is forwarded to the TextField',
+        (tester) async {
+      final node = FocusNode();
+      addTearDown(node.dispose);
+      final built = b.build(
+        ResolvedArguments(named: {'focusNode': node}),
+        testContext(),
+      );
+      await tester.pumpWidget(_harness(built));
+      final tf = tester.widget<TextField>(find.byType(TextField));
+      expect(identical(tf.focusNode, node), isTrue);
+    });
+
     testWidgets(
       'external controller: not disposed when the widget unmounts',
       (tester) async {

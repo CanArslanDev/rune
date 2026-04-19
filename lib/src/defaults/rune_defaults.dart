@@ -76,6 +76,9 @@ import 'package:rune/src/builders/widgets/filter_chip_builder.dart';
 import 'package:rune/src/builders/widgets/fitted_box_builder.dart';
 import 'package:rune/src/builders/widgets/flexible_builder.dart';
 import 'package:rune/src/builders/widgets/floating_action_button_builder.dart';
+import 'package:rune/src/builders/widgets/focus_builder.dart';
+import 'package:rune/src/builders/widgets/focus_scope_builder.dart';
+import 'package:rune/src/builders/widgets/form_builder.dart';
 import 'package:rune/src/builders/widgets/fractionally_sized_box_builder.dart';
 import 'package:rune/src/builders/widgets/future_builder_builder.dart';
 import 'package:rune/src/builders/widgets/gesture_detector_builder.dart';
@@ -131,6 +134,7 @@ import 'package:rune/src/builders/widgets/tab_builder.dart';
 import 'package:rune/src/builders/widgets/text_builder.dart';
 import 'package:rune/src/builders/widgets/text_button_builder.dart';
 import 'package:rune/src/builders/widgets/text_field_builder.dart';
+import 'package:rune/src/builders/widgets/text_form_field_builder.dart';
 import 'package:rune/src/builders/widgets/tooltip_builder.dart';
 import 'package:rune/src/builders/widgets/unconstrained_box_builder.dart';
 import 'package:rune/src/builders/widgets/visibility_builder.dart';
@@ -201,6 +205,11 @@ abstract final class RuneDefaults {
       ..registerBuilder(const TextFieldBuilder())
       ..registerBuilder(const SwitchBuilder())
       ..registerBuilder(const CheckboxBuilder())
+      // Form + validation + focus (v1.5.0).
+      ..registerBuilder(const FormBuilder())
+      ..registerBuilder(const TextFormFieldBuilder())
+      ..registerBuilder(const FocusBuilder())
+      ..registerBuilder(const FocusScopeBuilder())
       // Form inputs (extended).
       ..registerBuilder(const SliderBuilder())
       ..registerBuilder(const RadioBuilder())

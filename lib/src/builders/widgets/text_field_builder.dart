@@ -35,6 +35,10 @@ import 'package:rune/src/core/rune_context.dart';
 ///   in source (`maxLines: null`) enables multiline growth; the
 ///   resolved value flows through unchanged.
 /// - `enabled` (`bool`) — defaults to `true`.
+/// - `focusNode` ([FocusNode]) — an externally-owned [FocusNode],
+///   typically seeded in a `StatefulBuilder(initial: {...})` and
+///   disposed via its `dispose` closure. When absent, Flutter creates
+///   its own internal node (the historical v1.0 behavior).
 ///
 /// Internally returns a private stateful wrapper that owns a
 /// [TextEditingController] across `RuneView` rebuilds, so cursor
@@ -52,6 +56,7 @@ final class TextFieldBuilder implements RuneWidgetBuilder {
     return _RuneTextField(
       value: args.get<String>('value'),
       externalController: args.get<TextEditingController>('controller'),
+      focusNode: args.get<FocusNode>('focusNode'),
       onChangedSource: args.named['onChanged'],
       hintText: args.get<String>('hintText'),
       labelText: args.get<String>('labelText'),
@@ -69,6 +74,7 @@ class _RuneTextField extends StatefulWidget {
   const _RuneTextField({
     required this.value,
     required this.externalController,
+    required this.focusNode,
     required this.onChangedSource,
     required this.hintText,
     required this.labelText,
@@ -80,6 +86,7 @@ class _RuneTextField extends StatefulWidget {
 
   final String? value;
   final TextEditingController? externalController;
+  final FocusNode? focusNode;
   final Object? onChangedSource;
   final String? hintText;
   final String? labelText;
@@ -161,6 +168,7 @@ class _RuneTextFieldState extends State<_RuneTextField> {
   Widget build(BuildContext context) {
     return TextField(
       controller: _controller,
+      focusNode: widget.focusNode,
       obscureText: widget.obscureText,
       maxLines: widget.maxLines,
       enabled: widget.enabled,

@@ -206,6 +206,67 @@ PopupMenuItemBuilder<Object?> toPopupMenuItemBuilder(
   };
 }
 
+/// Validates a resolved `validator` argument for form-field widgets
+/// (`TextFormField`) and returns a typed [FormFieldValidator] of
+/// `String` that feeds the current field value into the underlying
+/// [RuneClosure].
+///
+/// The closure signature is `(String?) -> String?`. A non-null return
+/// value is displayed by the form field as the validation error; a
+/// `null` return signals the field is valid.
+///
+/// Returns `null` when [source] is `null`, matching Flutter's "no
+/// validator attached" semantics. Failure modes:
+///
+/// 1. [source] is not a [RuneClosure]: [ArgumentException].
+/// 2. Closure declares an arity other than 1: [ArgumentException].
+/// 3. Closure body evaluates to a non-`String`, non-`null` value at
+///    invocation time: [ResolveException].
+FormFieldValidator<String>? toValidator(Object? source, String widgetName) {
+  if (source == null) return null;
+  final closure = _requireClosure(source, widgetName, 'validator', 1);
+  return (value) {
+    final result = closure.call(<Object?>[value]);
+    if (result != null && result is! String) {
+      throw ResolveException(
+        widgetName,
+        '$widgetName.validator closure must return String? '
+        '(null = valid); got ${result.runtimeType}',
+      );
+    }
+    return result as String?;
+  };
+}
+
+/// Validates a resolved `onSaved` / `onFieldSubmitted` argument for
+/// form-field widgets and returns a nullable [ValueChanged] of
+/// `String?` that feeds the current field value into the underlying
+/// [RuneClosure].
+///
+/// The closure signature is `(String?) -> void`; any return value is
+/// discarded. Returns `null` when [source] is `null`, matching
+/// Flutter's "no handler attached" semantics.
+///
+/// Failure modes:
+///
+/// 1. [source] is not a [RuneClosure]: [ArgumentException].
+/// 2. Closure declares an arity other than 1: [ArgumentException].
+///
+/// [paramName] customizes the diagnostic text so `onSaved` and
+/// `onFieldSubmitted` produce distinct error messages when arity or
+/// runtime type is wrong.
+ValueChanged<String?>? toStringValueChanged(
+  Object? source,
+  String widgetName, {
+  required String paramName,
+}) {
+  if (source == null) return null;
+  final closure = _requireClosure(source, widgetName, paramName, 1);
+  return (value) {
+    closure.call(<Object?>[value]);
+  };
+}
+
 /// Shared guard: extracts a [RuneClosure] of arity [expectedArity] from
 /// [source], raising [ArgumentException] citing [widgetName] and
 /// [paramName] on any failure (null, wrong runtime type, wrong arity).

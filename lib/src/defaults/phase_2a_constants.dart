@@ -7,7 +7,8 @@ import 'package:rune/src/registry/constant_registry.dart';
 /// - All enum values in: `MainAxisAlignment`, `CrossAxisAlignment`,
 ///   `MainAxisSize`, `TextAlign`, `BoxFit`, `StackFit`, `Axis`,
 ///   `TextOverflow`, `BoxShape`, `FlexFit`, `WrapAlignment`,
-///   `WrapCrossAlignment`, `BottomNavigationBarType`, `Clip`.
+///   `WrapCrossAlignment`, `BottomNavigationBarType`, `Clip`,
+///   `AutovalidateMode`.
 /// - The nine aligned-singleton `Alignment` values.
 /// - The `FontWeight` weights `w100..w900`, `normal`, and `bold`.
 /// - `EdgeInsets.zero`.
@@ -48,6 +49,7 @@ void registerPhase2aConstants(ConstantRegistry registry) {
   _registerThemeMode(registry);
   _registerBrightness(registry);
   _registerMaterialTapTargetSize(registry);
+  _registerAutovalidateMode(registry);
 }
 
 // Registers every Colors member that is a concrete Color value.
@@ -347,5 +349,14 @@ void _registerBrightness(ConstantRegistry r) {
 void _registerMaterialTapTargetSize(ConstantRegistry r) {
   r.registerAll('MaterialTapTargetSize', <String, Object?>{
     for (final v in MaterialTapTargetSize.values) v.name: v,
+  });
+}
+
+// Registers AutovalidateMode enum values (disabled, always, onUnfocus,
+// onUserInteraction); consumed by `Form` and `TextFormField` as the
+// policy for when to revalidate fields automatically.
+void _registerAutovalidateMode(ConstantRegistry r) {
+  r.registerAll('AutovalidateMode', <String, Object?>{
+    for (final v in AutovalidateMode.values) v.name: v,
   });
 }

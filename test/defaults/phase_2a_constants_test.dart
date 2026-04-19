@@ -257,5 +257,26 @@ void main() {
         MaterialTapTargetSize.shrinkWrap,
       );
     });
+
+    test('seeds AutovalidateMode', () {
+      final r = ConstantRegistry();
+      registerPhase2aConstants(r);
+      expect(
+        r.resolve('AutovalidateMode', 'disabled'),
+        AutovalidateMode.disabled,
+      );
+      expect(
+        r.resolve('AutovalidateMode', 'always'),
+        AutovalidateMode.always,
+      );
+      expect(
+        r.resolve('AutovalidateMode', 'onUnfocus'),
+        AutovalidateMode.onUnfocus,
+      );
+      expect(
+        r.resolve('AutovalidateMode', 'onUserInteraction'),
+        AutovalidateMode.onUserInteraction,
+      );
+    });
   });
 }

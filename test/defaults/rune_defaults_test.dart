@@ -35,6 +35,10 @@ void main() {
         'TextField',
         'Switch',
         'Checkbox',
+        'Form',
+        'TextFormField',
+        'Focus',
+        'FocusScope',
         'Slider',
         'Radio',
         'CheckboxListTile',
@@ -174,6 +178,8 @@ void main() {
       expect(r.contains('ThemeMode', 'light'), isTrue);
       expect(r.contains('Brightness', 'dark'), isTrue);
       expect(r.contains('MaterialTapTargetSize', 'padded'), isTrue);
+      expect(r.contains('AutovalidateMode', 'always'), isTrue);
+      expect(r.contains('AutovalidateMode', 'onUserInteraction'), isTrue);
     });
 
     test('individual register* calls combined produce the full set', () {
@@ -183,7 +189,7 @@ void main() {
       RuneDefaults.registerWidgets(w);
       RuneDefaults.registerValues(v);
       RuneDefaults.registerConstants(c);
-      expect(w.size, greaterThanOrEqualTo(95));
+      expect(w.size, greaterThanOrEqualTo(99));
       expect(v.size, greaterThanOrEqualTo(41));
       expect(c.size, greaterThanOrEqualTo(54));
     });
