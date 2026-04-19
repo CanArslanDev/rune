@@ -6,6 +6,63 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-04-19 - dialogs, overlays, imperative bridges
+
+### Added
+
+- **Dialog family.** `AlertDialog`, `SimpleDialog`,
+  `SimpleDialogOption`, `Dialog` widget builders cover the standard
+  Material dialog shapes. `AlertDialog` accepts title / content /
+  actions / icon plus full theming. `SimpleDialogOption` takes
+  `onPressed` as a String event name or closure.
+- **Popup menus.** `PopupMenuButton`, `PopupMenuItem`,
+  `PopupMenuDivider`. `PopupMenuButton.itemBuilder` is a
+  `(BuildContext) -> List<PopupMenuEntry>` closure; `onSelected`
+  receives the tapped item's value through the callback dispatch
+  contract. `PopupMenuDivider` exposes `height` for now; newer
+  Flutter-only params (thickness, indent, color) are deferred
+  until the pinned-CI Flutter catches up.
+- **SnackBar value builder.** `SnackBar(content, action?,
+  duration?, backgroundColor?, behavior?)` constructs the
+  SnackBar that the `showSnackBar` imperative bridge consumes.
+  `SnackBarBehavior.fixed` / `.floating` join the constants table.
+- **Imperative bridges.** `showDialog(builder, barrierDismissible?)`,
+  `showModalBottomSheet(builder, isScrollControlled?,
+  backgroundColor?)`, `showSnackBar(snackBar)`, and
+  `Navigator.pop(result?)` are recognised at the resolver level
+  as bare-identifier invocations that route through
+  `RuneContext.flutterContext`. Each helper raises a clear
+  ResolveException when the context is null (source invoked
+  outside a live RuneView render).
+- **Closure helpers.** `toContextWidgetBuilder` and
+  `toPopupMenuItemBuilder` join `lib/src/builders/closure_builder_helpers.dart`
+  alongside the v1.2.0 builder-callback adapters.
+
+### Notes
+
+- Widget count 84 to 91; value count 34 to 35. Constants table
+  gains SnackBarBehavior.
+- About 57 new tests across the seven widget builders, the SnackBar
+  value builder, the four imperative bridges, and five integration
+  smokes (showDialog with AlertDialog, PopupMenuButton selection,
+  showSnackBar notification, showModalBottomSheet, Navigator.pop
+  from inside a dialog).
+- `BottomSheet` widget and `showMenu` imperative bridge are
+  deferred: `BottomSheet` requires `onClosing` and is better
+  expressed through `showModalBottomSheet`, and `showMenu` needs
+  custom `RelativeRect` positioning outside v1.3.0 scope.
+  `SnackBarAction` value builder deferred; `action: null` is
+  fine for this release.
+
+### Fixed
+
+- `PopupMenuDivider` narrowed to the `height` parameter only.
+  The Flutter version pinned to CI (3.24) rejects the
+  `thickness` / `indent` / `endIndent` / `color` named params.
+  Local dev Flutter accepted them, so `e652789` originally
+  landed with a version-mismatch analyzer error; `7d764c1`
+  trimmed the surface so both Flutter versions compile cleanly.
+
 ## [1.2.0] - 2026-04-19 - closure-based builder widgets
 
 ### Added
@@ -811,7 +868,8 @@ All notable changes to this project are documented here. Format follows
 - Example app at `example/lib/main.dart` demonstrating the full Phase 1
   feature set.
 
-[Unreleased]: https://github.com/CanArslanDev/rune/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/CanArslanDev/rune/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/CanArslanDev/rune/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/CanArslanDev/rune/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/CanArslanDev/rune/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/CanArslanDev/rune/compare/v0.11.0...v1.0.0
