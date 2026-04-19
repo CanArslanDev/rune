@@ -42,6 +42,9 @@ void main() {
         'Wrap',
         'AspectRatio',
         'Positioned',
+        'AnimatedContainer',
+        'AnimatedOpacity',
+        'AnimatedPositioned',
       ]) {
         expect(r.contains(name), isTrue, reason: 'missing widget $name');
       }
@@ -61,6 +64,7 @@ void main() {
         'BoxDecoration',
         'Image.network',
         'Image.asset',
+        'Duration',
       ]) {
         expect(r.contains(key), isTrue, reason: 'missing value $key');
       }
@@ -83,8 +87,8 @@ void main() {
       RuneDefaults.registerWidgets(w);
       RuneDefaults.registerValues(v);
       RuneDefaults.registerConstants(c);
-      expect(w.size, greaterThanOrEqualTo(32));
-      expect(v.size, greaterThanOrEqualTo(10));
+      expect(w.size, greaterThanOrEqualTo(35));
+      expect(v.size, greaterThanOrEqualTo(11));
       expect(c.size, greaterThanOrEqualTo(50));
     });
   });

@@ -128,5 +128,19 @@ void main() {
         WrapCrossAlignment.start,
       );
     });
+
+    test('seeds Curves', () {
+      final r = ConstantRegistry();
+      registerPhase2aConstants(r);
+      expect(r.resolve('Curves', 'linear'), same(Curves.linear));
+      expect(r.resolve('Curves', 'easeIn'), same(Curves.easeIn));
+      expect(r.resolve('Curves', 'easeOut'), same(Curves.easeOut));
+      expect(r.resolve('Curves', 'easeInOut'), same(Curves.easeInOut));
+      expect(r.resolve('Curves', 'bounceIn'), same(Curves.bounceIn));
+      expect(r.resolve('Curves', 'bounceOut'), same(Curves.bounceOut));
+      expect(r.resolve('Curves', 'elasticIn'), same(Curves.elasticIn));
+      expect(r.resolve('Curves', 'elasticOut'), same(Curves.elasticOut));
+      expect(r.resolve('Curves', 'fastOutSlowIn'), same(Curves.fastOutSlowIn));
+    });
   });
 }

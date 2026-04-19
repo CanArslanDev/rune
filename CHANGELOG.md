@@ -6,6 +6,20 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+### Added
+- **Animated widgets and Duration support** —
+  `AnimatedContainer`, `AnimatedOpacity`, and `AnimatedPositioned`
+  join the default widget registry. Each takes a required
+  `duration: Duration(...)` and an optional `curve` (defaulting to
+  `Curves.linear`); when the host rebuilds `RuneView` with new
+  values for any tweenable slot (dimensions, colour, opacity,
+  position), Flutter animates between the old and new values
+  automatically. `Duration(milliseconds: n)` is now a default value
+  builder; nine canonical `Curves.*` instances (`linear`, `easeIn`,
+  `easeOut`, `easeInOut`, `bounceIn/Out`, `elasticIn/Out`,
+  `fastOutSlowIn`) join the constants table so source can reference
+  them directly.
+
 ## [0.4.0] — 2026-04-19 — interactive + layout polish
 
 ### Added

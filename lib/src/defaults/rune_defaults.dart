@@ -1,11 +1,15 @@
 import 'package:rune/src/builders/values/border_radius_circular_builder.dart';
 import 'package:rune/src/builders/values/box_decoration_builder.dart';
 import 'package:rune/src/builders/values/color_builder.dart';
+import 'package:rune/src/builders/values/duration_builder.dart';
 import 'package:rune/src/builders/values/edge_insets_all_builder.dart';
 import 'package:rune/src/builders/values/edge_insets_ltrb_builder.dart';
 import 'package:rune/src/builders/values/edge_insets_only_builder.dart';
 import 'package:rune/src/builders/values/edge_insets_symmetric_builder.dart';
 import 'package:rune/src/builders/values/text_style_builder.dart';
+import 'package:rune/src/builders/widgets/animated_container_builder.dart';
+import 'package:rune/src/builders/widgets/animated_opacity_builder.dart';
+import 'package:rune/src/builders/widgets/animated_positioned_builder.dart';
 import 'package:rune/src/builders/widgets/app_bar_builder.dart';
 import 'package:rune/src/builders/widgets/aspect_ratio_builder.dart';
 import 'package:rune/src/builders/widgets/card_builder.dart';
@@ -115,7 +119,11 @@ abstract final class RuneDefaults {
       ..registerBuilder(const SingleChildScrollViewBuilder())
       ..registerBuilder(const WrapBuilder())
       ..registerBuilder(const AspectRatioBuilder())
-      ..registerBuilder(const PositionedBuilder());
+      ..registerBuilder(const PositionedBuilder())
+      // Animated widgets.
+      ..registerBuilder(const AnimatedContainerBuilder())
+      ..registerBuilder(const AnimatedOpacityBuilder())
+      ..registerBuilder(const AnimatedPositionedBuilder());
   }
 
   /// Registers every Phase 1–2c value builder into [registry].
@@ -130,7 +138,8 @@ abstract final class RuneDefaults {
       ..registerBuilder(const BorderRadiusCircularBuilder())
       ..registerBuilder(const BoxDecorationBuilder())
       ..registerBuilder(const ImageNetworkBuilder())
-      ..registerBuilder(const ImageAssetBuilder());
+      ..registerBuilder(const ImageAssetBuilder())
+      ..registerBuilder(const DurationBuilder());
   }
 
   /// Seeds [registry] with Phase 2a constants (Colors, enums,

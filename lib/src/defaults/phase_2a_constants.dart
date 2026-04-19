@@ -11,6 +11,10 @@ import 'package:rune/src/registry/constant_registry.dart';
 /// - The nine aligned-singleton `Alignment` values.
 /// - The `FontWeight` weights `w100..w900`, `normal`, and `bold`.
 /// - `EdgeInsets.zero`.
+/// - The nine canonical `Curves.*` static instances used by the
+///   animated widgets (`linear`, `easeIn`, `easeOut`, `easeInOut`,
+///   `bounceIn`, `bounceOut`, `elasticIn`, `elasticOut`,
+///   `fastOutSlowIn`).
 ///
 /// Calling this twice on the same registry throws `StateError` via the
 /// underlying [ConstantRegistry.register] duplicate guard.
@@ -31,6 +35,7 @@ void registerPhase2aConstants(ConstantRegistry registry) {
   _registerWrapAlignment(registry);
   _registerWrapCrossAlignment(registry);
   _registerEdgeInsetsSingletons(registry);
+  _registerCurves(registry);
 }
 
 // Registers every Colors member that is a concrete Color value.
@@ -210,4 +215,20 @@ void _registerWrapCrossAlignment(ConstantRegistry r) {
 // Registers EdgeInsets.zero singleton.
 void _registerEdgeInsetsSingletons(ConstantRegistry r) {
   r.register('EdgeInsets', 'zero', EdgeInsets.zero);
+}
+
+// Registers the nine canonical Curves.* static instances the animated
+// widget builders default to.
+void _registerCurves(ConstantRegistry r) {
+  r.registerAll('Curves', <String, Object?>{
+    'linear': Curves.linear,
+    'easeIn': Curves.easeIn,
+    'easeOut': Curves.easeOut,
+    'easeInOut': Curves.easeInOut,
+    'bounceIn': Curves.bounceIn,
+    'bounceOut': Curves.bounceOut,
+    'elasticIn': Curves.elasticIn,
+    'elasticOut': Curves.elasticOut,
+    'fastOutSlowIn': Curves.fastOutSlowIn,
+  });
 }
