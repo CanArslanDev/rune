@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:rune/src/builders/builder.dart';
+import 'package:rune/src/builders/event_callback.dart';
 import 'package:rune/src/builders/resolved_arguments.dart';
 import 'package:rune/src/core/rune_context.dart';
 
@@ -23,19 +24,16 @@ final class InkWellBuilder implements RuneWidgetBuilder {
 
   @override
   Widget build(ResolvedArguments args, RuneContext ctx) {
-    final onTapEvent = args.get<String>('onTap');
-    final onDoubleTapEvent = args.get<String>('onDoubleTap');
-    final onLongPressEvent = args.get<String>('onLongPress');
     return InkWell(
-      onTap: onTapEvent == null
-          ? null
-          : () => ctx.events.dispatch(onTapEvent),
-      onDoubleTap: onDoubleTapEvent == null
-          ? null
-          : () => ctx.events.dispatch(onDoubleTapEvent),
-      onLongPress: onLongPressEvent == null
-          ? null
-          : () => ctx.events.dispatch(onLongPressEvent),
+      onTap: voidEventCallback(args.get<String>('onTap'), ctx.events),
+      onDoubleTap: voidEventCallback(
+        args.get<String>('onDoubleTap'),
+        ctx.events,
+      ),
+      onLongPress: voidEventCallback(
+        args.get<String>('onLongPress'),
+        ctx.events,
+      ),
       borderRadius: args.get<BorderRadius>('borderRadius'),
       child: args.get<Widget>('child'),
     );

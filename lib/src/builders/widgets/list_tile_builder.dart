@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:rune/src/builders/builder.dart';
+import 'package:rune/src/builders/event_callback.dart';
 import 'package:rune/src/builders/resolved_arguments.dart';
 import 'package:rune/src/core/rune_context.dart';
 
@@ -18,13 +19,12 @@ final class ListTileBuilder implements RuneWidgetBuilder {
 
   @override
   Widget build(ResolvedArguments args, RuneContext ctx) {
-    final onTapEvent = args.get<String>('onTap');
     return ListTile(
       title: args.get<Widget>('title'),
       subtitle: args.get<Widget>('subtitle'),
       leading: args.get<Widget>('leading'),
       trailing: args.get<Widget>('trailing'),
-      onTap: onTapEvent == null ? null : () => ctx.events.dispatch(onTapEvent),
+      onTap: voidEventCallback(args.get<String>('onTap'), ctx.events),
       dense: args.get<bool>('dense'),
       enabled: args.getOr<bool>('enabled', true),
       selected: args.getOr<bool>('selected', false),

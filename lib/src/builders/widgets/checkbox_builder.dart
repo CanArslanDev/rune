@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:rune/src/builders/builder.dart';
+import 'package:rune/src/builders/event_callback.dart';
 import 'package:rune/src/builders/resolved_arguments.dart';
 import 'package:rune/src/core/rune_context.dart';
 
@@ -25,15 +26,13 @@ final class CheckboxBuilder implements RuneWidgetBuilder {
 
   @override
   Widget build(ResolvedArguments args, RuneContext ctx) {
-    final value = args.get<bool>('value');
-    final tristate = args.getOr<bool>('tristate', false);
-    final eventName = args.get<String>('onChanged');
     return Checkbox(
-      value: value,
-      tristate: tristate,
-      onChanged: eventName == null
-          ? null
-          : (next) => ctx.events.dispatch(eventName, <Object?>[next]),
+      value: args.get<bool>('value'),
+      tristate: args.getOr<bool>('tristate', false),
+      onChanged: valueEventCallback<bool?>(
+        args.get<String>('onChanged'),
+        ctx.events,
+      ),
     );
   }
 }

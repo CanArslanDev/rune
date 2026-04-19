@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:rune/src/builders/builder.dart';
+import 'package:rune/src/builders/event_callback.dart';
 import 'package:rune/src/builders/resolved_arguments.dart';
 import 'package:rune/src/core/exceptions.dart';
 import 'package:rune/src/core/rune_context.dart';
@@ -51,7 +52,6 @@ final class RadioBuilder implements RuneWidgetBuilder {
     // from the named map directly rather than through `require`.
     final value = args.named['value'];
     final groupValue = args.named['groupValue'];
-    final eventName = args.get<String>('onChanged');
     final toggleable = args.getOr<bool>('toggleable', false);
     // See class dartdoc: Rune intentionally keeps the direct
     // groupValue/onChanged contract rather than requiring a RadioGroup
@@ -64,9 +64,10 @@ final class RadioBuilder implements RuneWidgetBuilder {
       groupValue: groupValue,
       toggleable: toggleable,
       // ignore: deprecated_member_use
-      onChanged: eventName == null
-          ? null
-          : (next) => ctx.events.dispatch(eventName, <Object?>[next]),
+      onChanged: valueEventCallback<Object?>(
+        args.get<String>('onChanged'),
+        ctx.events,
+      ),
     );
   }
 }

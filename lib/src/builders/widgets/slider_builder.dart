@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:rune/src/builders/builder.dart';
+import 'package:rune/src/builders/event_callback.dart';
 import 'package:rune/src/builders/resolved_arguments.dart';
 import 'package:rune/src/core/rune_context.dart';
 
@@ -31,17 +32,16 @@ final class SliderBuilder implements RuneWidgetBuilder {
 
   @override
   Widget build(ResolvedArguments args, RuneContext ctx) {
-    final value = args.require<num>('value', source: 'Slider').toDouble();
-    final eventName = args.get<String>('onChanged');
     return Slider(
-      value: value,
+      value: args.require<num>('value', source: 'Slider').toDouble(),
       min: args.get<num>('min')?.toDouble() ?? 0.0,
       max: args.get<num>('max')?.toDouble() ?? 1.0,
       divisions: args.get<int>('divisions'),
       label: args.get<String>('label'),
-      onChanged: eventName == null
-          ? null
-          : (next) => ctx.events.dispatch(eventName, <Object?>[next]),
+      onChanged: valueEventCallback<double>(
+        args.get<String>('onChanged'),
+        ctx.events,
+      ),
     );
   }
 }

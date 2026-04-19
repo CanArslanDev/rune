@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:rune/src/builders/builder.dart';
+import 'package:rune/src/builders/event_callback.dart';
 import 'package:rune/src/builders/resolved_arguments.dart';
 import 'package:rune/src/core/rune_context.dart';
 
@@ -14,13 +15,9 @@ final class TextButtonBuilder implements RuneWidgetBuilder {
 
   @override
   Widget build(ResolvedArguments args, RuneContext ctx) {
-    final eventName = args.get<String>('onPressed');
-    final child = args.get<Widget>('child');
     return TextButton(
-      onPressed: eventName == null
-          ? null
-          : () => ctx.events.dispatch(eventName),
-      child: child ?? const SizedBox.shrink(),
+      onPressed: voidEventCallback(args.get<String>('onPressed'), ctx.events),
+      child: args.get<Widget>('child') ?? const SizedBox.shrink(),
     );
   }
 }

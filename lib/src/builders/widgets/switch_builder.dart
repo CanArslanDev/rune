@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:rune/src/builders/builder.dart';
+import 'package:rune/src/builders/event_callback.dart';
 import 'package:rune/src/builders/resolved_arguments.dart';
 import 'package:rune/src/core/rune_context.dart';
 
@@ -19,13 +20,12 @@ final class SwitchBuilder implements RuneWidgetBuilder {
 
   @override
   Widget build(ResolvedArguments args, RuneContext ctx) {
-    final value = args.getOr<bool>('value', false);
-    final eventName = args.get<String>('onChanged');
     return Switch(
-      value: value,
-      onChanged: eventName == null
-          ? null
-          : (next) => ctx.events.dispatch(eventName, <Object?>[next]),
+      value: args.getOr<bool>('value', false),
+      onChanged: valueEventCallback<bool>(
+        args.get<String>('onChanged'),
+        ctx.events,
+      ),
     );
   }
 }
