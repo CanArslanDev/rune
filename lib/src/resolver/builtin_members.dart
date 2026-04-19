@@ -26,6 +26,7 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:rune/src/core/exceptions.dart';
 import 'package:rune/src/core/rune_context.dart';
 import 'package:rune/src/core/source_span.dart';
+import 'package:rune/src/resolver/rune_closure.dart';
 
 /// Looks up [propertyName] on [target] in the built-in property whitelist.
 ///
@@ -85,7 +86,16 @@ import 'package:rune/src/core/source_span.dart';
 ///   `startsWith`, `endsWith`, `split` (1 `String` arg); `substring`
 ///   (1 or 2 `int` args); `replaceAll` (2 `String` args).
 /// - `List`: `contains`, `indexOf` (1 arg of any type); `join` (0 or 1
-///   `String` arg, default separator `''`).
+///   `String` arg, default separator `''`); `map`, `where`, `any`,
+///   `every`, `firstWhere`, `forEach` (1 closure arg of arity 1);
+///   `fold` (initial value + closure of arity 2); `reduce` (1 closure
+///   arg of arity 2). `map`, `where` return materialised `List`s
+///   (lazy `Iterable`s are not exposed). `any`, `every`, and the
+///   closures passed to `where` / `firstWhere` must return `bool`;
+///   a non-bool return raises [ResolveException]. `firstWhere`
+///   propagates Dart's own [StateError] on no-match; `reduce` does
+///   the same on an empty list. No-`orElse` variant of `firstWhere`
+///   only; the named-arg form is deferred.
 /// - `Map`: `containsKey`, `containsValue` (1 arg of any type).
 /// - `num`: `abs`, `round`, `floor`, `ceil`, `toInt`, `toDouble` (0 args).
 ///
@@ -304,6 +314,208 @@ Object? _invokeListMethod({
         'join expects 0 or 1 positional args, got ${positionalArgs.length}',
         location: locationOf(),
       );
+    case 'map':
+      _requireArity(
+        methodName: 'map',
+        expected: 1,
+        positionalArgs: positionalArgs,
+        source: source,
+        locationOf: locationOf,
+      );
+      final fn = _requireClosureArg(
+        positionalArgs: positionalArgs,
+        index: 0,
+        expectedArity: 1,
+        methodName: 'map',
+        typeName: 'List',
+        source: source,
+        locationOf: locationOf,
+      );
+      return <Object?>[for (final e in target) fn.call(<Object?>[e])];
+    case 'where':
+      _requireArity(
+        methodName: 'where',
+        expected: 1,
+        positionalArgs: positionalArgs,
+        source: source,
+        locationOf: locationOf,
+      );
+      final fn = _requireClosureArg(
+        positionalArgs: positionalArgs,
+        index: 0,
+        expectedArity: 1,
+        methodName: 'where',
+        typeName: 'List',
+        source: source,
+        locationOf: locationOf,
+      );
+      return <Object?>[
+        for (final e in target)
+          if (_requireBoolResult(
+            result: fn.call(<Object?>[e]),
+            methodName: 'where',
+            typeName: 'List',
+            source: source,
+            locationOf: locationOf,
+          ))
+            e,
+      ];
+    case 'any':
+      _requireArity(
+        methodName: 'any',
+        expected: 1,
+        positionalArgs: positionalArgs,
+        source: source,
+        locationOf: locationOf,
+      );
+      final fn = _requireClosureArg(
+        positionalArgs: positionalArgs,
+        index: 0,
+        expectedArity: 1,
+        methodName: 'any',
+        typeName: 'List',
+        source: source,
+        locationOf: locationOf,
+      );
+      for (final e in target) {
+        if (_requireBoolResult(
+          result: fn.call(<Object?>[e]),
+          methodName: 'any',
+          typeName: 'List',
+          source: source,
+          locationOf: locationOf,
+        )) {
+          return true;
+        }
+      }
+      return false;
+    case 'every':
+      _requireArity(
+        methodName: 'every',
+        expected: 1,
+        positionalArgs: positionalArgs,
+        source: source,
+        locationOf: locationOf,
+      );
+      final fn = _requireClosureArg(
+        positionalArgs: positionalArgs,
+        index: 0,
+        expectedArity: 1,
+        methodName: 'every',
+        typeName: 'List',
+        source: source,
+        locationOf: locationOf,
+      );
+      for (final e in target) {
+        if (!_requireBoolResult(
+          result: fn.call(<Object?>[e]),
+          methodName: 'every',
+          typeName: 'List',
+          source: source,
+          locationOf: locationOf,
+        )) {
+          return false;
+        }
+      }
+      return true;
+    case 'firstWhere':
+      _requireArity(
+        methodName: 'firstWhere',
+        expected: 1,
+        positionalArgs: positionalArgs,
+        source: source,
+        locationOf: locationOf,
+      );
+      final fn = _requireClosureArg(
+        positionalArgs: positionalArgs,
+        index: 0,
+        expectedArity: 1,
+        methodName: 'firstWhere',
+        typeName: 'List',
+        source: source,
+        locationOf: locationOf,
+      );
+      return target.firstWhere(
+        (e) => _requireBoolResult(
+          result: fn.call(<Object?>[e]),
+          methodName: 'firstWhere',
+          typeName: 'List',
+          source: source,
+          locationOf: locationOf,
+        ),
+      );
+    case 'forEach':
+      _requireArity(
+        methodName: 'forEach',
+        expected: 1,
+        positionalArgs: positionalArgs,
+        source: source,
+        locationOf: locationOf,
+      );
+      final fn = _requireClosureArg(
+        positionalArgs: positionalArgs,
+        index: 0,
+        expectedArity: 1,
+        methodName: 'forEach',
+        typeName: 'List',
+        source: source,
+        locationOf: locationOf,
+      );
+      for (final e in target) {
+        fn.call(<Object?>[e]);
+      }
+      return null;
+    case 'fold':
+      _requireArity(
+        methodName: 'fold',
+        expected: 2,
+        positionalArgs: positionalArgs,
+        source: source,
+        locationOf: locationOf,
+      );
+      final fn = _requireClosureArg(
+        positionalArgs: positionalArgs,
+        index: 1,
+        expectedArity: 2,
+        methodName: 'fold',
+        typeName: 'List',
+        source: source,
+        locationOf: locationOf,
+      );
+      var acc = positionalArgs[0];
+      for (final e in target) {
+        acc = fn.call(<Object?>[acc, e]);
+      }
+      return acc;
+    case 'reduce':
+      _requireArity(
+        methodName: 'reduce',
+        expected: 1,
+        positionalArgs: positionalArgs,
+        source: source,
+        locationOf: locationOf,
+      );
+      final fn = _requireClosureArg(
+        positionalArgs: positionalArgs,
+        index: 0,
+        expectedArity: 2,
+        methodName: 'reduce',
+        typeName: 'List',
+        source: source,
+        locationOf: locationOf,
+      );
+      // `target` may be a narrower runtime type (e.g. `List<int>` via
+      // covariance) whose `reduce` demands a `(E, E) => E` combiner.
+      // Our closure returns `Object?`, so we reduce manually instead of
+      // delegating, preserving Dart's empty-list StateError semantics.
+      if (target.isEmpty) {
+        throw StateError('No element');
+      }
+      var acc = target.first;
+      for (var i = 1; i < target.length; i++) {
+        acc = fn.call(<Object?>[acc, target[i]]);
+      }
+      return acc;
   }
 
   throw ResolveException(
@@ -311,6 +523,95 @@ Object? _invokeListMethod({
     'No built-in method "$methodName" on List',
     location: locationOf(),
   );
+}
+
+/// Validates arity for a positional-only method dispatch arm.
+void _requireArity({
+  required String methodName,
+  required int expected,
+  required List<Object?> positionalArgs,
+  required String source,
+  required SourceSpan Function() locationOf,
+}) {
+  if (positionalArgs.length != expected) {
+    throw ResolveException(
+      source,
+      '$methodName expects $expected positional '
+      'arg${expected == 1 ? "" : "s"}, got ${positionalArgs.length}',
+      location: locationOf(),
+    );
+  }
+}
+
+/// Extracts a [RuneClosure] from [positionalArgs] at [index], validating
+/// its presence, runtime type, and parameter arity.
+///
+/// Three failure modes; all surface as [ResolveException] with a
+/// populated [SourceSpan]:
+///
+/// 1. Missing arg: [positionalArgs] is shorter than `index + 1`.
+/// 2. Wrong runtime type: the value at [index] is not a [RuneClosure].
+/// 3. Wrong arity: the closure declares a different number of
+///    parameters than [expectedArity].
+///
+/// [typeName] is the receiver type (e.g. `List`) and [methodName] is the
+/// member name (e.g. `map`); both are used only for error messaging so
+/// the diagnostic reads `List.map expects a closure ...`.
+RuneClosure _requireClosureArg({
+  required List<Object?> positionalArgs,
+  required int index,
+  required int expectedArity,
+  required String methodName,
+  required String typeName,
+  required String source,
+  required SourceSpan Function() locationOf,
+}) {
+  if (index >= positionalArgs.length) {
+    throw ResolveException(
+      source,
+      '$typeName.$methodName expects a closure argument at position $index',
+      location: locationOf(),
+    );
+  }
+  final raw = positionalArgs[index];
+  if (raw is! RuneClosure) {
+    throw ResolveException(
+      source,
+      '$typeName.$methodName expects a closure at position $index; '
+      'got ${raw.runtimeType}',
+      location: locationOf(),
+    );
+  }
+  if (raw.parameterNames.length != expectedArity) {
+    throw ResolveException(
+      source,
+      '$typeName.$methodName closure expects $expectedArity '
+      'parameter${expectedArity == 1 ? "" : "s"}, '
+      'got ${raw.parameterNames.length}',
+      location: locationOf(),
+    );
+  }
+  return raw;
+}
+
+/// Validates that a bool-predicate closure returned a bool. Returns the
+/// coerced bool on success; raises [ResolveException] otherwise.
+bool _requireBoolResult({
+  required Object? result,
+  required String methodName,
+  required String typeName,
+  required String source,
+  required SourceSpan Function() locationOf,
+}) {
+  if (result is! bool) {
+    throw ResolveException(
+      source,
+      '$typeName.$methodName closure must return bool, '
+      'got ${result.runtimeType}',
+      location: locationOf(),
+    );
+  }
+  return result;
 }
 
 Object? _invokeMapMethod({

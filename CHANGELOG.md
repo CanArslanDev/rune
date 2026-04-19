@@ -6,6 +6,43 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+### Added
+- **Closures in source (Phase A).** Function literals written inline
+  in Rune source compile into `RuneClosure` values that capture the
+  surrounding data context and are invocable anywhere the language
+  needs a callable. Ships in three layers:
+  - **A.1, `RuneClosure` + `FunctionExpression` dispatch.** The
+    expression resolver learns to route `FunctionExpression` AST
+    nodes through a new arm that builds a `RuneClosure` capturing
+    the formal parameter names, the arrow body, and the current
+    context. Calls re-enter the resolver with an extended data
+    context binding argument values to parameter names. Arrow
+    bodies only in Phase A; block bodies (`(x) { return expr; }`)
+    remain deferred.
+  - **A.2, builder event callbacks accept closures.** The shared
+    `voidEventCallback` / `valueEventCallback` helpers accept a
+    `RuneClosure` alongside the existing named-event string. Every
+    button / switch / slider / dropdown / tab / tile builder now
+    supports both `onPressed: 'submit'` and
+    `onPressed: () => doSomething()` (plus the value-carrying
+    variants such as `onChanged: (v) => v * 2`). Closure-driven
+    callbacks re-enter the resolver on each invocation so the
+    closure body sees the latest captured data.
+  - **A.3, closure-accepting collection methods.** The
+    `invokeBuiltinMethod` whitelist gains eight new arms on
+    `List`: `map`, `where`, `any`, `every`, `firstWhere`, `forEach`
+    (1-arg closures), `fold` (initial value + 2-arg closure), and
+    `reduce` (2-arg closure). `map` and `where` return materialised
+    `List`s; `any`/`every` and the predicates in `where` /
+    `firstWhere` validate the closure's bool return; `firstWhere`
+    propagates Dart's own `StateError` on no-match; `reduce`
+    propagates `StateError` on empty input. With A.3, method
+    chaining with closures is genuinely useful in source:
+    `items.where((i) => i.active).map((i) => Text(i.title))` now
+    renders as expected. `orElse`-flavoured `firstWhere` is
+    deferred until the resolver supports named arguments on
+    runtime methods.
+
 ## [0.8.0] - 2026-04-19 - pragmatic gaps
 
 ### Added
