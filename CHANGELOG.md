@@ -6,6 +6,44 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+### Added
+- **Built-in properties on runtime values** — `.length`, `.isEmpty`,
+  `.isNotEmpty`, `.first`, `.last`, `.keys`, `.values` on the Dart
+  primitives they apply to (String, List, Map). `PropertyResolver`
+  consults the new table after the Map-key fast-path and before the
+  extension registry, so bridge-registered extensions still win on
+  custom names.
+- **Whitelisted built-in method invocation on runtime values** —
+  `toString()` on anything; `toUpperCase/toLowerCase/trim/contains/
+  startsWith/endsWith/split/substring/replaceAll` on strings;
+  `contains/indexOf/join` on lists; `containsKey/containsValue` on
+  maps; `abs/round/floor/ceil/toInt/toDouble` on num. Any other
+  (type, method) pair raises `ResolveException`. Arbitrary method
+  invocation stays forbidden — whitelist only, matching the
+  store-compliance posture.
+
+### Changed
+- `PropertyResolver` precedence is now: Map key (if present) →
+  built-in property (if the pair is recognised) → extension
+  registry. Previously a Map with an absent key returned `null`
+  silently; now if the absent key happens to match a built-in
+  property (e.g. `cart.length` on a Map with no `length` key),
+  the Map's own size is returned. Callers relying on the old
+  null-for-absent behaviour for keys that collide with built-in
+  property names should use explicit `[…]` indexing instead.
+- `IdentifierResolver.resolvePrefixed` gained the same built-in
+  awareness so `items.length` (a `PrefixedIdentifier`) behaves
+  identically to `cart.items.length` (a `PropertyAccess`) — both
+  consult the built-in table when the data value is a non-Map
+  type or when a Map lacks the requested key.
+- `InvocationResolver` now dispatches runtime method calls on
+  resolved values. When a `MethodInvocation`'s target is a
+  `SimpleIdentifier` that doesn't match a registered builder type,
+  or any non-identifier target, the resolver resolves the target,
+  then looks up `(runtimeType, methodName)` in the whitelist.
+  Builder dispatch still wins for `TypeName.ctor(...)` shapes when
+  `TypeName` is in the widget or value registry.
+
 ## [0.2.0] — 2026-04-19 — diagnostics + richer source language
 
 ### Added

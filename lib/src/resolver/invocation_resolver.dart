@@ -3,6 +3,7 @@ import 'package:rune/src/builders/resolved_arguments.dart';
 import 'package:rune/src/core/exceptions.dart';
 import 'package:rune/src/core/rune_context.dart';
 import 'package:rune/src/core/source_span.dart';
+import 'package:rune/src/resolver/builtin_members.dart';
 import 'package:rune/src/resolver/expression_resolver.dart';
 
 /// Resolves constructor-call expressions — both bare `Text('hi')` shape
@@ -36,36 +37,109 @@ final class InvocationResolver implements InvocationResolverContract {
     };
   }
 
-  /// Extracts `(typeName, constructorName?)` from a bare call-syntax node
-  /// (e.g. `Text('hi')`, `EdgeInsets.all(16)`) and dispatches to [_dispatch].
+  /// Dispatches a [MethodInvocation] to either a registered builder
+  /// (`Text('hi')`, `EdgeInsets.all(16)`) or a whitelisted runtime-value
+  /// method (`text.toUpperCase()`, `items[0].contains('a')`).
+  ///
+  /// Dispatch order:
+  ///
+  /// - `target == null` (bare `Text('hi')`): look up `methodName` as a
+  ///   widget/value builder. Unregistered → [UnregisteredBuilderException].
+  /// - `target is SimpleIdentifier`: first look up `target.name` as a
+  ///   widget or value builder (`EdgeInsets.all(16)` shape); only if
+  ///   neither registry holds that name do we fall through to runtime
+  ///   method dispatch. This preserves every existing builder-call
+  ///   behaviour.
+  /// - any other target shape (`PropertyAccess`, `IndexExpression`,
+  ///   `ParenthesizedExpression`, chained `MethodInvocation`, etc.): go
+  ///   straight to runtime method dispatch on the resolved target.
+  ///
+  /// Runtime method dispatch resolves the target via the expression
+  /// resolver — any [BindingException] for an absent data identifier
+  /// bubbles naturally, which is the correct diagnostic for
+  /// `someThing.foo()` where `someThing` is neither a builder nor a
+  /// data key.
   Object? _resolveMethodInvocation(MethodInvocation node, RuneContext ctx) {
-    final String typeName;
-    final String? constructorName;
     final target = node.target;
+
     if (target == null) {
       // Bare `Text('hi')`.
-      typeName = node.methodName.name;
-      constructorName = null;
-    } else if (target is SimpleIdentifier) {
-      // Bare `EdgeInsets.all(16)`.
-      typeName = target.name;
-      constructorName = node.methodName.name;
-    } else {
-      throw ResolveException(
-        node.toSource(),
-        'Unsupported MethodInvocation target shape: '
-        '${target.runtimeType}',
+      return _dispatch(
+        typeName: node.methodName.name,
+        constructorName: null,
+        argumentList: node.argumentList,
+        ctx: ctx,
+        source: node.toSource(),
         location:
             SourceSpan.fromAstOffset(ctx.source, node.offset, node.length),
       );
     }
-    return _dispatch(
-      typeName: typeName,
-      constructorName: constructorName,
-      argumentList: node.argumentList,
+
+    if (target is SimpleIdentifier) {
+      // Either `EdgeInsets.all(16)` (builder) or `text.toUpperCase()`
+      // (runtime method on a data identifier). Builder registries win.
+      final typeName = target.name;
+      final constructorName = node.methodName.name;
+      final widgetBuilder = ctx.widgets.find(typeName);
+      if (widgetBuilder != null) {
+        final args = _resolveArguments(node.argumentList, ctx);
+        return _runBuilder(
+          () => widgetBuilder.build(args, ctx),
+          invocationLocation:
+              SourceSpan.fromAstOffset(ctx.source, node.offset, node.length),
+        );
+      }
+      final valueBuilder = ctx.values.findValue(
+        typeName,
+        constructorName: constructorName,
+      );
+      if (valueBuilder != null) {
+        final args = _resolveArguments(node.argumentList, ctx);
+        return _runBuilder(
+          () => valueBuilder.build(args, ctx),
+          invocationLocation:
+              SourceSpan.fromAstOffset(ctx.source, node.offset, node.length),
+        );
+      }
+      // Neither widget nor value builder — fall through to runtime
+      // method dispatch on the resolved identifier.
+      return _dispatchRuntimeMethod(node: node, ctx: ctx);
+    }
+
+    // Any other expression target — PropertyAccess, IndexExpression,
+    // ParenthesizedExpression, chained MethodInvocation, etc. — goes
+    // directly to runtime method dispatch.
+    return _dispatchRuntimeMethod(node: node, ctx: ctx);
+  }
+
+  /// Resolves a runtime method call on a non-builder target.
+  ///
+  /// Resolves the receiver via the injected expression resolver, then
+  /// dispatches to [invokeBuiltinMethod] with the resolved positional
+  /// and named arguments. Any failure (arity mismatch, type mismatch,
+  /// unknown method, named args) raises [ResolveException] with a
+  /// source-span pointer.
+  Object? _dispatchRuntimeMethod({
+    required MethodInvocation node,
+    required RuneContext ctx,
+  }) {
+    final receiver = _expr.resolve(node.target!, ctx);
+    final positional = <Object?>[];
+    final named = <String, Object?>{};
+    for (final arg in node.argumentList.arguments) {
+      if (arg is NamedExpression) {
+        named[arg.name.label.name] = _expr.resolve(arg.expression, ctx);
+      } else {
+        positional.add(_expr.resolve(arg, ctx));
+      }
+    }
+    return invokeBuiltinMethod(
+      target: receiver,
+      methodName: node.methodName.name,
+      positionalArgs: positional,
+      namedArgs: named,
+      sourceNode: node,
       ctx: ctx,
-      source: node.toSource(),
-      location: SourceSpan.fromAstOffset(ctx.source, node.offset, node.length),
     );
   }
 

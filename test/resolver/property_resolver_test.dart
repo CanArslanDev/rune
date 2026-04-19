@@ -143,6 +143,92 @@ void main() {
     });
   });
 
+  group('PropertyResolver — built-in properties', () {
+    test("literal 'hello'.length → 5 (direct PropertyAccess)", () {
+      final exprResolver = buildExprResolver();
+      final resolver = PropertyResolver(exprResolver);
+      final ctx = testContext();
+      final node = parser.parse("'hello'.length") as PropertyAccess;
+      expect(resolver.resolve(node, ctx), 5);
+    });
+
+    test('deep map with absent "length" key falls through to built-in size',
+        () {
+      // Semantic change documented in the CHANGELOG: a Map without an
+      // explicit "length" key now reports its size rather than null.
+      // `cart.items.length` — cart resolves to a Map, then .items resolves
+      // to a Map (no "length" key) → built-in Map.length fires.
+      final exprResolver = buildExprResolver();
+      final resolver = PropertyResolver(exprResolver);
+      final ctx = testContext(
+        data: RuneDataContext(const {
+          'cart': {
+            'items': {'a': 1, 'b': 2, 'c': 3},
+          },
+        }),
+      );
+      final node = parser.parse('cart.items.length') as PropertyAccess;
+      expect(resolver.resolve(node, ctx), 3);
+    });
+
+    test('map-wins-over-built-in: explicit "length" key returns map value',
+        () {
+      final exprResolver = buildExprResolver();
+      final resolver = PropertyResolver(exprResolver);
+      final ctx = testContext(
+        data: RuneDataContext(const {
+          'cart': {
+            'items': {'length': 99, 'actual': 'ignored'},
+          },
+        }),
+      );
+      final node = parser.parse('cart.items.length') as PropertyAccess;
+      expect(
+        resolver.resolve(node, ctx),
+        99,
+        reason: 'map key "length" must win over the built-in Map.length',
+      );
+    });
+
+    test('List.length via deep data path', () {
+      final exprResolver = buildExprResolver();
+      final resolver = PropertyResolver(exprResolver);
+      final ctx = testContext(
+        data: RuneDataContext(const {
+          'cart': {
+            'items': [1, 2, 3, 4],
+          },
+        }),
+      );
+      final node = parser.parse('cart.items.length') as PropertyAccess;
+      expect(resolver.resolve(node, ctx), 4);
+    });
+
+    test('bridge-registered extension name still wins when not a built-in',
+        () {
+      // `.doubled` is not a built-in, so the extension handler must fire.
+      final exprResolver = buildExprResolver();
+      final resolver = PropertyResolver(exprResolver);
+      final extensions = ExtensionRegistry()
+        ..register('doubled', (t, c) => (t! as num) * 2);
+      final ctx = testContext(extensions: extensions);
+      final node = parser.parse('(7).doubled') as PropertyAccess;
+      expect(resolver.resolve(node, ctx), 14);
+    });
+
+    test('built-in wins over an extension with the same name on same type',
+        () {
+      // Document the precedence: built-in props fire before extensions.
+      final exprResolver = buildExprResolver();
+      final resolver = PropertyResolver(exprResolver);
+      final extensions = ExtensionRegistry()
+        ..register('length', (t, c) => -1);
+      final ctx = testContext(extensions: extensions);
+      final node = parser.parse("'abc'.length") as PropertyAccess;
+      expect(resolver.resolve(node, ctx), 3);
+    });
+  });
+
   group('PropertyResolver — ResolveException.location threading', () {
     test(
       'unknown extension property populates location with line/excerpt',

@@ -52,6 +52,8 @@ typedef _Pipeline = ({
 _Pipeline _buildPipeline({
   List<RuneWidgetBuilder> widgets = const [],
   List<RuneValueBuilder> values = const [],
+  Map<String, Object?> data = const <String, Object?>{},
+  String source = '',
 }) {
   final wr = WidgetRegistry();
   for (final b in widgets) {
@@ -61,10 +63,17 @@ _Pipeline _buildPipeline({
   for (final b in values) {
     vr.registerBuilder(b);
   }
-  final ctx = testContext(widgets: wr, values: vr);
+  final ctx = testContext(
+    widgets: wr,
+    values: vr,
+    data: RuneDataContext(data),
+    source: source,
+  );
   final expr = ExpressionResolver(LiteralResolver(), IdentifierResolver());
   final inv = InvocationResolver(expr);
-  expr.bind(inv);
+  expr
+    ..bind(inv)
+    ..bindProperty(PropertyResolver(expr));
   return (expr: expr, inv: inv, ctx: ctx);
 }
 
@@ -135,18 +144,20 @@ void main() {
     });
 
     test(
-      'unsupported MethodInvocation target shape raises ResolveException',
+      'non-SimpleIdentifier target is resolved then dispatched as a '
+      'runtime method',
       () {
+        // `a.b.c()` — target is `a.b` (PrefixedIdentifier). Now that the
+        // resolver accepts any target shape and routes to runtime
+        // method dispatch, the receiver is resolved first. Here `a` is
+        // neither in data nor in the constants registry, so the
+        // identifier resolver raises a `ResolveException` for the
+        // unknown constant. This is the correct, more-specific
+        // diagnostic than the previous "unsupported target shape" guard.
         final p = _buildPipeline();
-        // `a.b.c()` — target is a PrefixedIdentifier, not SimpleIdentifier.
         expect(
           () => p.expr.resolve(parser.parse('a.b.c()'), p.ctx),
-          throwsA(isA<ResolveException>()
-              .having(
-                (e) => e.message,
-                'message',
-                contains('MethodInvocation target'),
-              ),),
+          throwsA(isA<ResolveException>()),
         );
       },
     );
@@ -182,6 +193,123 @@ void main() {
         );
       },
     );
+  });
+
+  group('InvocationResolver — runtime method dispatch', () {
+    test("text.toUpperCase() on data identifier → 'HI'", () {
+      final p = _buildPipeline(data: const {'text': 'hi'});
+      final out = p.expr.resolve(parser.parse('text.toUpperCase()'), p.ctx);
+      expect(out, 'HI');
+    });
+
+    test("chained: name.trim().toUpperCase() → 'ALI'", () {
+      final p = _buildPipeline(data: const {'name': '  ali  '});
+      final out = p.expr.resolve(
+        parser.parse('name.trim().toUpperCase()'),
+        p.ctx,
+      );
+      expect(out, 'ALI');
+    });
+
+    test("deep path target: cart.items.join(',') → 'a,b,c'", () {
+      final p = _buildPipeline(
+        data: const {
+          'cart': {
+            'items': ['a', 'b', 'c'],
+          },
+        },
+      );
+      final out =
+          p.expr.resolve(parser.parse("cart.items.join(',')"), p.ctx);
+      expect(out, 'a,b,c');
+    });
+
+    test("IndexExpression target: items[0].toUpperCase() → 'FIRST'", () {
+      final p = _buildPipeline(
+        data: const {
+          'items': ['first', 'second'],
+        },
+      );
+      final out =
+          p.expr.resolve(parser.parse('items[0].toUpperCase()'), p.ctx);
+      expect(out, 'FIRST');
+    });
+
+    test('builder-vs-runtime tie-break: EdgeInsets.all(16) → builder', () {
+      // Regression: even after the runtime-method path is added, a
+      // registered value builder `EdgeInsets.all` must still win.
+      final b = _RecordingValue('EdgeInsets', 'all', 'RESULT');
+      final p = _buildPipeline(values: [b]);
+      final out = p.expr.resolve(parser.parse('EdgeInsets.all(16)'), p.ctx);
+      expect(out, 'RESULT');
+      expect(b.lastArgs?.positional, [16]);
+    });
+
+    test('text.toUpperCase() when text is absent → BindingException', () {
+      final p = _buildPipeline();
+      expect(
+        () => p.expr.resolve(parser.parse('text.toUpperCase()'), p.ctx),
+        throwsA(isA<BindingException>()
+            .having((e) => e.message, 'message', contains('text')),),
+      );
+    });
+
+    test(
+      'NonRegistered.foo() where neither builder nor data → '
+      'BindingException',
+      () {
+        final p = _buildPipeline();
+        // The runtime-method path resolves the target (SimpleIdentifier
+        // `NonRegistered`) which isn't in data — BindingException is the
+        // specific diagnostic.
+        expect(
+          () => p.expr.resolve(parser.parse('NonRegistered.foo()'), p.ctx),
+          throwsA(isA<BindingException>()),
+        );
+      },
+    );
+
+    test('unknown runtime method on known target → ResolveException', () {
+      final p = _buildPipeline(data: const {'text': 'hello'});
+      expect(
+        () => p.expr.resolve(parser.parse('text.banana()'), p.ctx),
+        throwsA(
+          isA<ResolveException>()
+              .having((e) => e.message, 'message', contains('banana')),
+        ),
+      );
+    });
+
+    test('runtime method carries SourceSpan location on failure', () {
+      const src = 'Column(\n  children: [text.banana()],\n)';
+      final p = _buildPipeline(
+        widgets: [_RecordingWidget('Column')],
+        data: const {'text': 'hello'},
+        source: src,
+      );
+      try {
+        p.expr.resolve(parser.parse(src), p.ctx);
+        fail('expected ResolveException');
+      } on ResolveException catch (err) {
+        expect(err.location, isNotNull);
+        expect(err.location!.line, 2);
+        expect(err.location!.excerpt, contains('text.banana()'));
+      }
+    });
+
+    test('named arg on runtime method → ResolveException', () {
+      final p = _buildPipeline(data: const {'text': 'banana'});
+      expect(
+        () => p.expr.resolve(
+          parser.parse("text.contains(needle: 'a')"),
+          p.ctx,
+        ),
+        throwsA(
+          isA<ResolveException>()
+              .having((e) => e.message, 'message', contains('named')),
+        ),
+      );
+    });
   });
 
   group('InvocationResolver — exception.location threading', () {
