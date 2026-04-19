@@ -1,6 +1,7 @@
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:rune/src/core/exceptions.dart';
 import 'package:rune/src/core/rune_context.dart';
+import 'package:rune/src/core/rune_state.dart';
 import 'package:rune/src/core/source_span.dart';
 import 'package:rune/src/resolver/builtin_members.dart';
 
@@ -80,6 +81,15 @@ final class IdentifierResolver {
         if (hit) return value;
         // Preserve legacy absent-key → null semantics for Maps when the
         // member is neither a key nor a built-in.
+        return null;
+      }
+
+      // RuneState: mirror the Map branch — entry-present wins,
+      // absent falls through to null to match Map semantics.
+      if (holder is RuneState) {
+        if (holder.has(memberName)) {
+          return holder.get(memberName);
+        }
         return null;
       }
 

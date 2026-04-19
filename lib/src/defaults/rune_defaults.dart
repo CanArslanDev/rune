@@ -89,6 +89,7 @@ import 'package:rune/src/builders/widgets/sliver_padding_builder.dart';
 import 'package:rune/src/builders/widgets/sliver_to_box_adapter_builder.dart';
 import 'package:rune/src/builders/widgets/spacer_builder.dart';
 import 'package:rune/src/builders/widgets/stack_builder.dart';
+import 'package:rune/src/builders/widgets/stateful_builder_builder.dart';
 import 'package:rune/src/builders/widgets/switch_builder.dart';
 import 'package:rune/src/builders/widgets/switch_list_tile_builder.dart';
 import 'package:rune/src/builders/widgets/tab_bar_builder.dart';
@@ -231,7 +232,9 @@ abstract final class RuneDefaults {
       ..registerBuilder(const ConstrainedBoxBuilder())
       ..registerBuilder(const LimitedBoxBuilder())
       ..registerBuilder(const UnconstrainedBoxBuilder())
-      ..registerBuilder(const FractionallySizedBoxBuilder());
+      ..registerBuilder(const FractionallySizedBoxBuilder())
+      // Stateful source.
+      ..registerBuilder(const StatefulBuilderBuilder());
   }
 
   /// Registers every Phase 1–2c value builder into [registry].

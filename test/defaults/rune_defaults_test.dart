@@ -88,6 +88,7 @@ void main() {
         'LimitedBox',
         'UnconstrainedBox',
         'FractionallySizedBox',
+        'StatefulBuilder',
       ]) {
         expect(r.contains(name), isTrue, reason: 'missing widget $name');
       }
@@ -143,7 +144,7 @@ void main() {
       RuneDefaults.registerWidgets(w);
       RuneDefaults.registerValues(v);
       RuneDefaults.registerConstants(c);
-      expect(w.size, greaterThanOrEqualTo(78));
+      expect(w.size, greaterThanOrEqualTo(79));
       expect(v.size, greaterThanOrEqualTo(24));
       expect(c.size, greaterThanOrEqualTo(50));
     });

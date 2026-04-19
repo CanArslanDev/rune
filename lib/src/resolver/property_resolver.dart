@@ -1,5 +1,6 @@
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:rune/src/core/rune_context.dart';
+import 'package:rune/src/core/rune_state.dart';
 import 'package:rune/src/core/source_span.dart';
 import 'package:rune/src/resolver/builtin_members.dart';
 import 'package:rune/src/resolver/expression_resolver.dart';
@@ -48,6 +49,12 @@ final class PropertyResolver {
       return target[propName];
     }
 
+    // 1b. RuneState with a matching entry — source-level state access
+    // goes through the same data-first path as Map targets.
+    if (target is RuneState && target.has(propName)) {
+      return target.get(propName);
+    }
+
     // 2. Built-in property on String / List / Map / etc.
     final (hit, value) = resolveBuiltinProperty(target, propName);
     if (hit) return value;
@@ -57,6 +64,13 @@ final class PropertyResolver {
     // extension miss. A Map's shape says "arbitrary key space", so an
     // unknown member is data-absent rather than a missing extension.
     if (target is Map<String, Object?>) {
+      return null;
+    }
+
+    // 3b. Same legacy absent-key → null for RuneState: the source wrote
+    // `state.something` where `something` is neither a set entry nor a
+    // recognized RuneState member.
+    if (target is RuneState) {
       return null;
     }
 

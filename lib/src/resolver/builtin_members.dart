@@ -25,6 +25,7 @@ library;
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:rune/src/core/exceptions.dart';
 import 'package:rune/src/core/rune_context.dart';
+import 'package:rune/src/core/rune_state.dart';
 import 'package:rune/src/core/source_span.dart';
 import 'package:rune/src/resolver/rune_closure.dart';
 
@@ -181,10 +182,94 @@ Object? invokeBuiltinMethod({
       locationOf: locationOf,
     );
   }
+  if (target is RuneState) {
+    return _invokeRuneStateMethod(
+      target: target,
+      methodName: methodName,
+      positionalArgs: positionalArgs,
+      source: source,
+      locationOf: locationOf,
+    );
+  }
 
   throw ResolveException(
     source,
     'No built-in method "$methodName" on ${target.runtimeType}',
+    location: locationOf(),
+  );
+}
+
+Object? _invokeRuneStateMethod({
+  required RuneState target,
+  required String methodName,
+  required List<Object?> positionalArgs,
+  required String source,
+  required SourceSpan Function() locationOf,
+}) {
+  void requireArity(int expected) {
+    if (positionalArgs.length != expected) {
+      throw ResolveException(
+        source,
+        '$methodName expects $expected positional '
+        'arg${expected == 1 ? "" : "s"}, got ${positionalArgs.length}',
+        location: locationOf(),
+      );
+    }
+  }
+
+  String requireStringKey(int index) {
+    final v = positionalArgs[index];
+    if (v is! String) {
+      throw ResolveException(
+        source,
+        '$methodName expects a String key at position $index, '
+        'got ${v.runtimeType}',
+        location: locationOf(),
+      );
+    }
+    return v;
+  }
+
+  switch (methodName) {
+    case 'get':
+      requireArity(1);
+      return target.get(requireStringKey(0));
+    case 'has':
+      requireArity(1);
+      return target.has(requireStringKey(0));
+    case 'set':
+      requireArity(2);
+      target.set(requireStringKey(0), positionalArgs[1]);
+      return null;
+    case 'setMany':
+      requireArity(1);
+      final additions = positionalArgs[0];
+      if (additions is! Map<Object?, Object?>) {
+        throw ResolveException(
+          source,
+          'setMany expects a Map<String, Object?> at position 0, '
+          'got ${additions.runtimeType}',
+          location: locationOf(),
+        );
+      }
+      target.setMany(
+        additions.map<String, Object?>(
+          (k, v) => MapEntry(k.toString(), v),
+        ),
+      );
+      return null;
+    case 'remove':
+      requireArity(1);
+      return target.remove(requireStringKey(0));
+    case 'clear':
+      requireArity(0);
+      target.clear();
+      return null;
+  }
+
+  throw ResolveException(
+    source,
+    'No built-in method "$methodName" on RuneState',
     location: locationOf(),
   );
 }
