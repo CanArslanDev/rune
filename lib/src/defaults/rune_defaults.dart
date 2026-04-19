@@ -13,10 +13,13 @@ import 'package:rune/src/builders/widgets/animated_opacity_builder.dart';
 import 'package:rune/src/builders/widgets/animated_positioned_builder.dart';
 import 'package:rune/src/builders/widgets/app_bar_builder.dart';
 import 'package:rune/src/builders/widgets/aspect_ratio_builder.dart';
+import 'package:rune/src/builders/widgets/badge_builder.dart';
 import 'package:rune/src/builders/widgets/bottom_navigation_bar_builder.dart';
 import 'package:rune/src/builders/widgets/card_builder.dart';
 import 'package:rune/src/builders/widgets/center_builder.dart';
 import 'package:rune/src/builders/widgets/checkbox_builder.dart';
+import 'package:rune/src/builders/widgets/chip_builder.dart';
+import 'package:rune/src/builders/widgets/circular_progress_indicator_builder.dart';
 import 'package:rune/src/builders/widgets/column_builder.dart';
 import 'package:rune/src/builders/widgets/container_builder.dart';
 import 'package:rune/src/builders/widgets/divider_builder.dart';
@@ -25,12 +28,14 @@ import 'package:rune/src/builders/widgets/dropdown_menu_item_builder.dart';
 import 'package:rune/src/builders/widgets/elevated_button_builder.dart';
 import 'package:rune/src/builders/widgets/expanded_builder.dart';
 import 'package:rune/src/builders/widgets/flexible_builder.dart';
+import 'package:rune/src/builders/widgets/floating_action_button_builder.dart';
 import 'package:rune/src/builders/widgets/gesture_detector_builder.dart';
 import 'package:rune/src/builders/widgets/icon_builder.dart';
 import 'package:rune/src/builders/widgets/icon_button_builder.dart';
 import 'package:rune/src/builders/widgets/image_asset_builder.dart';
 import 'package:rune/src/builders/widgets/image_network_builder.dart';
 import 'package:rune/src/builders/widgets/ink_well_builder.dart';
+import 'package:rune/src/builders/widgets/linear_progress_indicator_builder.dart';
 import 'package:rune/src/builders/widgets/list_tile_builder.dart';
 import 'package:rune/src/builders/widgets/list_view_builder.dart';
 import 'package:rune/src/builders/widgets/padding_builder.dart';
@@ -136,7 +141,13 @@ abstract final class RuneDefaults {
       ..registerBuilder(const TabBuilder())
       // Dropdown.
       ..registerBuilder(const DropdownButtonBuilder())
-      ..registerBuilder(const DropdownMenuItemBuilder());
+      ..registerBuilder(const DropdownMenuItemBuilder())
+      // Material widgets — misc.
+      ..registerBuilder(const FloatingActionButtonBuilder())
+      ..registerBuilder(const ChipBuilder())
+      ..registerBuilder(const BadgeBuilder())
+      ..registerBuilder(const CircularProgressIndicatorBuilder())
+      ..registerBuilder(const LinearProgressIndicatorBuilder());
   }
 
   /// Registers every Phase 1–2c value builder into [registry].

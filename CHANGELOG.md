@@ -6,6 +6,16 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+### Added
+- **Material widget breadth** — five more everyday builders.
+  `FloatingActionButton` (onPressed event, optional child/tooltip/
+  colors/mini), `Chip` (required label, optional avatar, onDeleted
+  event, colors/style), `Badge` (wraps a child with an optional
+  label overlay; supports backgroundColor/textColor/smallSize/
+  largeSize/isLabelVisible), `CircularProgressIndicator` and
+  `LinearProgressIndicator` (both indeterminate by default, set
+  `value: 0.0-1.0` for determinate).
+
 ## [0.5.0] — 2026-04-19 — animations + navigation + dropdown
 
 ### Added

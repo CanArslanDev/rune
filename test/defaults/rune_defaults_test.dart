@@ -50,6 +50,11 @@ void main() {
         'Tab',
         'DropdownButton',
         'DropdownMenuItem',
+        'FloatingActionButton',
+        'Chip',
+        'Badge',
+        'CircularProgressIndicator',
+        'LinearProgressIndicator',
       ]) {
         expect(r.contains(name), isTrue, reason: 'missing widget $name');
       }
@@ -93,7 +98,7 @@ void main() {
       RuneDefaults.registerWidgets(w);
       RuneDefaults.registerValues(v);
       RuneDefaults.registerConstants(c);
-      expect(w.size, greaterThanOrEqualTo(40));
+      expect(w.size, greaterThanOrEqualTo(45));
       expect(v.size, greaterThanOrEqualTo(12));
       expect(c.size, greaterThanOrEqualTo(50));
     });
