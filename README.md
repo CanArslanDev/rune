@@ -113,6 +113,8 @@ Current release: **`v0.1.0`** (first minor — Phase 1 through Phase 4 shipped).
 | Collections           | `[for (final item in items) Text(item.title)]` — data-driven widget lists, nested for-elements, static + for elements interleaved                                                                            |
 | Events                | `ElevatedButton(onPressed: 'submit', ...)` → `RuneView.onEvent('submit', [])`                                                                                                                                |
 | Property extensions   | `10.w`, `size.half` — via `RuneBridge` packages registering handlers                                                                                                                                         |
+| Operators             | `==` `!=` `<` `<=` `>` `>=` on num+num or String+String; `&&` `\|\|` (short-circuit); `+` `-` `*` `/` `%` on num; `!` on bool; unary `-` on num                                                              |
+| Conditionals          | Ternary `cond ? a : b`; list-literal `[if (cond) widget]` / `[if (cond) a else b]` — both short-circuit the un-taken branch                                                                                  |
 
 Anything outside this surface raises a `RuneException` (parse, resolve, or unregistered-builder variant). The plans in `docs/superpowers/plans/` enumerate the phases that built this set.
 

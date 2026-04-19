@@ -56,15 +56,17 @@ final class ExpressionResolver {
   /// before [PrefixedIdentifier] so receiver-style property access on
   /// non-identifier targets (e.g. `10.px`, `(5).doubled`) routes through
   /// the extension registry. [PrefixedIdentifier] must be tested before
-  /// [SimpleIdentifier] because it extends it. [BinaryExpression] and
-  /// [PrefixExpression] are plain [Expression] siblings and are placed
-  /// between [IndexExpression] and [Literal] purely for readability.
+  /// [SimpleIdentifier] because it extends it. [BinaryExpression],
+  /// [PrefixExpression], and [ConditionalExpression] are plain
+  /// [Expression] siblings and are placed between [IndexExpression] and
+  /// [Literal] purely for readability.
   Object? resolve(Expression expr, RuneContext ctx) {
     return switch (expr) {
       StringInterpolation() => _resolveInterpolation(expr, ctx),
       ListLiteral() => _resolveList(expr, ctx),
       SetOrMapLiteral() => _resolveSetOrMap(expr, ctx),
       IndexExpression() => _resolveIndex(expr, ctx),
+      ConditionalExpression() => _resolveConditional(expr, ctx),
       BinaryExpression() => _resolveBinary(expr, ctx),
       PrefixExpression() => _resolvePrefix(expr, ctx),
       Literal() => _literal.resolve(expr),
@@ -129,12 +131,48 @@ final class ExpressionResolver {
       _collectForElement(element, result, ctx);
       return;
     }
+    if (element is IfElement) {
+      _collectIfElement(element, result, ctx);
+      return;
+    }
     throw ResolveException(
       element.toSource(),
       'Unsupported list element: ${element.runtimeType}',
       location:
           SourceSpan.fromAstOffset(ctx.source, element.offset, element.length),
     );
+  }
+
+  void _collectIfElement(
+    IfElement node,
+    List<Object?> result,
+    RuneContext ctx,
+  ) {
+    if (node.caseClause != null) {
+      throw ResolveException(
+        node.toSource(),
+        'if-case patterns are not supported in list literals',
+        location:
+            SourceSpan.fromAstOffset(ctx.source, node.offset, node.length),
+      );
+    }
+    final cond = resolve(node.expression, ctx);
+    if (cond is! bool) {
+      throw ResolveException(
+        node.toSource(),
+        'if-element condition must be bool, got ${cond.runtimeType}',
+        location:
+            SourceSpan.fromAstOffset(ctx.source, node.offset, node.length),
+      );
+    }
+    if (cond) {
+      _collectListElement(node.thenElement, result, ctx);
+    } else {
+      final elseEl = node.elseElement;
+      if (elseEl != null) {
+        _collectListElement(elseEl, result, ctx);
+      }
+    }
   }
 
   void _collectForElement(
@@ -396,6 +434,26 @@ final class ExpressionResolver {
               SourceSpan.fromAstOffset(ctx.source, node.offset, node.length),
         ),
     };
+  }
+
+  /// Evaluates a [ConditionalExpression] — the ternary `cond ? a : b`.
+  ///
+  /// Short-circuits the un-taken branch: only the branch selected by the
+  /// condition is resolved. This preserves patterns like
+  /// `isLoggedIn ? user.name : 'Guest'`, where `user` may be absent from
+  /// data when `isLoggedIn` is `false`.
+  Object? _resolveConditional(ConditionalExpression node, RuneContext ctx) {
+    final cond = resolve(node.condition, ctx);
+    if (cond is! bool) {
+      throw ResolveException(
+        node.toSource(),
+        'Conditional expression condition must be bool, got '
+        '${cond.runtimeType}',
+        location:
+            SourceSpan.fromAstOffset(ctx.source, node.offset, node.length),
+      );
+    }
+    return resolve(cond ? node.thenExpression : node.elseExpression, ctx);
   }
 
   PropertyResolver _requireProperty() {

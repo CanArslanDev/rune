@@ -19,6 +19,17 @@ All notable changes to this project are documented here. Format follows
   the single source of truth for AST-offset-to-source-location
   conversion, rebasing analyzer-wrapper offsets and clamping
   EOF-shaped diagnostics into usable spans.
+- Binary and prefix expression operators in the resolver. Equality
+  (`==`, `!=`), comparison (`<`, `<=`, `>`, `>=` on num+num or
+  String+String), short-circuit logicals (`&&`, `||`), arithmetic
+  (`+`, `-`, `*`, `/`, `%` on num), logical not (`!` on bool), and
+  unary negation (`-` on num). Out-of-domain operands surface as
+  `ResolveException` with a source-location pointer.
+- Conditional rendering. Ternary (`cond ? a : b`) as an expression
+  arm, and `if`-elements in list literals (`[if (cond) widget]`,
+  `[if (cond) a else b]`). Both short-circuit the un-taken branch,
+  so data keys that are only present in one branch don't need to
+  be defensively populated in the other.
 
 ### Changed
 - `RuneContext` gained a required `String source` field so resolvers

@@ -548,4 +548,198 @@ void main() {
       }
     });
   });
+
+  group('conditional expression (ternary)', () {
+    test('true branch wins', () {
+      final r = makeResolver();
+      expect(
+        r.resolve(parser.parse("true ? 'a' : 'b'"), testContext()),
+        'a',
+      );
+    });
+
+    test('false branch wins', () {
+      final r = makeResolver();
+      expect(
+        r.resolve(parser.parse("false ? 'a' : 'b'"), testContext()),
+        'b',
+      );
+    });
+
+    test('un-taken branch is not evaluated', () {
+      final r = makeResolver();
+      // `missingKey` is absent from the data context; evaluating it would
+      // raise BindingException. Short-circuit guarantees it isn't.
+      expect(
+        r.resolve(parser.parse('true ? 1 : missingKey'), testContext()),
+        1,
+      );
+      expect(
+        r.resolve(parser.parse('false ? missingKey : 2'), testContext()),
+        2,
+      );
+    });
+
+    test('non-bool condition throws ResolveException with location', () {
+      final r = makeResolver();
+      const source = "'x' ? 1 : 2";
+      final ctx = testContext(source: source);
+      try {
+        r.resolve(parser.parse(source), ctx);
+        fail('expected ResolveException');
+      } on ResolveException catch (e) {
+        expect(e.message, contains('bool'));
+        expect(e.location, isNotNull);
+      }
+    });
+
+    test('nested ternary resolves correctly', () {
+      final r = makeResolver();
+      final ctx = testContext(
+        data: RuneDataContext(const {'a': 2, 'b': 2}),
+      );
+      expect(
+        r.resolve(
+          parser.parse("a > b ? 'big' : (a == b ? 'eq' : 'small')"),
+          ctx,
+        ),
+        'eq',
+      );
+    });
+  });
+
+  group('if-element in list literals', () {
+    test('present when condition is true', () {
+      final r = makeResolver();
+      expect(
+        r.resolve(parser.parse("[if (true) 'x']"), testContext()),
+        ['x'],
+      );
+    });
+
+    test('absent when condition is false with no else', () {
+      final r = makeResolver();
+      expect(
+        r.resolve(parser.parse("[if (false) 'x']"), testContext()),
+        <Object?>[],
+      );
+    });
+
+    test('else branch renders when condition is false', () {
+      final r = makeResolver();
+      expect(
+        r.resolve(parser.parse("[if (false) 'a' else 'b']"), testContext()),
+        ['b'],
+      );
+    });
+
+    test('un-taken branch is not evaluated', () {
+      final r = makeResolver();
+      // `missingKey` is absent from data. If the false branch evaluated
+      // it, BindingException would escape. Passing proves short-circuit.
+      expect(
+        r.resolve(
+          parser.parse("[if (false) missingKey else 'safe']"),
+          testContext(),
+        ),
+        ['safe'],
+      );
+    });
+
+    test('interleaves with static and for-elements', () {
+      final r = makeResolver();
+      final ctx = testContext(
+        data: RuneDataContext(const {
+          'guard': true,
+          'xs': [2, 3],
+        }),
+      );
+      expect(
+        r.resolve(
+          parser.parse('[0, if (guard) 1, for (final x in xs) x]'),
+          ctx,
+        ),
+        [0, 1, 2, 3],
+      );
+    });
+
+    test('nested if-elements compose', () {
+      final r = makeResolver();
+      final ctx = testContext(
+        data: RuneDataContext(const {'outer': true, 'inner': true}),
+      );
+      expect(
+        r.resolve(
+          parser.parse("[if (outer) if (inner) 'a']"),
+          ctx,
+        ),
+        ['a'],
+      );
+      final ctx2 = testContext(
+        data: RuneDataContext(const {'outer': true, 'inner': false}),
+      );
+      expect(
+        r.resolve(
+          parser.parse("[if (outer) if (inner) 'a']"),
+          ctx2,
+        ),
+        <Object?>[],
+      );
+      final ctx3 = testContext(
+        data: RuneDataContext(const {'outer': false, 'inner': true}),
+      );
+      expect(
+        r.resolve(
+          parser.parse("[if (outer) if (inner) 'a']"),
+          ctx3,
+        ),
+        <Object?>[],
+      );
+    });
+  });
+
+  group('location threading on conditionals', () {
+    test('multi-line ternary non-bool condition reports correct line', () {
+      final r = makeResolver();
+      const source = "[\n  'a',\n  'x' ? 1 : 2,\n]";
+      final ctx = testContext(source: source);
+      try {
+        r.resolve(parser.parse(source), ctx);
+        fail('expected ResolveException');
+      } on ResolveException catch (e) {
+        expect(e.location, isNotNull);
+        expect(e.location!.line, 3);
+      }
+    });
+
+    test('multi-line if-element non-bool condition reports correct line', () {
+      final r = makeResolver();
+      const source = "[\n  'header',\n  if ('x') 'y',\n]";
+      final ctx = testContext(source: source);
+      try {
+        r.resolve(parser.parse(source), ctx);
+        fail('expected ResolveException');
+      } on ResolveException catch (e) {
+        expect(e.location, isNotNull);
+        expect(e.location!.line, 3);
+      }
+    });
+  });
+
+  group('if-case pattern is out of scope', () {
+    test('if-case pattern throws ResolveException mentioning if-case', () {
+      final r = makeResolver();
+      const source = "[if (x case 1) 'yes']";
+      final ctx = testContext(
+        data: RuneDataContext(const {'x': 1}),
+        source: source,
+      );
+      try {
+        r.resolve(parser.parse(source), ctx);
+        fail('expected ResolveException');
+      } on ResolveException catch (e) {
+        expect(e.message, contains('if-case'));
+      }
+    });
+  });
 }
