@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:rune/src/binding/rune_data_context.dart';
 import 'package:rune/src/binding/rune_event_dispatcher.dart';
 import 'package:rune/src/core/rune_context.dart';
+import 'package:rune/src/registry/component_registry.dart';
 import 'package:rune/src/registry/constant_registry.dart';
 import 'package:rune/src/registry/extension_registry.dart';
 import 'package:rune/src/registry/value_registry.dart';
@@ -25,6 +26,7 @@ void main() {
         events: events,
         constants: constants,
         extensions: ExtensionRegistry(),
+        components: ComponentRegistry(),
         source: '',
       );
       expect(ctx.widgets, same(widgets));
@@ -43,6 +45,7 @@ void main() {
         events: RuneEventDispatcher(),
         constants: ConstantRegistry(),
         extensions: ExtensionRegistry(),
+        components: ComponentRegistry(),
         source: '',
       );
       final newData = RuneDataContext(const {'k': 'v'});
@@ -62,6 +65,7 @@ void main() {
         events: RuneEventDispatcher(),
         constants: ConstantRegistry(),
         extensions: ExtensionRegistry(),
+        components: ComponentRegistry(),
         source: '',
       );
       final copy = ctx.copyWith();
@@ -94,6 +98,7 @@ void main() {
         events: RuneEventDispatcher(),
         constants: ConstantRegistry(),
         extensions: ExtensionRegistry(),
+        components: ComponentRegistry(),
         source: '',
         flutterContext: captured,
       );
@@ -110,6 +115,7 @@ void main() {
         events: RuneEventDispatcher(),
         constants: constants,
         extensions: ExtensionRegistry(),
+        components: ComponentRegistry(),
         source: '',
       );
       expect(ctx.constants, same(constants));
@@ -125,6 +131,7 @@ void main() {
         events: RuneEventDispatcher(),
         constants: originalConstants,
         extensions: ExtensionRegistry(),
+        components: ComponentRegistry(),
         source: '',
       );
       expect(ctx.copyWith().constants, same(originalConstants));
@@ -143,6 +150,7 @@ void main() {
         events: RuneEventDispatcher(),
         constants: ConstantRegistry(),
         extensions: extensions,
+        components: ComponentRegistry(),
         source: '',
       );
       expect(ctx.extensions, same(extensions));
@@ -158,6 +166,7 @@ void main() {
         events: RuneEventDispatcher(),
         constants: ConstantRegistry(),
         extensions: original,
+        components: ComponentRegistry(),
         source: '',
       );
       expect(ctx.copyWith().extensions, same(original));
@@ -177,6 +186,7 @@ void main() {
         events: RuneEventDispatcher(),
         constants: ConstantRegistry(),
         extensions: ExtensionRegistry(),
+        components: ComponentRegistry(),
         source: 'Text("hi")',
       );
       expect(ctx.source, 'Text("hi")');
@@ -190,6 +200,7 @@ void main() {
         events: RuneEventDispatcher(),
         constants: ConstantRegistry(),
         extensions: ExtensionRegistry(),
+        components: ComponentRegistry(),
         source: 'a',
       );
       final copy = ctx.copyWith(source: 'b');
@@ -211,6 +222,7 @@ void main() {
         events: RuneEventDispatcher(),
         constants: ConstantRegistry(),
         extensions: ExtensionRegistry(),
+        components: ComponentRegistry(),
         source: 'original',
       );
       final copy = ctx.copyWith(
@@ -227,6 +239,7 @@ void main() {
         events: RuneEventDispatcher(),
         constants: ConstantRegistry(),
         extensions: ExtensionRegistry(),
+        components: ComponentRegistry(),
         source: '',
       );
       expect(ctx.source, '');

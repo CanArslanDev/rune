@@ -99,6 +99,7 @@ void main() {
         events: RuneEventDispatcher(),
         constants: config.constants,
         extensions: config.extensions,
+        components: ComponentRegistry(),
         source: '',
       );
       expect(
@@ -122,6 +123,7 @@ void main() {
         events: RuneEventDispatcher(),
         constants: config.constants,
         extensions: config.extensions,
+        components: ComponentRegistry(),
         source: '',
       );
       expect(

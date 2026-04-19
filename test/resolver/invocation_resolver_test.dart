@@ -4,6 +4,7 @@ import 'package:rune/src/binding/rune_data_context.dart';
 import 'package:rune/src/builders/builder.dart';
 import 'package:rune/src/builders/resolved_arguments.dart';
 import 'package:rune/src/core/exceptions.dart';
+import 'package:rune/src/core/rune_component.dart';
 import 'package:rune/src/core/rune_context.dart';
 import 'package:rune/src/core/rune_state.dart';
 import 'package:rune/src/parser/dart_parser.dart';
@@ -665,6 +666,174 @@ void _setStateTests() {
           ),
         ),
       );
+    });
+  });
+
+  group('InvocationResolver: component dispatch (Phase F)', () {
+    RuneComponent recordingComponent({
+      required String name,
+      required List<Object?> callLog,
+      List<String> paramNames = const [],
+    }) {
+      return RuneComponent(
+        name: name,
+        parameterNames: paramNames,
+        body: (args) {
+          callLog.add(List<Object?>.from(args));
+          return 'built:$name';
+        },
+      );
+    }
+
+    test('bare Foo(...) dispatches to a registered component', () {
+      final calls = <Object?>[];
+      final p = _buildPipeline();
+      p.ctx.components.register(
+        recordingComponent(
+          name: 'MyButton',
+          paramNames: const ['label'],
+          callLog: calls,
+        ),
+      );
+      final out = p.expr.resolve(
+        parser.parse("MyButton(label: 'Go')"),
+        p.ctx,
+      );
+      expect(out, 'built:MyButton');
+      expect(calls, [
+        ['Go'],
+      ]);
+    });
+
+    test('component dispatch precedes the widget registry on name collision',
+        () {
+      // A widget builder named "Text" is registered (standard). A
+      // component with the same name is ALSO registered; the component
+      // must win.
+      final widgetCalls = _RecordingWidget('Text');
+      final componentCalls = <Object?>[];
+      final p = _buildPipeline(widgets: [widgetCalls]);
+      p.ctx.components.register(
+        recordingComponent(
+          name: 'Text',
+          paramNames: const ['value'],
+          callLog: componentCalls,
+        ),
+      );
+      final out = p.expr.resolve(parser.parse("Text(value: 'hi')"), p.ctx);
+      expect(out, 'built:Text');
+      expect(componentCalls, [
+        ['hi'],
+      ]);
+      expect(
+        widgetCalls.lastArgs,
+        isNull,
+        reason: 'the widget Text builder must not run when a '
+            'same-named component is registered',
+      );
+    });
+
+    test('component call missing a declared named arg raises ResolveException',
+        () {
+      final calls = <Object?>[];
+      final p = _buildPipeline();
+      p.ctx.components.register(
+        recordingComponent(
+          name: 'MyButton',
+          paramNames: const ['label', 'onTap'],
+          callLog: calls,
+        ),
+      );
+      expect(
+        () => p.expr.resolve(parser.parse("MyButton(label: 'Go')"), p.ctx),
+        throwsA(
+          isA<ResolveException>().having(
+            (e) => e.message,
+            'message',
+            contains('missing required argument "onTap"'),
+          ),
+        ),
+      );
+      expect(calls, isEmpty);
+    });
+
+    test('component call with an extra named arg raises ResolveException', () {
+      final calls = <Object?>[];
+      final p = _buildPipeline();
+      p.ctx.components.register(
+        recordingComponent(
+          name: 'MyButton',
+          paramNames: const ['label'],
+          callLog: calls,
+        ),
+      );
+      expect(
+        () => p.expr.resolve(
+          parser.parse("MyButton(label: 'Go', nope: 1)"),
+          p.ctx,
+        ),
+        throwsA(
+          isA<ResolveException>().having(
+            (e) => e.message,
+            'message',
+            contains('does not declare parameter "nope"'),
+          ),
+        ),
+      );
+      expect(calls, isEmpty);
+    });
+
+    test('component call with a positional arg raises ResolveException', () {
+      final calls = <Object?>[];
+      final p = _buildPipeline();
+      p.ctx.components.register(
+        recordingComponent(
+          name: 'MyButton',
+          paramNames: const ['label'],
+          callLog: calls,
+        ),
+      );
+      expect(
+        () => p.expr.resolve(
+          parser.parse("MyButton('Go')"),
+          p.ctx,
+        ),
+        throwsA(
+          isA<ResolveException>().having(
+            (e) => e.message,
+            'message',
+            contains('only named arguments'),
+          ),
+        ),
+      );
+      expect(calls, isEmpty);
+    });
+
+    test('component called with a named constructor raises ResolveException',
+        () {
+      final calls = <Object?>[];
+      final p = _buildPipeline();
+      p.ctx.components.register(
+        recordingComponent(
+          name: 'MyButton',
+          paramNames: const ['label'],
+          callLog: calls,
+        ),
+      );
+      expect(
+        () => p.expr.resolve(
+          parser.parse("MyButton.fancy(label: 'Go')"),
+          p.ctx,
+        ),
+        throwsA(
+          isA<ResolveException>().having(
+            (e) => e.message,
+            'message',
+            contains('does not accept a named constructor'),
+          ),
+        ),
+      );
+      expect(calls, isEmpty);
     });
   });
 }

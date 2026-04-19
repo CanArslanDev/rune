@@ -13,6 +13,7 @@ import 'package:rune/src/builders/values/grid_view_extent_builder.dart';
 import 'package:rune/src/builders/values/navigation_destination_builder.dart';
 import 'package:rune/src/builders/values/navigation_rail_destination_builder.dart';
 import 'package:rune/src/builders/values/offset_builder.dart';
+import 'package:rune/src/builders/values/rune_component_builder.dart';
 import 'package:rune/src/builders/values/sliver_grid_count_builder.dart';
 import 'package:rune/src/builders/values/sliver_grid_extent_builder.dart';
 import 'package:rune/src/builders/values/text_style_builder.dart';
@@ -76,6 +77,7 @@ import 'package:rune/src/builders/widgets/positioned_builder.dart';
 import 'package:rune/src/builders/widgets/radio_builder.dart';
 import 'package:rune/src/builders/widgets/radio_list_tile_builder.dart';
 import 'package:rune/src/builders/widgets/row_builder.dart';
+import 'package:rune/src/builders/widgets/rune_compose_builder.dart';
 import 'package:rune/src/builders/widgets/safe_area_builder.dart';
 import 'package:rune/src/builders/widgets/scaffold_builder.dart';
 import 'package:rune/src/builders/widgets/semantics_builder.dart';
@@ -234,7 +236,9 @@ abstract final class RuneDefaults {
       ..registerBuilder(const UnconstrainedBoxBuilder())
       ..registerBuilder(const FractionallySizedBoxBuilder())
       // Stateful source.
-      ..registerBuilder(const StatefulBuilderBuilder());
+      ..registerBuilder(const StatefulBuilderBuilder())
+      // Components (Phase F).
+      ..registerBuilder(const RuneComposeBuilder());
   }
 
   /// Registers every Phase 1–2c value builder into [registry].
@@ -268,7 +272,9 @@ abstract final class RuneDefaults {
       ..registerBuilder(const TransformScaleBuilder())
       ..registerBuilder(const TransformRotateBuilder())
       ..registerBuilder(const TransformTranslateBuilder())
-      ..registerBuilder(const TransformFlipBuilder());
+      ..registerBuilder(const TransformFlipBuilder())
+      // Components (Phase F).
+      ..registerBuilder(const RuneComponentBuilder());
   }
 
   /// Seeds [registry] with Phase 2a constants (Colors, enums,

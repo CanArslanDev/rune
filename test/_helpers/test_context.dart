@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:rune/src/binding/rune_data_context.dart';
 import 'package:rune/src/binding/rune_event_dispatcher.dart';
 import 'package:rune/src/core/rune_context.dart';
+import 'package:rune/src/registry/component_registry.dart';
 import 'package:rune/src/registry/constant_registry.dart';
 import 'package:rune/src/registry/extension_registry.dart';
 import 'package:rune/src/registry/value_registry.dart';
@@ -19,6 +20,7 @@ RuneContext testContext({
   RuneEventDispatcher? events,
   ConstantRegistry? constants,
   ExtensionRegistry? extensions,
+  ComponentRegistry? components,
   String source = '',
   BuildContext? flutterContext,
 }) {
@@ -29,6 +31,7 @@ RuneContext testContext({
     events: events ?? RuneEventDispatcher(),
     constants: constants ?? ConstantRegistry(),
     extensions: extensions ?? ExtensionRegistry(),
+    components: components ?? ComponentRegistry(),
     source: source,
     flutterContext: flutterContext,
   );

@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:rune/src/binding/rune_data_context.dart';
 import 'package:rune/src/binding/rune_event_dispatcher.dart';
 import 'package:rune/src/core/rune_scope.dart';
+import 'package:rune/src/registry/component_registry.dart';
 import 'package:rune/src/registry/constant_registry.dart';
 import 'package:rune/src/registry/extension_registry.dart';
 import 'package:rune/src/registry/value_registry.dart';
@@ -36,6 +37,7 @@ final class RuneContext {
     required this.events,
     required this.constants,
     required this.extensions,
+    required this.components,
     required this.source,
     this.flutterContext,
     this.scope,
@@ -64,6 +66,15 @@ final class RuneContext {
   /// consulted by `PropertyResolver` when evaluating `PropertyAccess`
   /// expressions like `10.w`.
   final ExtensionRegistry extensions;
+
+  /// Registry of named Rune components declared in the current source.
+  ///
+  /// Consulted by `InvocationResolver` ahead of the widget/value
+  /// registries so a source-declared component (`RuneComponent(name:
+  /// 'Foo', ...)`) shadows any default builder of the same name.
+  /// Each `RuneView` render allocates a fresh [ComponentRegistry];
+  /// components are not global.
+  final ComponentRegistry components;
 
   /// The original Rune source string. Threaded through so resolvers can
   /// compute `SourceSpan` pointers from AST node offsets when raising
@@ -101,6 +112,7 @@ final class RuneContext {
     RuneEventDispatcher? events,
     ConstantRegistry? constants,
     ExtensionRegistry? extensions,
+    ComponentRegistry? components,
     String? source,
     BuildContext? flutterContext,
     RuneScope? scope,
@@ -112,6 +124,7 @@ final class RuneContext {
       events: events ?? this.events,
       constants: constants ?? this.constants,
       extensions: extensions ?? this.extensions,
+      components: components ?? this.components,
       source: source ?? this.source,
       flutterContext: flutterContext ?? this.flutterContext,
       scope: scope ?? this.scope,

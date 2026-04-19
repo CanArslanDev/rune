@@ -89,6 +89,7 @@ void main() {
         'UnconstrainedBox',
         'FractionallySizedBox',
         'StatefulBuilder',
+        'RuneCompose',
       ]) {
         expect(r.contains(name), isTrue, reason: 'missing widget $name');
       }
@@ -122,6 +123,7 @@ void main() {
         'Transform.translate',
         'Transform.flip',
         'BoxConstraints',
+        'RuneComponent',
       ]) {
         expect(r.contains(key), isTrue, reason: 'missing value $key');
       }
@@ -144,8 +146,8 @@ void main() {
       RuneDefaults.registerWidgets(w);
       RuneDefaults.registerValues(v);
       RuneDefaults.registerConstants(c);
-      expect(w.size, greaterThanOrEqualTo(79));
-      expect(v.size, greaterThanOrEqualTo(24));
+      expect(w.size, greaterThanOrEqualTo(80));
+      expect(v.size, greaterThanOrEqualTo(25));
       expect(c.size, greaterThanOrEqualTo(50));
     });
   });

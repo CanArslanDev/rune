@@ -12,11 +12,13 @@ export 'src/builders/builder.dart'
 export 'src/builders/resolved_arguments.dart' show ResolvedArguments;
 export 'src/config.dart' show RuneConfig;
 export 'src/core/exceptions.dart';
+export 'src/core/rune_component.dart' show RuneComponent;
 export 'src/core/rune_context.dart' show RuneContext;
 export 'src/core/source_span.dart' show SourceSpan;
 export 'src/defaults/rune_defaults.dart' show RuneDefaults;
 export 'src/dev/rune_dev_overlay.dart' show RuneDevOverlay;
 export 'src/dynamic_view.dart' show RuneView;
+export 'src/registry/component_registry.dart' show ComponentRegistry;
 export 'src/registry/constant_registry.dart' show ConstantRegistry;
 export 'src/registry/extension_registry.dart'
     show ExtensionRegistry, RuneExtensionHandler;

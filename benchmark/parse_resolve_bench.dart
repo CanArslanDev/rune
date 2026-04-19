@@ -83,6 +83,7 @@ void main() {
     events: RuneEventDispatcher(),
     constants: config.constants,
     extensions: config.extensions,
+    components: ComponentRegistry(),
     source: _canonicalSource,
   );
 

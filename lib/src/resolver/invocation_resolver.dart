@@ -1,6 +1,7 @@
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:rune/src/builders/resolved_arguments.dart';
 import 'package:rune/src/core/exceptions.dart';
+import 'package:rune/src/core/rune_component.dart';
 import 'package:rune/src/core/rune_context.dart';
 import 'package:rune/src/core/source_span.dart';
 import 'package:rune/src/resolver/builtin_members.dart';
@@ -89,6 +90,21 @@ final class InvocationResolver implements InvocationResolverContract {
       // (runtime method on a data identifier). Builder registries win.
       final typeName = target.name;
       final constructorName = node.methodName.name;
+      // Phase F: a source-declared component with the same name as
+      // `typeName` takes priority. Named-constructor shape is invalid
+      // on a component call, so we raise ResolveException here (a
+      // targeted diagnostic beats the silent fallthrough to runtime
+      // method dispatch that would otherwise happen).
+      final component = ctx.components.find(typeName);
+      if (component != null) {
+        throw ResolveException(
+          node.toSource(),
+          'Component $typeName does not accept a named constructor '
+          '(got $typeName.$constructorName)',
+          location:
+              SourceSpan.fromAstOffset(ctx.source, node.offset, node.length),
+        );
+      }
       final widgetBuilder = ctx.widgets.find(typeName);
       if (widgetBuilder != null) {
         final args = _resolveArguments(node.argumentList, ctx);
@@ -246,6 +262,20 @@ final class InvocationResolver implements InvocationResolverContract {
     required String source,
     required SourceSpan location,
   }) {
+    // Phase F: source-declared components win over every built-in
+    // registry so a `RuneComponent(name: 'Text', ...)` declaration can
+    // shadow the default Text widget builder.
+    final component = ctx.components.find(typeName);
+    if (component != null) {
+      return _invokeComponent(
+        component: component,
+        constructorName: constructorName,
+        argumentList: argumentList,
+        ctx: ctx,
+        source: source,
+        location: location,
+      );
+    }
     final widgetBuilder = ctx.widgets.find(typeName);
     if (widgetBuilder != null) {
       final args = _resolveArguments(argumentList, ctx);
@@ -294,6 +324,70 @@ final class InvocationResolver implements InvocationResolverContract {
         location: invocationLocation,
       );
     }
+  }
+
+  /// Invokes a Phase-F source-declared [component] with the call's
+  /// named arguments.
+  ///
+  /// Components accept named arguments only; positional calls and
+  /// named-constructor shapes raise [ResolveException]. The call's
+  /// named arguments are resolved against the enclosing context, then
+  /// reordered into positional values in the order declared by
+  /// [RuneComponent.parameterNames] before being passed to
+  /// [RuneComponent.body]. Missing or extra names raise
+  /// [ResolveException] with a diagnostic message pointing at the
+  /// call site.
+  Object? _invokeComponent({
+    required RuneComponent component,
+    required String? constructorName,
+    required ArgumentList argumentList,
+    required RuneContext ctx,
+    required String source,
+    required SourceSpan location,
+  }) {
+    if (constructorName != null) {
+      throw ResolveException(
+        source,
+        'Component ${component.name} does not accept a named '
+        'constructor (got ${component.name}.$constructorName)',
+        location: location,
+      );
+    }
+    final named = <String, Object?>{};
+    for (final arg in argumentList.arguments) {
+      if (arg is! NamedExpression) {
+        throw ResolveException(
+          source,
+          'Component ${component.name} accepts only named arguments; '
+          'got a positional argument',
+          location: location,
+        );
+      }
+      named[arg.name.label.name] = _expr.resolve(arg.expression, ctx);
+    }
+    for (final name in named.keys) {
+      if (!component.parameterNames.contains(name)) {
+        throw ResolveException(
+          source,
+          'Component ${component.name} does not declare parameter '
+          '"$name" (declared: ${component.parameterNames.join(', ')})',
+          location: location,
+        );
+      }
+    }
+    final positional = <Object?>[];
+    for (final paramName in component.parameterNames) {
+      if (!named.containsKey(paramName)) {
+        throw ResolveException(
+          source,
+          'Component ${component.name} missing required argument '
+          '"$paramName"',
+          location: location,
+        );
+      }
+      positional.add(named[paramName]);
+    }
+    return component.body(positional);
   }
 
   ResolvedArguments _resolveArguments(ArgumentList list, RuneContext ctx) {
