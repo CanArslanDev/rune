@@ -6,6 +6,8 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-04-19 - source-level state and setState sugar
+
 ### Added
 
 - **Source-level state via StatefulBuilder and RuneState (Phase C
@@ -660,7 +662,8 @@ All notable changes to this project are documented here. Format follows
 - Example app at `example/lib/main.dart` demonstrating the full Phase 1
   feature set.
 
-[Unreleased]: https://github.com/CanArslanDev/rune/compare/v0.10.0...HEAD
+[Unreleased]: https://github.com/CanArslanDev/rune/compare/v0.11.0...HEAD
+[0.11.0]: https://github.com/CanArslanDev/rune/compare/v0.10.0...v0.11.0
 [0.10.0]: https://github.com/CanArslanDev/rune/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/CanArslanDev/rune/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/CanArslanDev/rune/compare/v0.7.0...v0.8.0
