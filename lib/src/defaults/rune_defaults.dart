@@ -9,6 +9,7 @@ import 'package:rune/src/builders/values/text_style_builder.dart';
 import 'package:rune/src/builders/widgets/app_bar_builder.dart';
 import 'package:rune/src/builders/widgets/card_builder.dart';
 import 'package:rune/src/builders/widgets/center_builder.dart';
+import 'package:rune/src/builders/widgets/checkbox_builder.dart';
 import 'package:rune/src/builders/widgets/column_builder.dart';
 import 'package:rune/src/builders/widgets/container_builder.dart';
 import 'package:rune/src/builders/widgets/elevated_button_builder.dart';
@@ -24,8 +25,10 @@ import 'package:rune/src/builders/widgets/row_builder.dart';
 import 'package:rune/src/builders/widgets/scaffold_builder.dart';
 import 'package:rune/src/builders/widgets/sized_box_builder.dart';
 import 'package:rune/src/builders/widgets/stack_builder.dart';
+import 'package:rune/src/builders/widgets/switch_builder.dart';
 import 'package:rune/src/builders/widgets/text_builder.dart';
 import 'package:rune/src/builders/widgets/text_button_builder.dart';
+import 'package:rune/src/builders/widgets/text_field_builder.dart';
 import 'package:rune/src/config.dart';
 import 'package:rune/src/defaults/phase_2a_constants.dart';
 import 'package:rune/src/defaults/phase_2c_icons.dart';
@@ -82,7 +85,11 @@ abstract final class RuneDefaults {
       // Phase 2d
       ..registerBuilder(const ElevatedButtonBuilder())
       ..registerBuilder(const TextButtonBuilder())
-      ..registerBuilder(const IconButtonBuilder());
+      ..registerBuilder(const IconButtonBuilder())
+      // C.2: form inputs
+      ..registerBuilder(const TextFieldBuilder())
+      ..registerBuilder(const SwitchBuilder())
+      ..registerBuilder(const CheckboxBuilder());
   }
 
   /// Registers every Phase 1–2c value builder into [registry].

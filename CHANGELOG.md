@@ -30,6 +30,14 @@ All notable changes to this project are documented here. Format follows
   `[if (cond) a else b]`). Both short-circuit the un-taken branch,
   so data keys that are only present in one branch don't need to
   be defensively populated in the other.
+- Form input widget builders with two-way data binding —
+  `TextField`, `Switch`, `Checkbox`. Each accepts a `value` (from
+  the host's `data` map) and an `onChanged` event name; user
+  interactions dispatch the new value as a single-element args list
+  through `RuneView.onEvent`, leaving the host responsible for
+  updating state. `TextField` uses a persistent
+  `TextEditingController` under the hood so external value updates
+  stay cursor-safe.
 
 ### Changed
 - `RuneContext` gained a required `String source` field so resolvers
