@@ -45,6 +45,9 @@ void registerPhase2aConstants(ConstantRegistry registry) {
   _registerConnectionState(registry);
   _registerOrientation(registry);
   _registerSnackBarBehavior(registry);
+  _registerThemeMode(registry);
+  _registerBrightness(registry);
+  _registerMaterialTapTargetSize(registry);
 }
 
 // Registers every Colors member that is a concrete Color value.
@@ -319,5 +322,30 @@ void _registerOrientation(ConstantRegistry r) {
 void _registerSnackBarBehavior(ConstantRegistry r) {
   r.registerAll('SnackBarBehavior', <String, Object?>{
     for (final v in SnackBarBehavior.values) v.name: v,
+  });
+}
+
+// Registers ThemeMode enum values (system, light, dark); used by source
+// that wants to express a top-level theme selection.
+void _registerThemeMode(ConstantRegistry r) {
+  r.registerAll('ThemeMode', <String, Object?>{
+    for (final v in ThemeMode.values) v.name: v,
+  });
+}
+
+// Registers Brightness enum values (light, dark); consumed by ThemeData
+// and ColorScheme.fromSeed's `brightness:` argument.
+void _registerBrightness(ConstantRegistry r) {
+  r.registerAll('Brightness', <String, Object?>{
+    for (final v in Brightness.values) v.name: v,
+  });
+}
+
+// Registers MaterialTapTargetSize enum values (padded, shrinkWrap);
+// consumed by ThemeData's `materialTapTargetSize:` and several Material
+// widgets that expose the same slot.
+void _registerMaterialTapTargetSize(ConstantRegistry r) {
+  r.registerAll('MaterialTapTargetSize', <String, Object?>{
+    for (final v in MaterialTapTargetSize.values) v.name: v,
   });
 }

@@ -50,6 +50,25 @@ import 'package:rune/src/resolver/rune_closure.dart';
 ///   `connectionState`
 /// - `BoxConstraints`: `maxWidth`, `minWidth`, `maxHeight`, `minHeight`,
 ///   `biggest`, `smallest`
+/// - `ThemeData` (v1.4.0): `colorScheme`, `textTheme`, `brightness`,
+///   `primaryColor`, `useMaterial3`, `scaffoldBackgroundColor`,
+///   `cardColor`, `dividerColor`
+/// - `ColorScheme` (v1.4.0): `primary`, `onPrimary`, `primaryContainer`,
+///   `onPrimaryContainer`, `secondary`, `onSecondary`,
+///   `secondaryContainer`, `onSecondaryContainer`, `tertiary`,
+///   `onTertiary`, `error`, `onError`, `surface`, `onSurface`,
+///   `surfaceContainerHighest`, `outline`, `shadow`, `inverseSurface`,
+///   `brightness`
+/// - `TextTheme` (v1.4.0): `displayLarge`..`displaySmall`,
+///   `headlineLarge`..`headlineSmall`, `titleLarge`..`titleSmall`,
+///   `bodyLarge`..`bodySmall`, `labelLarge`..`labelSmall`
+/// - `MediaQueryData` (v1.4.0): `size`, `orientation`, `padding`,
+///   `viewInsets`, `viewPadding`, `devicePixelRatio`, `textScaler`,
+///   `platformBrightness`
+/// - `Size` (v1.4.0): `width`, `height`, `shortestSide`, `longestSide`,
+///   `aspectRatio`, `isEmpty`
+/// - `EdgeInsets` (v1.4.0): `left`, `top`, `right`, `bottom`,
+///   `horizontal`, `vertical`
 ///
 /// `.first` and `.last` on an empty list propagate Dart's own
 /// [StateError] unchanged — the diagnostic is identical to what a
@@ -125,6 +144,102 @@ import 'package:rune/src/resolver/rune_closure.dart';
       'minHeight' => (true, target.minHeight),
       'biggest' => (true, target.biggest),
       'smallest' => (true, target.smallest),
+      _ => (false, null),
+    };
+  }
+  // Theme-related read-only value types (v1.4.0). Rune source has no
+  // mutation API for these; the whitelist exposes the commonly-consumed
+  // slots so templates can style off of a live ThemeData reached via
+  // Theme.of(context).
+  if (target is ThemeData) {
+    return switch (propertyName) {
+      'colorScheme' => (true, target.colorScheme),
+      'textTheme' => (true, target.textTheme),
+      'brightness' => (true, target.brightness),
+      'primaryColor' => (true, target.primaryColor),
+      'useMaterial3' => (true, target.useMaterial3),
+      'scaffoldBackgroundColor' => (true, target.scaffoldBackgroundColor),
+      'cardColor' => (true, target.cardColor),
+      'dividerColor' => (true, target.dividerColor),
+      _ => (false, null),
+    };
+  }
+  if (target is ColorScheme) {
+    return switch (propertyName) {
+      'primary' => (true, target.primary),
+      'onPrimary' => (true, target.onPrimary),
+      'primaryContainer' => (true, target.primaryContainer),
+      'onPrimaryContainer' => (true, target.onPrimaryContainer),
+      'secondary' => (true, target.secondary),
+      'onSecondary' => (true, target.onSecondary),
+      'secondaryContainer' => (true, target.secondaryContainer),
+      'onSecondaryContainer' => (true, target.onSecondaryContainer),
+      'tertiary' => (true, target.tertiary),
+      'onTertiary' => (true, target.onTertiary),
+      'error' => (true, target.error),
+      'onError' => (true, target.onError),
+      'surface' => (true, target.surface),
+      'onSurface' => (true, target.onSurface),
+      'surfaceContainerHighest' => (true, target.surfaceContainerHighest),
+      'outline' => (true, target.outline),
+      'shadow' => (true, target.shadow),
+      'inverseSurface' => (true, target.inverseSurface),
+      'brightness' => (true, target.brightness),
+      _ => (false, null),
+    };
+  }
+  if (target is TextTheme) {
+    return switch (propertyName) {
+      'displayLarge' => (true, target.displayLarge),
+      'displayMedium' => (true, target.displayMedium),
+      'displaySmall' => (true, target.displaySmall),
+      'headlineLarge' => (true, target.headlineLarge),
+      'headlineMedium' => (true, target.headlineMedium),
+      'headlineSmall' => (true, target.headlineSmall),
+      'titleLarge' => (true, target.titleLarge),
+      'titleMedium' => (true, target.titleMedium),
+      'titleSmall' => (true, target.titleSmall),
+      'bodyLarge' => (true, target.bodyLarge),
+      'bodyMedium' => (true, target.bodyMedium),
+      'bodySmall' => (true, target.bodySmall),
+      'labelLarge' => (true, target.labelLarge),
+      'labelMedium' => (true, target.labelMedium),
+      'labelSmall' => (true, target.labelSmall),
+      _ => (false, null),
+    };
+  }
+  if (target is MediaQueryData) {
+    return switch (propertyName) {
+      'size' => (true, target.size),
+      'orientation' => (true, target.orientation),
+      'padding' => (true, target.padding),
+      'viewInsets' => (true, target.viewInsets),
+      'viewPadding' => (true, target.viewPadding),
+      'devicePixelRatio' => (true, target.devicePixelRatio),
+      'textScaler' => (true, target.textScaler),
+      'platformBrightness' => (true, target.platformBrightness),
+      _ => (false, null),
+    };
+  }
+  if (target is Size) {
+    return switch (propertyName) {
+      'width' => (true, target.width),
+      'height' => (true, target.height),
+      'shortestSide' => (true, target.shortestSide),
+      'longestSide' => (true, target.longestSide),
+      'aspectRatio' => (true, target.aspectRatio),
+      'isEmpty' => (true, target.isEmpty),
+      _ => (false, null),
+    };
+  }
+  if (target is EdgeInsets) {
+    return switch (propertyName) {
+      'left' => (true, target.left),
+      'top' => (true, target.top),
+      'right' => (true, target.right),
+      'bottom' => (true, target.bottom),
+      'horizontal' => (true, target.horizontal),
+      'vertical' => (true, target.vertical),
       _ => (false, null),
     };
   }

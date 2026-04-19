@@ -229,5 +229,33 @@ void main() {
       expect(r.resolve('Orientation', 'portrait'), Orientation.portrait);
       expect(r.resolve('Orientation', 'landscape'), Orientation.landscape);
     });
+
+    test('seeds ThemeMode', () {
+      final r = ConstantRegistry();
+      registerPhase2aConstants(r);
+      expect(r.resolve('ThemeMode', 'system'), ThemeMode.system);
+      expect(r.resolve('ThemeMode', 'light'), ThemeMode.light);
+      expect(r.resolve('ThemeMode', 'dark'), ThemeMode.dark);
+    });
+
+    test('seeds Brightness', () {
+      final r = ConstantRegistry();
+      registerPhase2aConstants(r);
+      expect(r.resolve('Brightness', 'light'), Brightness.light);
+      expect(r.resolve('Brightness', 'dark'), Brightness.dark);
+    });
+
+    test('seeds MaterialTapTargetSize', () {
+      final r = ConstantRegistry();
+      registerPhase2aConstants(r);
+      expect(
+        r.resolve('MaterialTapTargetSize', 'padded'),
+        MaterialTapTargetSize.padded,
+      );
+      expect(
+        r.resolve('MaterialTapTargetSize', 'shrinkWrap'),
+        MaterialTapTargetSize.shrinkWrap,
+      );
+    });
   });
 }

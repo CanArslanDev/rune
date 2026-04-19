@@ -152,6 +152,33 @@ WidgetBuilder toContextWidgetBuilder(Object? source, String widgetName) {
   };
 }
 
+/// Validates a resolved `suggestionsBuilder` argument for
+/// [SearchAnchor] / `SearchAnchor.bar` and returns a [SuggestionsBuilder]
+/// that feeds `(BuildContext, SearchController)` into the underlying
+/// [RuneClosure].
+///
+/// The closure is expected to return a list of [Widget]s (typically a
+/// list of [ListTile] entries). Non-[Widget] values are silently
+/// filtered out, matching the Column/Row children-filter convention. A
+/// non-list return raises [ResolveException].
+SuggestionsBuilder toSearchSuggestionsBuilder(
+  Object? source,
+  String widgetName,
+) {
+  final closure = _requireClosure(source, widgetName, 'suggestionsBuilder', 2);
+  return (ctx, controller) {
+    final result = closure.call(<Object?>[ctx, controller]);
+    if (result is! List) {
+      throw ResolveException(
+        widgetName,
+        '$widgetName.suggestionsBuilder closure must return a List; '
+        'got ${result.runtimeType}',
+      );
+    }
+    return result.whereType<Widget>().toList(growable: false);
+  };
+}
+
 /// Validates a resolved `itemBuilder` argument for [PopupMenuButton] and
 /// returns a [PopupMenuItemBuilder] of `Object?` that feeds
 /// `(BuildContext)` into the underlying [RuneClosure].

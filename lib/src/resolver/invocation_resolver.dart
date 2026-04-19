@@ -1,4 +1,5 @@
 import 'package:analyzer/dart/ast/ast.dart';
+import 'package:flutter/material.dart';
 import 'package:rune/src/builders/imperative_helpers.dart';
 import 'package:rune/src/builders/resolved_arguments.dart';
 import 'package:rune/src/core/exceptions.dart';
@@ -102,6 +103,25 @@ final class InvocationResolver implements InvocationResolverContract {
       // builder named `Navigator` can shadow it.
       if (target.name == 'Navigator' && node.methodName.name == 'pop') {
         return _resolveImperativeBridge(node, ctx, runNavigatorPop);
+      }
+      // v1.4.0 context accessors: `Theme.of(ctx)` and
+      // `MediaQuery.of(ctx)` yield the enclosing Flutter theme/media-query
+      // as plain data values that downstream property access (via the
+      // built-in property whitelist) can read. Placed before the
+      // component/value/widget lookups so no host-registered builder
+      // named `Theme` or `MediaQuery` can shadow them.
+      if (node.methodName.name == 'of') {
+        if (target.name == 'Theme') {
+          return _resolveContextAccessor(node, ctx, 'Theme.of', _readTheme);
+        }
+        if (target.name == 'MediaQuery') {
+          return _resolveContextAccessor(
+            node,
+            ctx,
+            'MediaQuery.of',
+            _readMediaQuery,
+          );
+        }
       }
       // Either `EdgeInsets.all(16)` (builder) or `text.toUpperCase()`
       // (runtime method on a data identifier). Builder registries win.
@@ -466,6 +486,59 @@ final class InvocationResolver implements InvocationResolverContract {
     );
   }
 
+  /// Resolves a v1.4.0 context accessor (`Theme.of(ctx)` or
+  /// `MediaQuery.of(ctx)`) by validating that exactly one positional
+  /// argument was supplied, resolving it to a [BuildContext], and
+  /// delegating to [reader] to look up the per-accessor Flutter value.
+  ///
+  /// All three failure modes surface as [ResolveException] with a
+  /// source-span pointer at the call site:
+  ///
+  /// 1. Named arguments supplied.
+  /// 2. Positional arity != 1.
+  /// 3. The resolved positional value is not a [BuildContext].
+  Object? _resolveContextAccessor(
+    MethodInvocation node,
+    RuneContext ctx,
+    String accessorName,
+    Object? Function(BuildContext context) reader,
+  ) {
+    final argList = node.argumentList.arguments;
+    final location =
+        SourceSpan.fromAstOffset(ctx.source, node.offset, node.length);
+    final named =
+        argList.whereType<NamedExpression>().toList(growable: false);
+    if (named.isNotEmpty) {
+      throw ResolveException(
+        node.toSource(),
+        '$accessorName does not accept named arguments; '
+        'got ${named.map((n) => n.name.label.name).join(", ")}',
+        location: location,
+      );
+    }
+    final positional = argList
+        .where((a) => a is! NamedExpression)
+        .toList(growable: false);
+    if (positional.length != 1) {
+      throw ResolveException(
+        node.toSource(),
+        '$accessorName expects exactly one positional BuildContext '
+        'argument, got ${positional.length}',
+        location: location,
+      );
+    }
+    final resolved = _expr.resolve(positional.single, ctx);
+    if (resolved is! BuildContext) {
+      throw ResolveException(
+        node.toSource(),
+        '$accessorName expects a BuildContext argument; '
+        'got ${resolved.runtimeType}',
+        location: location,
+      );
+    }
+    return reader(resolved);
+  }
+
   /// Whitelist of bare-identifier imperative bridge calls.
   ///
   /// Entries route from the Rune source identifier (`showDialog`,
@@ -481,5 +554,17 @@ final class InvocationResolver implements InvocationResolverContract {
     'showDialog': runShowDialog,
     'showModalBottomSheet': runShowModalBottomSheet,
     'showSnackBar': runShowSnackBar,
+    'showDatePicker': runShowDatePicker,
+    'showTimePicker': runShowTimePicker,
   };
 }
+
+/// Reads [Theme.of] off the supplied [context]. Top-level helper for
+/// [InvocationResolver._resolveContextAccessor] dispatch on `Theme.of(ctx)`.
+ThemeData _readTheme(BuildContext context) => Theme.of(context);
+
+/// Reads [MediaQuery.of] off the supplied [context]. Top-level helper for
+/// [InvocationResolver._resolveContextAccessor] dispatch on
+/// `MediaQuery.of(ctx)`.
+MediaQueryData _readMediaQuery(BuildContext context) =>
+    MediaQuery.of(context);

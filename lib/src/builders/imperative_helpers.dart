@@ -143,6 +143,79 @@ Object? runNavigatorPop(ResolvedArguments args, RuneContext ctx) {
   return null;
 }
 
+/// Resolves `showDatePicker(...)` into Flutter's imperative
+/// `showDatePicker`.
+///
+/// Accepts named arguments only:
+/// - `initialDate` ([DateTime], required).
+/// - `firstDate` ([DateTime], required).
+/// - `lastDate` ([DateTime], required).
+/// - `helpText`, `cancelText`, `confirmText`, `errorFormatText`,
+///   `errorInvalidText`, `fieldHintText`, `fieldLabelText` ([String]?).
+///
+/// Returns the `Future<DateTime?>` yielded by Flutter's `showDatePicker`.
+/// Rune source has no `await` syntax, so the returned Future is typically
+/// ignored; the picker still mounts and dismisses correctly because
+/// Flutter's imperative surface fires its own lifecycle callbacks.
+Future<DateTime?> runShowDatePicker(
+  ResolvedArguments args,
+  RuneContext ctx,
+) {
+  final context = _requireFlutterContext(ctx, 'showDatePicker');
+  return showDatePicker(
+    context: context,
+    initialDate: args.require<DateTime>(
+      'initialDate',
+      source: 'showDatePicker',
+    ),
+    firstDate: args.require<DateTime>(
+      'firstDate',
+      source: 'showDatePicker',
+    ),
+    lastDate: args.require<DateTime>(
+      'lastDate',
+      source: 'showDatePicker',
+    ),
+    helpText: args.get<String>('helpText'),
+    cancelText: args.get<String>('cancelText'),
+    confirmText: args.get<String>('confirmText'),
+    errorFormatText: args.get<String>('errorFormatText'),
+    errorInvalidText: args.get<String>('errorInvalidText'),
+    fieldHintText: args.get<String>('fieldHintText'),
+    fieldLabelText: args.get<String>('fieldLabelText'),
+  );
+}
+
+/// Resolves `showTimePicker(...)` into Flutter's imperative
+/// `showTimePicker`.
+///
+/// Accepts named arguments only:
+/// - `initialTime` ([TimeOfDay], required).
+/// - `helpText`, `cancelText`, `confirmText`, `hourLabelText`,
+///   `minuteLabelText` ([String]?).
+///
+/// Returns the `Future<TimeOfDay?>` yielded by Flutter's
+/// `showTimePicker`. Rune source has no `await` syntax, so the returned
+/// Future is typically ignored.
+Future<TimeOfDay?> runShowTimePicker(
+  ResolvedArguments args,
+  RuneContext ctx,
+) {
+  final context = _requireFlutterContext(ctx, 'showTimePicker');
+  return showTimePicker(
+    context: context,
+    initialTime: args.require<TimeOfDay>(
+      'initialTime',
+      source: 'showTimePicker',
+    ),
+    helpText: args.get<String>('helpText'),
+    cancelText: args.get<String>('cancelText'),
+    confirmText: args.get<String>('confirmText'),
+    hourLabelText: args.get<String>('hourLabelText'),
+    minuteLabelText: args.get<String>('minuteLabelText'),
+  );
+}
+
 /// Shared guard: reads [RuneContext.flutterContext] or raises
 /// [ResolveException] citing [bridgeName] so unit tests without a live
 /// widget tree get an actionable diagnostic rather than a null-deref.

@@ -28,6 +28,10 @@ void main() {
         'ElevatedButton',
         'TextButton',
         'IconButton',
+        'FilledButton',
+        'OutlinedButton',
+        'SegmentedButton',
+        'SearchBar',
         'TextField',
         'Switch',
         'Checkbox',
@@ -121,6 +125,12 @@ void main() {
         'Image.network',
         'Image.asset',
         'Duration',
+        'DateTime',
+        'TimeOfDay',
+        'ColorScheme.fromSeed',
+        'ThemeData',
+        'ButtonSegment',
+        'SearchAnchor.bar',
         'BottomNavigationBarItem',
         'NavigationDestination',
         'NavigationRailDestination',
@@ -161,6 +171,9 @@ void main() {
       expect(r.contains('Icons', 'home'), isTrue);
       expect(r.contains('SnackBarBehavior', 'fixed'), isTrue);
       expect(r.contains('SnackBarBehavior', 'floating'), isTrue);
+      expect(r.contains('ThemeMode', 'light'), isTrue);
+      expect(r.contains('Brightness', 'dark'), isTrue);
+      expect(r.contains('MaterialTapTargetSize', 'padded'), isTrue);
     });
 
     test('individual register* calls combined produce the full set', () {
@@ -170,9 +183,9 @@ void main() {
       RuneDefaults.registerWidgets(w);
       RuneDefaults.registerValues(v);
       RuneDefaults.registerConstants(c);
-      expect(w.size, greaterThanOrEqualTo(91));
-      expect(v.size, greaterThanOrEqualTo(35));
-      expect(c.size, greaterThanOrEqualTo(51));
+      expect(w.size, greaterThanOrEqualTo(95));
+      expect(v.size, greaterThanOrEqualTo(41));
+      expect(c.size, greaterThanOrEqualTo(54));
     });
   });
 }
