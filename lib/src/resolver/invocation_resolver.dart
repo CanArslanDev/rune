@@ -112,7 +112,10 @@ final class InvocationResolver implements InvocationResolverContract {
     final widgetBuilder = ctx.widgets.find(typeName);
     if (widgetBuilder != null) {
       final args = _resolveArguments(argumentList, ctx);
-      return widgetBuilder.build(args, ctx);
+      return _runBuilder(
+        () => widgetBuilder.build(args, ctx),
+        invocationLocation: location,
+      );
     }
     final valueBuilder = ctx.values.findValue(
       typeName,
@@ -120,9 +123,40 @@ final class InvocationResolver implements InvocationResolverContract {
     );
     if (valueBuilder != null) {
       final args = _resolveArguments(argumentList, ctx);
-      return valueBuilder.build(args, ctx);
+      return _runBuilder(
+        () => valueBuilder.build(args, ctx),
+        invocationLocation: location,
+      );
     }
     throw UnregisteredBuilderException(source, typeName, location: location);
+  }
+
+  /// Invokes [build] and, if it raises an [ArgumentException] with no
+  /// [RuneException.location] set, rewraps the exception with
+  /// [invocationLocation] before rethrowing.
+  ///
+  /// Builders have no AST in hand — their `args.require*` throws have a
+  /// `null` location. The invocation resolver is one level up and holds
+  /// the call node's span, which is the right pointer for a missing-arg
+  /// diagnostic. Exceptions that already carry a location (e.g., a
+  /// [BindingException] raised during sub-argument resolution) are not
+  /// touched here at all — only [ArgumentException] is caught, and only
+  /// when its location is null. Deeper spans are always more precise
+  /// than the invocation's coarser one and must not be overwritten.
+  T _runBuilder<T>(
+    T Function() build, {
+    required SourceSpan invocationLocation,
+  }) {
+    try {
+      return build();
+    } on ArgumentException catch (e) {
+      if (e.location != null) rethrow;
+      throw ArgumentException(
+        e.source,
+        e.message,
+        location: invocationLocation,
+      );
+    }
   }
 
   ResolvedArguments _resolveArguments(ArgumentList list, RuneContext ctx) {

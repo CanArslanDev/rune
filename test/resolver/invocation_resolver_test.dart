@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:rune/src/binding/rune_data_context.dart';
 import 'package:rune/src/builders/builder.dart';
 import 'package:rune/src/builders/resolved_arguments.dart';
 import 'package:rune/src/core/exceptions.dart';
@@ -11,6 +12,7 @@ import 'package:rune/src/resolver/expression_resolver.dart';
 import 'package:rune/src/resolver/identifier_resolver.dart';
 import 'package:rune/src/resolver/invocation_resolver.dart';
 import 'package:rune/src/resolver/literal_resolver.dart';
+import 'package:rune/src/resolver/property_resolver.dart';
 
 import '../_helpers/test_context.dart';
 
@@ -232,6 +234,202 @@ void main() {
       },
     );
   });
+
+  group('ArgumentException bubble-up with invocation location', () {
+    test(
+      'missing required positional in a default-registered builder '
+      'carries invocation location',
+      () {
+        // Use the real default-registered TextBuilder, which requires a
+        // positional String. `Text()` has no args → ArgumentException from
+        // requirePositional. Without the wrap, location is null; with it,
+        // the invocation's span is attached.
+        const source = 'Text()';
+        final caught = _captureArgException(source: source);
+        expect(
+          caught.location,
+          isNotNull,
+          reason:
+              'ArgumentException from builder should carry invocation span',
+        );
+        expect(caught.location!.line, 1);
+        expect(caught.location!.excerpt, 'Text()');
+      },
+    );
+
+    test(
+      'missing required positional on line 3 of multiline source carries '
+      'line 3 location',
+      () {
+        // The inner `Text()` sits on line 3; the wrap should attach its
+        // invocation span (not the outer Column's).
+        const source = 'Column(\n'
+            '  children: [\n'
+            '    Text(),\n'
+            '  ],\n'
+            ')';
+        final caught = _captureArgException(source: source);
+        expect(caught.location, isNotNull);
+        expect(caught.location!.line, 3);
+        expect(caught.location!.excerpt, contains('Text()'));
+      },
+    );
+
+    test('value-builder argument failure is also wrapped', () {
+      // ColorBuilder requires a positional int; `Color()` fails with
+      // ArgumentException. The value-builder dispatch path must also
+      // wrap.
+      const source = 'Color()';
+      final caught = _captureArgException(source: source);
+      expect(caught.location, isNotNull);
+      expect(caught.location!.line, 1);
+      expect(caught.location!.excerpt, 'Color()');
+    });
+
+    test(
+      'pre-located exception from deeper resolution rethrows unchanged '
+      '(precise span wins)',
+      () {
+        // `Text(unknownName)` — the arg `unknownName` is a
+        // SimpleIdentifier resolved BEFORE the builder runs. Its
+        // BindingException carries a precise location pointing at the
+        // identifier itself. _runBuilder only catches ArgumentException,
+        // so BindingException bubbles through untouched — its
+        // identifier-level span is preserved.
+        const source = 'Text(unknownName)';
+        final parser = DartParser();
+        final ctx = testContext(
+          widgets: WidgetRegistry()..registerBuilder(const _RealTextBuilder()),
+          values: ValueRegistry(),
+          source: source,
+        );
+        final expr =
+            ExpressionResolver(LiteralResolver(), IdentifierResolver());
+        final inv = InvocationResolver(expr);
+        expr
+          ..bind(inv)
+          ..bindProperty(PropertyResolver(expr));
+        Object? caught;
+        try {
+          expr.resolve(parser.parse(source), ctx);
+          fail('expected BindingException');
+        } on Object catch (e) {
+          caught = e;
+        }
+        expect(caught, isA<BindingException>());
+        final binding = caught as BindingException;
+        expect(binding.location, isNotNull);
+        // The location is the identifier's span, NOT the invocation's.
+        expect(binding.location!.excerpt, 'Text(unknownName)');
+        // The span's length matches the identifier 'unknownName' (11),
+        // proving the invocation's wider span did not overwrite it.
+        expect(binding.location!.length, 'unknownName'.length);
+      },
+    );
+
+    test('happy path: a successful build still returns the widget', () {
+      // Sanity baseline: the wrap introduces a try/catch around build
+      // but must not otherwise alter the happy path.
+      const source = "Text('ok')";
+      final parser = DartParser();
+      final ctx = testContext(
+        widgets: WidgetRegistry()..registerBuilder(const _RealTextBuilder()),
+        values: ValueRegistry(),
+        source: source,
+      );
+      final expr =
+          ExpressionResolver(LiteralResolver(), IdentifierResolver());
+      final inv = InvocationResolver(expr);
+      expr
+        ..bind(inv)
+        ..bindProperty(PropertyResolver(expr));
+      final out = expr.resolve(parser.parse(source), ctx);
+      expect(out, isA<Text>());
+      expect((out! as Text).data, 'ok');
+    });
+  });
+}
+
+/// Captures an [ArgumentException] raised by driving a real parser →
+/// resolver → builder pipeline over [source] with the default Text/Color
+/// builders registered.
+ArgumentException _captureArgException({
+  required String source,
+  Map<String, Object?> data = const <String, Object?>{},
+}) {
+  final parser = DartParser();
+  final wr = WidgetRegistry()
+    ..registerBuilder(const _RealTextBuilder())
+    ..registerBuilder(const _RealColumnBuilder());
+  final vr = ValueRegistry()..registerBuilder(const _RealColorBuilder());
+  final ctx = testContext(
+    widgets: wr,
+    values: vr,
+    source: source,
+    data: RuneDataContext(data),
+  );
+  final expr = ExpressionResolver(LiteralResolver(), IdentifierResolver());
+  final inv = InvocationResolver(expr);
+  expr
+    ..bind(inv)
+    ..bindProperty(PropertyResolver(expr));
+  ArgumentException? caught;
+  try {
+    expr.resolve(parser.parse(source), ctx);
+  } on ArgumentException catch (e) {
+    caught = e;
+  }
+  expect(
+    caught,
+    isNotNull,
+    reason: 'expected ArgumentException from resolving "$source"',
+  );
+  return caught!;
+}
+
+/// Minimal stand-in for the default `TextBuilder` that raises
+/// [ArgumentException] when the positional String is missing. We inline
+/// it here rather than importing the real builder to keep this test
+/// file's dependency surface small — the behavior under test is the
+/// wrap inside [InvocationResolver], not the real builder's internals.
+final class _RealTextBuilder implements RuneWidgetBuilder {
+  const _RealTextBuilder();
+  @override
+  String get typeName => 'Text';
+  @override
+  Widget build(ResolvedArguments args, RuneContext ctx) {
+    final data = args.requirePositional<String>(0, source: 'Text');
+    return Text(data);
+  }
+}
+
+/// Stand-in for `ColumnBuilder` that resolves its `children` named arg
+/// as a List<Widget> and returns a Column. Used to prove line-3
+/// location threading for a nested failing `Text()`.
+final class _RealColumnBuilder implements RuneWidgetBuilder {
+  const _RealColumnBuilder();
+  @override
+  String get typeName => 'Column';
+  @override
+  Widget build(ResolvedArguments args, RuneContext ctx) {
+    final children = args.get<List<Object?>>('children') ?? const <Object?>[];
+    return Column(children: children.cast<Widget>());
+  }
+}
+
+/// Stand-in for the default `ColorBuilder` that raises [ArgumentException]
+/// when the positional int is missing.
+final class _RealColorBuilder implements RuneValueBuilder {
+  const _RealColorBuilder();
+  @override
+  String get typeName => 'Color';
+  @override
+  String? get constructorName => null;
+  @override
+  Object build(ResolvedArguments args, RuneContext ctx) {
+    final value = args.requirePositional<int>(0, source: 'Color');
+    return Color(value);
+  }
 }
 
 final class _PassthroughRow implements RuneWidgetBuilder {
