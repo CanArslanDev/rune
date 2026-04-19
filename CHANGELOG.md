@@ -17,6 +17,15 @@ All notable changes to this project are documented here. Format follows
   controller. `BottomNavigationBarItem` is a value builder for
   declaring the items list. `BottomNavigationBarType.fixed` and
   `.shifting` join the constants table.
+- **Dropdown select** — `DropdownButton` with `DropdownMenuItem`
+  completes the form-input set. Both parametric on `Object?` so
+  item values can be any runtime type (int, String, enum-ish keys).
+  Required `items: List<DropdownMenuItem<Object?>>`; optional
+  `value` (absent OR explicit null renders the hint), `onChanged`
+  event (`(name, [newValue])`), `hint`, `disabledHint`,
+  `isExpanded`. `DropdownMenuItem` requires `value` + `child`;
+  like Radio, it distinguishes absent-value (ArgumentException)
+  from explicit `value: null` (legitimate).
 - **Animated widgets and Duration support** —
   `AnimatedContainer`, `AnimatedOpacity`, and `AnimatedPositioned`
   join the default widget registry. Each takes a required

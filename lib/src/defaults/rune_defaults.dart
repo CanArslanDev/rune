@@ -20,6 +20,8 @@ import 'package:rune/src/builders/widgets/checkbox_builder.dart';
 import 'package:rune/src/builders/widgets/column_builder.dart';
 import 'package:rune/src/builders/widgets/container_builder.dart';
 import 'package:rune/src/builders/widgets/divider_builder.dart';
+import 'package:rune/src/builders/widgets/dropdown_button_builder.dart';
+import 'package:rune/src/builders/widgets/dropdown_menu_item_builder.dart';
 import 'package:rune/src/builders/widgets/elevated_button_builder.dart';
 import 'package:rune/src/builders/widgets/expanded_builder.dart';
 import 'package:rune/src/builders/widgets/flexible_builder.dart';
@@ -131,7 +133,10 @@ abstract final class RuneDefaults {
       // Navigation.
       ..registerBuilder(const BottomNavigationBarBuilder())
       ..registerBuilder(const TabBarBuilder())
-      ..registerBuilder(const TabBuilder());
+      ..registerBuilder(const TabBuilder())
+      // Dropdown.
+      ..registerBuilder(const DropdownButtonBuilder())
+      ..registerBuilder(const DropdownMenuItemBuilder());
   }
 
   /// Registers every Phase 1–2c value builder into [registry].
