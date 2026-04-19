@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart' hide RadioBuilder;
+import 'package:flutter/material.dart' show MaterialApp, Radio, Scaffold, Widget;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rune/src/binding/rune_event_dispatcher.dart';
 import 'package:rune/src/builders/resolved_arguments.dart';
