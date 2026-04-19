@@ -6,15 +6,9 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [0.6.0] — 2026-04-19 — widget breadth (Material, animations, grids)
+
 ### Added
-- **Grid views** — `GridView.count` (fixed column count) and
-  `GridView.extent` (max cell extent) join the default value-builder
-  registry. Both require their primary sizing arg
-  (`crossAxisCount: int` / `maxCrossAxisExtent: num`); optional
-  `children`, `mainAxisSpacing`, `crossAxisSpacing`,
-  `childAspectRatio`, `scrollDirection` (Axis), `padding`,
-  `shrinkWrap`, `reverse`. `GridView.builder` is deferred pending
-  function-literal support in source.
 - **Material widget breadth** — five more everyday builders.
   `FloatingActionButton` (onPressed event, optional child/tooltip/
   colors/mini), `Chip` (required label, optional avatar, onDeleted
@@ -38,6 +32,14 @@ All notable changes to this project are documented here. Format follows
   `CrossFadeState.showFirst` / `.showSecond` join the constants
   table. Closure-shaped args (`createRectTween`,
   `flightShuttleBuilder`, etc.) remain out of scope pending
+  function-literal support in source.
+- **Grid views** — `GridView.count` (fixed column count) and
+  `GridView.extent` (max cell extent) join the default value-builder
+  registry. Both require their primary sizing arg
+  (`crossAxisCount: int` / `maxCrossAxisExtent: num`); optional
+  `children`, `mainAxisSpacing`, `crossAxisSpacing`,
+  `childAspectRatio`, `scrollDirection` (Axis), `padding`,
+  `shrinkWrap`, `reverse`. `GridView.builder` is deferred pending
   function-literal support in source.
 
 ## [0.5.0] — 2026-04-19 — animations + navigation + dropdown
@@ -435,7 +437,8 @@ All notable changes to this project are documented here. Format follows
 - Example app at `example/lib/main.dart` demonstrating the full Phase 1
   feature set.
 
-[Unreleased]: https://github.com/CanArslanDev/rune/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/CanArslanDev/rune/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/CanArslanDev/rune/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/CanArslanDev/rune/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/CanArslanDev/rune/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/CanArslanDev/rune/compare/v0.2.0...v0.3.0
