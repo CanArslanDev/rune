@@ -31,6 +31,8 @@ void main() {
         'TextField',
         'Switch',
         'Checkbox',
+        'Slider',
+        'Radio',
         'ListTile',
         'Divider',
         'Spacer',
@@ -81,7 +83,7 @@ void main() {
       RuneDefaults.registerWidgets(w);
       RuneDefaults.registerValues(v);
       RuneDefaults.registerConstants(c);
-      expect(w.size, greaterThanOrEqualTo(30));
+      expect(w.size, greaterThanOrEqualTo(32));
       expect(v.size, greaterThanOrEqualTo(10));
       expect(c.size, greaterThanOrEqualTo(50));
     });

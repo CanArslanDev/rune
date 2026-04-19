@@ -22,6 +22,15 @@ All notable changes to this project are documented here. Format follows
   placement inside a `Stack`). `WrapAlignment` and `WrapCrossAlignment`
   enums join the default constants table so source code can reference
   `WrapAlignment.center` and friends.
+- **Form input widgets: `Slider` and `Radio`.** Slider dispatches
+  the new `double` value on each drag step; required `value` +
+  optional `min`/`max`/`divisions`/`label`/`onChanged`. Radio
+  dispatches the selected button's own `value` (any runtime type)
+  so the host can update `groupValue`; supports `toggleable` for
+  tap-to-deselect semantics. Both follow the two-way data-binding
+  contract established by TextField/Switch/Checkbox — the host
+  owns state, interactions fire named events with the new value
+  as the single argument.
 
 ## [0.3.0] — 2026-04-19 — runtime-value members + layout helpers
 

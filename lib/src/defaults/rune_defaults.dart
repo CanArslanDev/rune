@@ -27,10 +27,12 @@ import 'package:rune/src/builders/widgets/list_tile_builder.dart';
 import 'package:rune/src/builders/widgets/list_view_builder.dart';
 import 'package:rune/src/builders/widgets/padding_builder.dart';
 import 'package:rune/src/builders/widgets/positioned_builder.dart';
+import 'package:rune/src/builders/widgets/radio_builder.dart';
 import 'package:rune/src/builders/widgets/row_builder.dart';
 import 'package:rune/src/builders/widgets/scaffold_builder.dart';
 import 'package:rune/src/builders/widgets/single_child_scroll_view_builder.dart';
 import 'package:rune/src/builders/widgets/sized_box_builder.dart';
+import 'package:rune/src/builders/widgets/slider_builder.dart';
 import 'package:rune/src/builders/widgets/spacer_builder.dart';
 import 'package:rune/src/builders/widgets/stack_builder.dart';
 import 'package:rune/src/builders/widgets/switch_builder.dart';
@@ -99,6 +101,9 @@ abstract final class RuneDefaults {
       ..registerBuilder(const TextFieldBuilder())
       ..registerBuilder(const SwitchBuilder())
       ..registerBuilder(const CheckboxBuilder())
+      // Form inputs (extended).
+      ..registerBuilder(const SliderBuilder())
+      ..registerBuilder(const RadioBuilder())
       // Layout helpers + Material tiles.
       ..registerBuilder(const ListTileBuilder())
       ..registerBuilder(const DividerBuilder())
