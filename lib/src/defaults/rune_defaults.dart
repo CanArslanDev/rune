@@ -10,7 +10,10 @@ import 'package:rune/src/builders/values/edge_insets_only_builder.dart';
 import 'package:rune/src/builders/values/edge_insets_symmetric_builder.dart';
 import 'package:rune/src/builders/values/focus_node_builder.dart';
 import 'package:rune/src/builders/values/grid_view_count_builder.dart';
+import 'package:rune/src/builders/values/grid_view_count_builder_builder.dart';
 import 'package:rune/src/builders/values/grid_view_extent_builder.dart';
+import 'package:rune/src/builders/values/grid_view_extent_builder_builder.dart';
+import 'package:rune/src/builders/values/list_view_builder_builder.dart';
 import 'package:rune/src/builders/values/navigation_destination_builder.dart';
 import 'package:rune/src/builders/values/navigation_rail_destination_builder.dart';
 import 'package:rune/src/builders/values/offset_builder.dart';
@@ -18,7 +21,10 @@ import 'package:rune/src/builders/values/page_controller_builder.dart';
 import 'package:rune/src/builders/values/rune_component_builder.dart';
 import 'package:rune/src/builders/values/scroll_controller_builder.dart';
 import 'package:rune/src/builders/values/sliver_grid_count_builder.dart';
+import 'package:rune/src/builders/values/sliver_grid_count_builder_builder.dart';
 import 'package:rune/src/builders/values/sliver_grid_extent_builder.dart';
+import 'package:rune/src/builders/values/sliver_grid_extent_builder_builder.dart';
+import 'package:rune/src/builders/values/sliver_list_builder_builder.dart';
 import 'package:rune/src/builders/values/text_editing_controller_builder.dart';
 import 'package:rune/src/builders/values/text_style_builder.dart';
 import 'package:rune/src/builders/values/transform_flip_builder.dart';
@@ -61,6 +67,7 @@ import 'package:rune/src/builders/widgets/fitted_box_builder.dart';
 import 'package:rune/src/builders/widgets/flexible_builder.dart';
 import 'package:rune/src/builders/widgets/floating_action_button_builder.dart';
 import 'package:rune/src/builders/widgets/fractionally_sized_box_builder.dart';
+import 'package:rune/src/builders/widgets/future_builder_builder.dart';
 import 'package:rune/src/builders/widgets/gesture_detector_builder.dart';
 import 'package:rune/src/builders/widgets/hero_builder.dart';
 import 'package:rune/src/builders/widgets/icon_builder.dart';
@@ -68,6 +75,7 @@ import 'package:rune/src/builders/widgets/icon_button_builder.dart';
 import 'package:rune/src/builders/widgets/image_asset_builder.dart';
 import 'package:rune/src/builders/widgets/image_network_builder.dart';
 import 'package:rune/src/builders/widgets/ink_well_builder.dart';
+import 'package:rune/src/builders/widgets/layout_builder_builder.dart';
 import 'package:rune/src/builders/widgets/limited_box_builder.dart';
 import 'package:rune/src/builders/widgets/linear_progress_indicator_builder.dart';
 import 'package:rune/src/builders/widgets/list_tile_builder.dart';
@@ -76,6 +84,7 @@ import 'package:rune/src/builders/widgets/navigation_bar_builder.dart';
 import 'package:rune/src/builders/widgets/navigation_rail_builder.dart';
 import 'package:rune/src/builders/widgets/offstage_builder.dart';
 import 'package:rune/src/builders/widgets/opacity_builder.dart';
+import 'package:rune/src/builders/widgets/orientation_builder_builder.dart';
 import 'package:rune/src/builders/widgets/padding_builder.dart';
 import 'package:rune/src/builders/widgets/positioned_builder.dart';
 import 'package:rune/src/builders/widgets/radio_builder.dart';
@@ -96,6 +105,7 @@ import 'package:rune/src/builders/widgets/sliver_to_box_adapter_builder.dart';
 import 'package:rune/src/builders/widgets/spacer_builder.dart';
 import 'package:rune/src/builders/widgets/stack_builder.dart';
 import 'package:rune/src/builders/widgets/stateful_builder_builder.dart';
+import 'package:rune/src/builders/widgets/stream_builder_builder.dart';
 import 'package:rune/src/builders/widgets/switch_builder.dart';
 import 'package:rune/src/builders/widgets/switch_list_tile_builder.dart';
 import 'package:rune/src/builders/widgets/tab_bar_builder.dart';
@@ -241,6 +251,11 @@ abstract final class RuneDefaults {
       ..registerBuilder(const FractionallySizedBoxBuilder())
       // Stateful source.
       ..registerBuilder(const StatefulBuilderBuilder())
+      // Closure-based builder widgets (v1.2.0).
+      ..registerBuilder(const FutureBuilderBuilder())
+      ..registerBuilder(const StreamBuilderBuilder())
+      ..registerBuilder(const LayoutBuilderBuilder())
+      ..registerBuilder(const OrientationBuilderBuilder())
       // Components (Phase F).
       ..registerBuilder(const RuneComposeBuilder());
   }
@@ -265,12 +280,20 @@ abstract final class RuneDefaults {
       // Material 3 navigation destinations.
       ..registerBuilder(const NavigationDestinationBuilder())
       ..registerBuilder(const NavigationRailDestinationBuilder())
-      // Grid views (GridView.builder needs closure syntax — deferred).
+      // Grid views (static children).
       ..registerBuilder(const GridViewCountBuilder())
       ..registerBuilder(const GridViewExtentBuilder())
+      // Lazy lists / grids with closure itemBuilder (v1.2.0).
+      ..registerBuilder(const ListViewBuilderBuilder())
+      ..registerBuilder(const GridViewCountBuilderBuilder())
+      ..registerBuilder(const GridViewExtentBuilderBuilder())
       // Slivers (grid variants).
       ..registerBuilder(const SliverGridCountBuilder())
       ..registerBuilder(const SliverGridExtentBuilder())
+      // Sliver lazy variants (v1.2.0).
+      ..registerBuilder(const SliverListBuilderBuilder())
+      ..registerBuilder(const SliverGridCountBuilderBuilder())
+      ..registerBuilder(const SliverGridExtentBuilderBuilder())
       // Transforms.
       ..registerBuilder(const OffsetBuilder())
       ..registerBuilder(const TransformScaleBuilder())

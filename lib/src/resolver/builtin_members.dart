@@ -46,6 +46,10 @@ import 'package:rune/src/resolver/rune_closure.dart';
 /// - `TextEditingController`: `text`, `value`
 /// - `FocusNode`: `hasFocus`
 /// - `TabController`: `index`
+/// - `AsyncSnapshot`: `hasData`, `data`, `hasError`, `error`,
+///   `connectionState`
+/// - `BoxConstraints`: `maxWidth`, `minWidth`, `maxHeight`, `minHeight`,
+///   `biggest`, `smallest`
 ///
 /// `.first` and `.last` on an empty list propagate Dart's own
 /// [StateError] unchanged — the diagnostic is identical to what a
@@ -96,6 +100,31 @@ import 'package:rune/src/resolver/rune_closure.dart';
   if (target is TabController) {
     return switch (propertyName) {
       'index' => (true, target.index),
+      _ => (false, null),
+    };
+  }
+  // Closure-builder payload types (v1.2.0). Every getter is
+  // side-effect-free. AsyncSnapshot is generic in Dart; Rune's source
+  // layer treats its payload as Object? because v1.2.0 has no generics
+  // syntax, so we destructure via the AsyncSnapshot<Object?>-typed view.
+  if (target is AsyncSnapshot<Object?>) {
+    return switch (propertyName) {
+      'hasData' => (true, target.hasData),
+      'data' => (true, target.data),
+      'hasError' => (true, target.hasError),
+      'error' => (true, target.error),
+      'connectionState' => (true, target.connectionState),
+      _ => (false, null),
+    };
+  }
+  if (target is BoxConstraints) {
+    return switch (propertyName) {
+      'maxWidth' => (true, target.maxWidth),
+      'minWidth' => (true, target.minWidth),
+      'maxHeight' => (true, target.maxHeight),
+      'minHeight' => (true, target.minHeight),
+      'biggest' => (true, target.biggest),
+      'smallest' => (true, target.smallest),
       _ => (false, null),
     };
   }

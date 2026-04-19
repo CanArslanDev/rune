@@ -42,6 +42,8 @@ void registerPhase2aConstants(ConstantRegistry registry) {
   _registerDecorationPosition(registry);
   _registerListTileControlAffinity(registry);
   _registerNavigationRailLabelType(registry);
+  _registerConnectionState(registry);
+  _registerOrientation(registry);
 }
 
 // Registers every Colors member that is a concrete Color value.
@@ -291,5 +293,22 @@ void _registerNavigationRailLabelType(ConstantRegistry r) {
     'none': NavigationRailLabelType.none,
     'selected': NavigationRailLabelType.selected,
     'all': NavigationRailLabelType.all,
+  });
+}
+
+// Registers ConnectionState enum values (none, waiting, active, done);
+// used by FutureBuilder / StreamBuilder builder closures when comparing
+// `snapshot.connectionState` against a known state.
+void _registerConnectionState(ConstantRegistry r) {
+  r.registerAll('ConnectionState', <String, Object?>{
+    for (final v in ConnectionState.values) v.name: v,
+  });
+}
+
+// Registers Orientation enum values (portrait, landscape); delivered by
+// the OrientationBuilder's builder closure.
+void _registerOrientation(ConstantRegistry r) {
+  r.registerAll('Orientation', <String, Object?>{
+    for (final v in Orientation.values) v.name: v,
   });
 }

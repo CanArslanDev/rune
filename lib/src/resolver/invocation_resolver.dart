@@ -105,15 +105,12 @@ final class InvocationResolver implements InvocationResolverContract {
               SourceSpan.fromAstOffset(ctx.source, node.offset, node.length),
         );
       }
-      final widgetBuilder = ctx.widgets.find(typeName);
-      if (widgetBuilder != null) {
-        final args = _resolveArguments(node.argumentList, ctx);
-        return _runBuilder(
-          () => widgetBuilder.build(args, ctx),
-          invocationLocation:
-              SourceSpan.fromAstOffset(ctx.source, node.offset, node.length),
-        );
-      }
+      // When a named constructor is present (e.g. `ListView.builder(...)`),
+      // consult the value registry first. Widget builders are default-
+      // constructor-only; a constructor-name suffix means the source
+      // author wants a value-builder variant even if a plain widget
+      // builder of the same type is registered (such as `ListView`
+      // itself pairing with `ListView.builder`).
       final valueBuilder = ctx.values.findValue(
         typeName,
         constructorName: constructorName,
@@ -122,6 +119,15 @@ final class InvocationResolver implements InvocationResolverContract {
         final args = _resolveArguments(node.argumentList, ctx);
         return _runBuilder(
           () => valueBuilder.build(args, ctx),
+          invocationLocation:
+              SourceSpan.fromAstOffset(ctx.source, node.offset, node.length),
+        );
+      }
+      final widgetBuilder = ctx.widgets.find(typeName);
+      if (widgetBuilder != null) {
+        final args = _resolveArguments(node.argumentList, ctx);
+        return _runBuilder(
+          () => widgetBuilder.build(args, ctx),
           invocationLocation:
               SourceSpan.fromAstOffset(ctx.source, node.offset, node.length),
         );
@@ -275,6 +281,23 @@ final class InvocationResolver implements InvocationResolverContract {
         source: source,
         location: location,
       );
+    }
+    // When a named constructor is present, the value registry is the
+    // correct first stop (widget builders are default-constructor-only
+    // and would otherwise swallow `ListView.builder(...)` as if it were
+    // bare `ListView(...)`).
+    if (constructorName != null) {
+      final valueBuilder = ctx.values.findValue(
+        typeName,
+        constructorName: constructorName,
+      );
+      if (valueBuilder != null) {
+        final args = _resolveArguments(argumentList, ctx);
+        return _runBuilder(
+          () => valueBuilder.build(args, ctx),
+          invocationLocation: location,
+        );
+      }
     }
     final widgetBuilder = ctx.widgets.find(typeName);
     if (widgetBuilder != null) {

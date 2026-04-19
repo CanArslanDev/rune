@@ -1,4 +1,5 @@
 import 'package:analyzer/dart/ast/ast.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rune/src/binding/rune_data_context.dart';
 import 'package:rune/src/core/exceptions.dart';
@@ -117,6 +118,70 @@ void main() {
       expect(result.$1, true);
       expect(result.$2, isA<List<Object?>>());
       expect(result.$2, [1]);
+    });
+  });
+
+  group('resolveBuiltinProperty - AsyncSnapshot', () {
+    test('snapshot with data → hasData true, data value', () {
+      const snap = AsyncSnapshot<Object?>.withData(
+        ConnectionState.done,
+        'hello',
+      );
+      expect(resolveBuiltinProperty(snap, 'hasData'), (true, true));
+      expect(resolveBuiltinProperty(snap, 'data'), (true, 'hello'));
+      expect(resolveBuiltinProperty(snap, 'hasError'), (true, false));
+    });
+
+    test('snapshot with error → hasError true, error value', () {
+      final err = Exception('boom');
+      final snap = AsyncSnapshot<Object?>.withError(
+        ConnectionState.done,
+        err,
+      );
+      expect(resolveBuiltinProperty(snap, 'hasError'), (true, true));
+      expect(resolveBuiltinProperty(snap, 'error'), (true, err));
+    });
+
+    test('snapshot.connectionState → ConnectionState', () {
+      const snap = AsyncSnapshot<Object?>.nothing();
+      expect(
+        resolveBuiltinProperty(snap, 'connectionState'),
+        (true, ConnectionState.none),
+      );
+    });
+
+    test('unknown snapshot property → (false, null)', () {
+      const snap = AsyncSnapshot<Object?>.nothing();
+      expect(resolveBuiltinProperty(snap, 'nope'), (false, null));
+    });
+  });
+
+  group('resolveBuiltinProperty - BoxConstraints', () {
+    test('.maxWidth / .minWidth', () {
+      const c = BoxConstraints(minWidth: 10, maxWidth: 100);
+      expect(resolveBuiltinProperty(c, 'maxWidth'), (true, 100.0));
+      expect(resolveBuiltinProperty(c, 'minWidth'), (true, 10.0));
+    });
+
+    test('.maxHeight / .minHeight', () {
+      const c = BoxConstraints(minHeight: 5, maxHeight: 50);
+      expect(resolveBuiltinProperty(c, 'maxHeight'), (true, 50.0));
+      expect(resolveBuiltinProperty(c, 'minHeight'), (true, 5.0));
+    });
+
+    test('.biggest / .smallest return Size', () {
+      const c = BoxConstraints.tightFor(width: 20, height: 30);
+      final biggest = resolveBuiltinProperty(c, 'biggest');
+      expect(biggest.$1, true);
+      expect(biggest.$2, isA<Size>());
+      final smallest = resolveBuiltinProperty(c, 'smallest');
+      expect(smallest.$1, true);
+      expect(smallest.$2, isA<Size>());
+    });
+
+    test('unknown BoxConstraints property → (false, null)', () {
+      const c = BoxConstraints();
+      expect(resolveBuiltinProperty(c, 'nope'), (false, null));
     });
   });
 

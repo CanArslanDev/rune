@@ -89,6 +89,10 @@ void main() {
         'UnconstrainedBox',
         'FractionallySizedBox',
         'StatefulBuilder',
+        'FutureBuilder',
+        'StreamBuilder',
+        'LayoutBuilder',
+        'OrientationBuilder',
         'RuneCompose',
       ]) {
         expect(r.contains(name), isTrue, reason: 'missing widget $name');
@@ -115,8 +119,14 @@ void main() {
         'NavigationRailDestination',
         'GridView.count',
         'GridView.extent',
+        'ListView.builder',
+        'GridView.countBuilder',
+        'GridView.extentBuilder',
         'SliverGrid.count',
         'SliverGrid.extent',
+        'SliverList.builder',
+        'SliverGrid.countBuilder',
+        'SliverGrid.extentBuilder',
         'Transform.scale',
         'Transform.rotate',
         'Offset',
@@ -150,8 +160,8 @@ void main() {
       RuneDefaults.registerWidgets(w);
       RuneDefaults.registerValues(v);
       RuneDefaults.registerConstants(c);
-      expect(w.size, greaterThanOrEqualTo(80));
-      expect(v.size, greaterThanOrEqualTo(28));
+      expect(w.size, greaterThanOrEqualTo(84));
+      expect(v.size, greaterThanOrEqualTo(34));
       expect(c.size, greaterThanOrEqualTo(50));
     });
   });

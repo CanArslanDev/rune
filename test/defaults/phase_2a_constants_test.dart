@@ -213,5 +213,21 @@ void main() {
         NavigationRailLabelType.all,
       );
     });
+
+    test('seeds ConnectionState', () {
+      final r = ConstantRegistry();
+      registerPhase2aConstants(r);
+      expect(r.resolve('ConnectionState', 'none'), ConnectionState.none);
+      expect(r.resolve('ConnectionState', 'waiting'), ConnectionState.waiting);
+      expect(r.resolve('ConnectionState', 'active'), ConnectionState.active);
+      expect(r.resolve('ConnectionState', 'done'), ConnectionState.done);
+    });
+
+    test('seeds Orientation', () {
+      final r = ConstantRegistry();
+      registerPhase2aConstants(r);
+      expect(r.resolve('Orientation', 'portrait'), Orientation.portrait);
+      expect(r.resolve('Orientation', 'landscape'), Orientation.landscape);
+    });
   });
 }
