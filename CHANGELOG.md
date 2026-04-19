@@ -7,6 +7,20 @@ All notable changes to this project are documented here. Format follows
 ## [Unreleased]
 
 ### Added
+- **Display wrappers and programmatic transforms** — five
+  display-layer widget builders and two Transform value ctors.
+  `FittedBox` (scale child to fit; `fit: BoxFit`, `alignment`),
+  `ColoredBox` (efficient leaf for solid color fills),
+  `DecoratedBox` (Container without padding/margin overhead;
+  required `decoration`, optional `position`), `Offstage`
+  (renders invisible but state preserved), `Semantics`
+  (accessibility label/value/hint/button/link/header/image flags).
+  `Transform.scale` (uniform via `scale` or axis-specific via
+  `scaleX`/`scaleY`) and `Transform.rotate` (required
+  `angle` in radians). `DecorationPosition.background` and
+  `.foreground` join the constants table for DecoratedBox.
+  `Transform.translate` is deferred until the Offset value
+  builder lands alongside.
 - **Slivers and CustomScrollView** — compose advanced scrollable
   layouts that plain `ListView` / `GridView` can't express.
   `CustomScrollView` drives the `slivers` list; sliver primitives

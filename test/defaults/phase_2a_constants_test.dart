@@ -174,5 +174,18 @@ void main() {
       registerPhase2aConstants(r);
       expect(r.resolve('Clip', 'antiAlias'), Clip.antiAlias);
     });
+
+    test('seeds DecorationPosition', () {
+      final r = ConstantRegistry();
+      registerPhase2aConstants(r);
+      expect(
+        r.resolve('DecorationPosition', 'background'),
+        DecorationPosition.background,
+      );
+      expect(
+        r.resolve('DecorationPosition', 'foreground'),
+        DecorationPosition.foreground,
+      );
+    });
   });
 }

@@ -12,6 +12,8 @@ import 'package:rune/src/builders/values/grid_view_extent_builder.dart';
 import 'package:rune/src/builders/values/sliver_grid_count_builder.dart';
 import 'package:rune/src/builders/values/sliver_grid_extent_builder.dart';
 import 'package:rune/src/builders/values/text_style_builder.dart';
+import 'package:rune/src/builders/values/transform_rotate_builder.dart';
+import 'package:rune/src/builders/values/transform_scale_builder.dart';
 import 'package:rune/src/builders/widgets/animated_container_builder.dart';
 import 'package:rune/src/builders/widgets/animated_cross_fade_builder.dart';
 import 'package:rune/src/builders/widgets/animated_opacity_builder.dart';
@@ -29,15 +31,18 @@ import 'package:rune/src/builders/widgets/chip_builder.dart';
 import 'package:rune/src/builders/widgets/circular_progress_indicator_builder.dart';
 import 'package:rune/src/builders/widgets/clip_oval_builder.dart';
 import 'package:rune/src/builders/widgets/clip_rrect_builder.dart';
+import 'package:rune/src/builders/widgets/colored_box_builder.dart';
 import 'package:rune/src/builders/widgets/column_builder.dart';
 import 'package:rune/src/builders/widgets/container_builder.dart';
 import 'package:rune/src/builders/widgets/custom_scroll_view_builder.dart';
+import 'package:rune/src/builders/widgets/decorated_box_builder.dart';
 import 'package:rune/src/builders/widgets/divider_builder.dart';
 import 'package:rune/src/builders/widgets/drawer_builder.dart';
 import 'package:rune/src/builders/widgets/dropdown_button_builder.dart';
 import 'package:rune/src/builders/widgets/dropdown_menu_item_builder.dart';
 import 'package:rune/src/builders/widgets/elevated_button_builder.dart';
 import 'package:rune/src/builders/widgets/expanded_builder.dart';
+import 'package:rune/src/builders/widgets/fitted_box_builder.dart';
 import 'package:rune/src/builders/widgets/flexible_builder.dart';
 import 'package:rune/src/builders/widgets/floating_action_button_builder.dart';
 import 'package:rune/src/builders/widgets/gesture_detector_builder.dart';
@@ -50,6 +55,7 @@ import 'package:rune/src/builders/widgets/ink_well_builder.dart';
 import 'package:rune/src/builders/widgets/linear_progress_indicator_builder.dart';
 import 'package:rune/src/builders/widgets/list_tile_builder.dart';
 import 'package:rune/src/builders/widgets/list_view_builder.dart';
+import 'package:rune/src/builders/widgets/offstage_builder.dart';
 import 'package:rune/src/builders/widgets/opacity_builder.dart';
 import 'package:rune/src/builders/widgets/padding_builder.dart';
 import 'package:rune/src/builders/widgets/positioned_builder.dart';
@@ -57,6 +63,7 @@ import 'package:rune/src/builders/widgets/radio_builder.dart';
 import 'package:rune/src/builders/widgets/row_builder.dart';
 import 'package:rune/src/builders/widgets/safe_area_builder.dart';
 import 'package:rune/src/builders/widgets/scaffold_builder.dart';
+import 'package:rune/src/builders/widgets/semantics_builder.dart';
 import 'package:rune/src/builders/widgets/single_child_scroll_view_builder.dart';
 import 'package:rune/src/builders/widgets/sized_box_builder.dart';
 import 'package:rune/src/builders/widgets/slider_builder.dart';
@@ -187,7 +194,13 @@ abstract final class RuneDefaults {
       ..registerBuilder(const SliverToBoxAdapterBuilder())
       ..registerBuilder(const SliverAppBarBuilder())
       ..registerBuilder(const SliverPaddingBuilder())
-      ..registerBuilder(const SliverFillRemainingBuilder());
+      ..registerBuilder(const SliverFillRemainingBuilder())
+      // Display wrappers.
+      ..registerBuilder(const FittedBoxBuilder())
+      ..registerBuilder(const ColoredBoxBuilder())
+      ..registerBuilder(const DecoratedBoxBuilder())
+      ..registerBuilder(const OffstageBuilder())
+      ..registerBuilder(const SemanticsBuilder());
   }
 
   /// Registers every Phase 1–2c value builder into [registry].
@@ -210,7 +223,10 @@ abstract final class RuneDefaults {
       ..registerBuilder(const GridViewExtentBuilder())
       // Slivers (grid variants).
       ..registerBuilder(const SliverGridCountBuilder())
-      ..registerBuilder(const SliverGridExtentBuilder());
+      ..registerBuilder(const SliverGridExtentBuilder())
+      // Transforms.
+      ..registerBuilder(const TransformScaleBuilder())
+      ..registerBuilder(const TransformRotateBuilder());
   }
 
   /// Seeds [registry] with Phase 2a constants (Colors, enums,

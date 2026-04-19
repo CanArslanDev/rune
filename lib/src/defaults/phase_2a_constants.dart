@@ -39,6 +39,7 @@ void registerPhase2aConstants(ConstantRegistry registry) {
   _registerBottomNavigationBarType(registry);
   _registerCrossFadeState(registry);
   _registerClip(registry);
+  _registerDecorationPosition(registry);
 }
 
 // Registers every Colors member that is a concrete Color value.
@@ -258,5 +259,14 @@ void _registerCrossFadeState(ConstantRegistry r) {
 void _registerClip(ConstantRegistry r) {
   r.registerAll('Clip', <String, Object?>{
     for (final v in Clip.values) v.name: v,
+  });
+}
+
+// Registers DecorationPosition enum values (background, foreground) —
+// used by the DecoratedBox builder's `position:` arg.
+void _registerDecorationPosition(ConstantRegistry r) {
+  r.registerAll('DecorationPosition', <String, Object?>{
+    'background': DecorationPosition.background,
+    'foreground': DecorationPosition.foreground,
   });
 }

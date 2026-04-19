@@ -72,6 +72,11 @@ void main() {
         'SliverAppBar',
         'SliverPadding',
         'SliverFillRemaining',
+        'FittedBox',
+        'ColoredBox',
+        'DecoratedBox',
+        'Offstage',
+        'Semantics',
       ]) {
         expect(r.contains(name), isTrue, reason: 'missing widget $name');
       }
@@ -97,6 +102,8 @@ void main() {
         'GridView.extent',
         'SliverGrid.count',
         'SliverGrid.extent',
+        'Transform.scale',
+        'Transform.rotate',
       ]) {
         expect(r.contains(key), isTrue, reason: 'missing value $key');
       }
@@ -119,8 +126,8 @@ void main() {
       RuneDefaults.registerWidgets(w);
       RuneDefaults.registerValues(v);
       RuneDefaults.registerConstants(c);
-      expect(w.size, greaterThanOrEqualTo(62));
-      expect(v.size, greaterThanOrEqualTo(16));
+      expect(w.size, greaterThanOrEqualTo(67));
+      expect(v.size, greaterThanOrEqualTo(18));
       expect(c.size, greaterThanOrEqualTo(50));
     });
   });
