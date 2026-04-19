@@ -56,13 +56,17 @@ final class ExpressionResolver {
   /// before [PrefixedIdentifier] so receiver-style property access on
   /// non-identifier targets (e.g. `10.px`, `(5).doubled`) routes through
   /// the extension registry. [PrefixedIdentifier] must be tested before
-  /// [SimpleIdentifier] because it extends it.
+  /// [SimpleIdentifier] because it extends it. [BinaryExpression] and
+  /// [PrefixExpression] are plain [Expression] siblings and are placed
+  /// between [IndexExpression] and [Literal] purely for readability.
   Object? resolve(Expression expr, RuneContext ctx) {
     return switch (expr) {
       StringInterpolation() => _resolveInterpolation(expr, ctx),
       ListLiteral() => _resolveList(expr, ctx),
       SetOrMapLiteral() => _resolveSetOrMap(expr, ctx),
       IndexExpression() => _resolveIndex(expr, ctx),
+      BinaryExpression() => _resolveBinary(expr, ctx),
+      PrefixExpression() => _resolvePrefix(expr, ctx),
       Literal() => _literal.resolve(expr),
       PropertyAccess() => _requireProperty().resolve(expr, ctx),
       PrefixedIdentifier() => _identifier.resolvePrefixed(expr, ctx),
@@ -251,6 +255,147 @@ final class ExpressionResolver {
       'Cannot index into ${target.runtimeType}',
       location: SourceSpan.fromAstOffset(ctx.source, node.offset, node.length),
     );
+  }
+
+  /// Evaluates a [BinaryExpression] — equality (`==`, `!=`), comparison
+  /// (`<`, `<=`, `>`, `>=`), short-circuit logical (`&&`, `||`), and
+  /// arithmetic (`+`, `-`, `*`, `/`, `%`).
+  ///
+  /// `&&` / `||` short-circuit per Dart semantics: the RHS is not
+  /// evaluated when the LHS determines the result. This preserves the
+  /// common null-guard idiom (e.g. `isPresent && item.enabled` where
+  /// `item` may be absent when `isPresent` is false).
+  ///
+  /// `==` / `!=` fall back to Dart's default equality and accept any
+  /// type pair. Comparison operators accept `(num, num)` or
+  /// `(String, String)`; any other pairing raises [ResolveException].
+  /// Arithmetic operators accept `(num, num)` only; string
+  /// concatenation via `+` is deliberately unsupported — use string
+  /// interpolation instead. `/` always returns `double` per Dart
+  /// semantics. Truncating division (`~/`) and bitwise operators are
+  /// out of scope and surface via the unsupported-operator default arm.
+  Object? _resolveBinary(BinaryExpression node, RuneContext ctx) {
+    final op = node.operator.lexeme;
+
+    // Short-circuit: do NOT evaluate rightOperand until we know we must.
+    if (op == '&&' || op == '||') {
+      final left = resolve(node.leftOperand, ctx);
+      if (left is! bool) {
+        throw ResolveException(
+          node.toSource(),
+          'Logical operator "$op" expects bool on the left, '
+          'got ${left.runtimeType}',
+          location:
+              SourceSpan.fromAstOffset(ctx.source, node.offset, node.length),
+        );
+      }
+      if (op == '&&' && !left) return false;
+      if (op == '||' && left) return true;
+      final right = resolve(node.rightOperand, ctx);
+      if (right is! bool) {
+        throw ResolveException(
+          node.toSource(),
+          'Logical operator "$op" expects bool on the right, '
+          'got ${right.runtimeType}',
+          location:
+              SourceSpan.fromAstOffset(ctx.source, node.offset, node.length),
+        );
+      }
+      return right;
+    }
+
+    final left = resolve(node.leftOperand, ctx);
+    final right = resolve(node.rightOperand, ctx);
+
+    return switch (op) {
+      '==' => left == right,
+      '!=' => left != right,
+      '<' => _compareNumOrString(left, right, node, ctx) < 0,
+      '<=' => _compareNumOrString(left, right, node, ctx) <= 0,
+      '>' => _compareNumOrString(left, right, node, ctx) > 0,
+      '>=' => _compareNumOrString(left, right, node, ctx) >= 0,
+      '+' || '-' || '*' || '/' || '%' =>
+        _arithmetic(left, right, op, node, ctx),
+      _ => throw ResolveException(
+          node.toSource(),
+          'Unsupported binary operator "$op"',
+          location:
+              SourceSpan.fromAstOffset(ctx.source, node.offset, node.length),
+        ),
+    };
+  }
+
+  int _compareNumOrString(
+    Object? left,
+    Object? right,
+    BinaryExpression node,
+    RuneContext ctx,
+  ) {
+    if (left is num && right is num) return left.compareTo(right);
+    if (left is String && right is String) return left.compareTo(right);
+    throw ResolveException(
+      node.toSource(),
+      'Comparison operator "${node.operator.lexeme}" expects matching num or '
+      'String operands; got ${left.runtimeType} and ${right.runtimeType}',
+      location:
+          SourceSpan.fromAstOffset(ctx.source, node.offset, node.length),
+    );
+  }
+
+  Object _arithmetic(
+    Object? left,
+    Object? right,
+    String op,
+    BinaryExpression node,
+    RuneContext ctx,
+  ) {
+    if (left is! num || right is! num) {
+      throw ResolveException(
+        node.toSource(),
+        'Arithmetic operator "$op" expects num operands; got '
+        '${left.runtimeType} and ${right.runtimeType}',
+        location:
+            SourceSpan.fromAstOffset(ctx.source, node.offset, node.length),
+      );
+    }
+    return switch (op) {
+      '+' => left + right,
+      '-' => left - right,
+      '*' => left * right,
+      '/' => left / right,
+      '%' => left % right,
+      _ => throw StateError('unreachable: op=$op'),
+    };
+  }
+
+  /// Evaluates a [PrefixExpression] — logical not (`!`) on `bool` and
+  /// unary negation (`-`) on `num`. `++`, `--`, and `~` are out of
+  /// scope and raise [ResolveException] via the default arm.
+  Object _resolvePrefix(PrefixExpression node, RuneContext ctx) {
+    final op = node.operator.lexeme;
+    final operand = resolve(node.operand, ctx);
+    return switch (op) {
+      '!' when operand is bool => !operand,
+      '!' => throw ResolveException(
+          node.toSource(),
+          'Logical not "!" expects bool, got ${operand.runtimeType}',
+          location:
+              SourceSpan.fromAstOffset(ctx.source, node.offset, node.length),
+        ),
+      '-' when operand is num => -operand,
+      '-' => throw ResolveException(
+          node.toSource(),
+          'Unary minus "-" expects num, got ${operand.runtimeType}',
+          location:
+              SourceSpan.fromAstOffset(ctx.source, node.offset, node.length),
+        ),
+      _ => throw ResolveException(
+          node.toSource(),
+          'Unsupported prefix operator "$op"',
+          location:
+              SourceSpan.fromAstOffset(ctx.source, node.offset, node.length),
+        ),
+    };
   }
 
   PropertyResolver _requireProperty() {

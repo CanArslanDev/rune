@@ -69,14 +69,6 @@ void main() {
       );
     });
 
-    test('throws ResolveException on unsupported binary op', () {
-      final r = makeResolver();
-      expect(
-        () => r.resolve(parser.parse('1 + 2'), testContext()),
-        throwsA(isA<ResolveException>()),
-      );
-    });
-
     test('routes SimpleIdentifier → data context', () {
       final r = ExpressionResolver(LiteralResolver(), IdentifierResolver());
       final ctx = testContext(data: RuneDataContext(const {'name': 'Ali'}));
@@ -308,10 +300,10 @@ void main() {
   group('ExpressionResolver — ResolveException.location threading', () {
     test('unsupported expression populates location with line/excerpt', () {
       final r = ExpressionResolver(LiteralResolver(), IdentifierResolver());
-      // `1 + 2` is a BinaryExpression — not handled by the resolver's
-      // switch arms, so it hits the `_` default that throws
+      // A cascade expression (`1..toString()`) is not handled by any
+      // resolver arm, so it hits the `_` default that throws
       // ResolveException with the span of the unsupported node.
-      const source = '1 + 2';
+      const source = '1..toString()';
       final ctx = testContext(source: source);
       try {
         r.resolve(parser.parse(source), ctx);
@@ -320,7 +312,7 @@ void main() {
         expect(e.location, isNotNull);
         expect(e.location!.line, 1);
         expect(e.location!.column, 1);
-        expect(e.location!.excerpt, '1 + 2');
+        expect(e.location!.excerpt, source);
       }
     });
 
@@ -339,6 +331,220 @@ void main() {
         // The ForElement node's offset is right after the opening '['.
         expect(e.location!.column, 2);
         expect(e.location!.excerpt, source);
+      }
+    });
+  });
+
+  group('binary and prefix operators', () {
+    // --- Equality -----------------------------------------------------
+    test('== returns true for structurally equal values', () {
+      final r = makeResolver();
+      expect(r.resolve(parser.parse('1 == 1'), testContext()), true);
+      expect(r.resolve(parser.parse("'a' == 'a'"), testContext()), true);
+      expect(r.resolve(parser.parse("1 == '1'"), testContext()), false);
+    });
+
+    test('!= returns the inverse of ==', () {
+      final r = makeResolver();
+      expect(r.resolve(parser.parse('1 != 2'), testContext()), true);
+      expect(r.resolve(parser.parse('1 != 1'), testContext()), false);
+    });
+
+    // --- Comparison ---------------------------------------------------
+    test('numeric comparison operators produce expected booleans', () {
+      final r = makeResolver();
+      expect(r.resolve(parser.parse('1 < 2'), testContext()), true);
+      expect(r.resolve(parser.parse('2 <= 2'), testContext()), true);
+      expect(r.resolve(parser.parse('3 > 2'), testContext()), true);
+      expect(r.resolve(parser.parse('2 >= 2'), testContext()), true);
+      expect(r.resolve(parser.parse('5 < 2'), testContext()), false);
+    });
+
+    test('string comparison operators use lexicographic order', () {
+      final r = makeResolver();
+      expect(
+        r.resolve(parser.parse("'apple' < 'banana'"), testContext()),
+        true,
+      );
+      expect(r.resolve(parser.parse("'a' >= 'a'"), testContext()), true);
+    });
+
+    test('mixed-type comparison throws ResolveException with location', () {
+      final r = makeResolver();
+      const source = "1 < 'a'";
+      final ctx = testContext(source: source);
+      try {
+        r.resolve(parser.parse(source), ctx);
+        fail('expected ResolveException');
+      } on ResolveException catch (e) {
+        expect(e.message, contains('Comparison operator'));
+        expect(e.location, isNotNull);
+        expect(e.location!.excerpt, contains("1 < 'a'"));
+      }
+    });
+
+    test('comparison of nulls throws ResolveException', () {
+      final r = makeResolver();
+      expect(
+        () => r.resolve(parser.parse('null < 1'), testContext()),
+        throwsA(isA<ResolveException>()),
+      );
+    });
+
+    // --- Logical short-circuit ---------------------------------------
+    test('&& short-circuits on false LHS without evaluating RHS', () {
+      final r = makeResolver();
+      // `missingKey` is not in the data context — evaluating it would
+      // raise BindingException. The short-circuit guarantees it isn't.
+      expect(
+        r.resolve(parser.parse('false && missingKey'), testContext()),
+        false,
+      );
+    });
+
+    test('|| short-circuits on true LHS without evaluating RHS', () {
+      final r = makeResolver();
+      expect(
+        r.resolve(parser.parse('true || missingKey'), testContext()),
+        true,
+      );
+    });
+
+    test('logical operator with non-bool operand throws ResolveException', () {
+      final r = makeResolver();
+      try {
+        r.resolve(parser.parse("'x' && true"), testContext());
+        fail('expected ResolveException');
+      } on ResolveException catch (e) {
+        expect(e.message, contains('&&'));
+        expect(e.message, contains('bool'));
+      }
+    });
+
+    // --- Arithmetic --------------------------------------------------
+    test('+, -, * on ints return ints', () {
+      final r = makeResolver();
+      expect(r.resolve(parser.parse('3 + 4'), testContext()), 7);
+      expect(r.resolve(parser.parse('3 + 4'), testContext()), isA<int>());
+      expect(r.resolve(parser.parse('10 - 4'), testContext()), 6);
+      expect(r.resolve(parser.parse('10 - 4'), testContext()), isA<int>());
+      expect(r.resolve(parser.parse('3 * 4'), testContext()), 12);
+      expect(r.resolve(parser.parse('3 * 4'), testContext()), isA<int>());
+    });
+
+    test('/ always returns a double', () {
+      final r = makeResolver();
+      expect(r.resolve(parser.parse('6 / 2'), testContext()), 3.0);
+      expect(r.resolve(parser.parse('6 / 2'), testContext()), isA<double>());
+    });
+
+    test('% returns remainder', () {
+      final r = makeResolver();
+      expect(r.resolve(parser.parse('7 % 3'), testContext()), 1);
+    });
+
+    test('mixed int/double promotes to double', () {
+      final r = makeResolver();
+      expect(r.resolve(parser.parse('1 + 1.5'), testContext()), 2.5);
+      expect(r.resolve(parser.parse('1 + 1.5'), testContext()), isA<double>());
+    });
+
+    test('String + String throws ResolveException mentioning num', () {
+      final r = makeResolver();
+      try {
+        r.resolve(parser.parse("'a' + 'b'"), testContext());
+        fail('expected ResolveException');
+      } on ResolveException catch (e) {
+        expect(e.message, contains('num'));
+      }
+    });
+
+    // --- Prefix ------------------------------------------------------
+    test('!true → false, !false → true', () {
+      final r = makeResolver();
+      expect(r.resolve(parser.parse('!true'), testContext()), false);
+      expect(r.resolve(parser.parse('!false'), testContext()), true);
+    });
+
+    test('!<non-bool> throws ResolveException mentioning bool', () {
+      final r = makeResolver();
+      try {
+        r.resolve(parser.parse('!1'), testContext());
+        fail('expected ResolveException');
+      } on ResolveException catch (e) {
+        expect(e.message, contains('bool'));
+      }
+    });
+
+    test('unary minus negates num values', () {
+      final r = makeResolver();
+      expect(r.resolve(parser.parse('-5'), testContext()), -5);
+      expect(r.resolve(parser.parse('-(1.5)'), testContext()), -1.5);
+    });
+
+    test('unary minus on non-num throws ResolveException mentioning num', () {
+      final r = makeResolver();
+      try {
+        r.resolve(parser.parse("-'x'"), testContext());
+        fail('expected ResolveException');
+      } on ResolveException catch (e) {
+        expect(e.message, contains('num'));
+      }
+    });
+
+    // --- Location threading ------------------------------------------
+    test('multi-line binary failure reports correct line', () {
+      final r = makeResolver();
+      const source = "[\n  'header',\n  1 < 'a',\n]";
+      final ctx = testContext(source: source);
+      try {
+        r.resolve(parser.parse(source), ctx);
+        fail('expected ResolveException');
+      } on ResolveException catch (e) {
+        expect(e.location, isNotNull);
+        expect(e.location!.line, 3);
+      }
+    });
+
+    test('multi-line prefix failure reports correct line', () {
+      final r = makeResolver();
+      const source = "[\n  !'x',\n]";
+      final ctx = testContext(source: source);
+      try {
+        r.resolve(parser.parse(source), ctx);
+        fail('expected ResolveException');
+      } on ResolveException catch (e) {
+        expect(e.location, isNotNull);
+        expect(e.location!.line, 2);
+      }
+    });
+
+    // --- Unsupported operators ---------------------------------------
+    test('truncating division (~/) throws ResolveException', () {
+      final r = makeResolver();
+      try {
+        r.resolve(parser.parse('7 ~/ 2'), testContext());
+        fail('expected ResolveException');
+      } on ResolveException catch (e) {
+        expect(e.message, contains('~/'));
+      }
+    });
+
+    test('prefix increment (++) throws ResolveException', () {
+      final r = makeResolver();
+      // `++x` with `x` in data would short-circuit on a missing operand
+      // type; use a literal-compatible form so the operator itself is
+      // what trips the default arm.
+      const source = '++x';
+      final ctx = testContext(
+        data: RuneDataContext(const {'x': 1}),
+        source: source,
+      );
+      try {
+        r.resolve(parser.parse(source), ctx);
+        fail('expected ResolveException');
+      } on ResolveException catch (e) {
+        expect(e.message, contains('++'));
       }
     });
   });
