@@ -6,6 +6,18 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+### Added
+- **Transform.translate, Transform.flip, and Offset**. Closes the
+  Transform value-builder family started in v0.7.0 (which shipped
+  `Transform.scale` and `Transform.rotate` but deferred translate
+  pending an `Offset` value builder). `Offset(dx, dy)` takes two
+  positional nums coerced to double. `Transform.translate` requires
+  an `offset` plus optional `child` and `transformHitTests`.
+  `Transform.flip` takes optional `flipX` / `flipY` booleans (both
+  default false) plus `transformHitTests` and optional `child`;
+  alignment is fixed to `Alignment.center` by Flutter's own
+  constructor.
+
 ## [0.7.0] - 2026-04-19 - wrappers, slivers, transforms
 
 ### Added

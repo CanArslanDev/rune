@@ -9,11 +9,14 @@ import 'package:rune/src/builders/values/edge_insets_only_builder.dart';
 import 'package:rune/src/builders/values/edge_insets_symmetric_builder.dart';
 import 'package:rune/src/builders/values/grid_view_count_builder.dart';
 import 'package:rune/src/builders/values/grid_view_extent_builder.dart';
+import 'package:rune/src/builders/values/offset_builder.dart';
 import 'package:rune/src/builders/values/sliver_grid_count_builder.dart';
 import 'package:rune/src/builders/values/sliver_grid_extent_builder.dart';
 import 'package:rune/src/builders/values/text_style_builder.dart';
+import 'package:rune/src/builders/values/transform_flip_builder.dart';
 import 'package:rune/src/builders/values/transform_rotate_builder.dart';
 import 'package:rune/src/builders/values/transform_scale_builder.dart';
+import 'package:rune/src/builders/values/transform_translate_builder.dart';
 import 'package:rune/src/builders/widgets/animated_container_builder.dart';
 import 'package:rune/src/builders/widgets/animated_cross_fade_builder.dart';
 import 'package:rune/src/builders/widgets/animated_opacity_builder.dart';
@@ -225,8 +228,11 @@ abstract final class RuneDefaults {
       ..registerBuilder(const SliverGridCountBuilder())
       ..registerBuilder(const SliverGridExtentBuilder())
       // Transforms.
+      ..registerBuilder(const OffsetBuilder())
       ..registerBuilder(const TransformScaleBuilder())
-      ..registerBuilder(const TransformRotateBuilder());
+      ..registerBuilder(const TransformRotateBuilder())
+      ..registerBuilder(const TransformTranslateBuilder())
+      ..registerBuilder(const TransformFlipBuilder());
   }
 
   /// Seeds [registry] with Phase 2a constants (Colors, enums,

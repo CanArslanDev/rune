@@ -104,6 +104,9 @@ void main() {
         'SliverGrid.extent',
         'Transform.scale',
         'Transform.rotate',
+        'Offset',
+        'Transform.translate',
+        'Transform.flip',
       ]) {
         expect(r.contains(key), isTrue, reason: 'missing value $key');
       }
@@ -127,7 +130,7 @@ void main() {
       RuneDefaults.registerValues(v);
       RuneDefaults.registerConstants(c);
       expect(w.size, greaterThanOrEqualTo(67));
-      expect(v.size, greaterThanOrEqualTo(18));
+      expect(v.size, greaterThanOrEqualTo(21));
       expect(c.size, greaterThanOrEqualTo(50));
     });
   });
