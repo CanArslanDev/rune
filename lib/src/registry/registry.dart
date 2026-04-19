@@ -1,4 +1,5 @@
 import 'package:rune/src/core/exceptions.dart';
+import 'package:rune/src/core/source_span.dart';
 
 /// A keyed, name-based registry of items of type [T].
 ///
@@ -37,14 +38,18 @@ class Registry<T extends Object> {
   /// Returns the item registered under [name]; throws
   /// [UnregisteredBuilderException] citing [source] if absent.
   ///
+  /// [location] is an optional [SourceSpan] pointing into the Rune source
+  /// where the offending reference sits. Resolver callers with an AST node
+  /// in hand thread one through; non-resolver callers may omit it.
+  ///
   /// Note: this registry is used exclusively by builder lookups in Phase 1,
   /// so the exception's `typeName` maps naturally to the registered key. A
   /// future task may introduce a generic "registry miss" exception when
   /// non-builder registries are added.
-  T require(String name, {required String source}) {
+  T require(String name, {required String source, SourceSpan? location}) {
     final item = _items[name];
     if (item == null) {
-      throw UnregisteredBuilderException(source, name);
+      throw UnregisteredBuilderException(source, name, location: location);
     }
     return item;
   }

@@ -181,4 +181,63 @@ void main() {
       },
     );
   });
+
+  group('InvocationResolver — exception.location threading', () {
+    test('unregistered builder populates location with line/excerpt', () {
+      const source = 'Row(\n  children: [Nope()],\n)';
+      // Build pipeline around this exact source so the context carries it.
+      // `Row` is registered so the outer invocation succeeds into
+      // argument resolution, letting the inner `Nope()` surface the
+      // UnregisteredBuilderException with a line-2 pointer.
+      final wr = WidgetRegistry()..register('Row', _PassthroughRow());
+      final vr = ValueRegistry();
+      final ctx = testContext(widgets: wr, values: vr, source: source);
+      final expr = ExpressionResolver(LiteralResolver(), IdentifierResolver());
+      final inv = InvocationResolver(expr);
+      expr.bind(inv);
+      try {
+        expr.resolve(parser.parse(source), ctx);
+        fail('expected UnregisteredBuilderException');
+      } on UnregisteredBuilderException catch (err) {
+        expect(err.location, isNotNull);
+        // `Nope()` sits on line 2 of the source.
+        expect(err.location!.line, 2);
+        expect(err.location!.excerpt, contains('Nope()'));
+      }
+    });
+
+    test(
+      'unsupported MethodInvocation target shape populates location',
+      () {
+        // `a.b.c()` — target of the outer MethodInvocation is a
+        // PrefixedIdentifier, which triggers the "unsupported target shape"
+        // guard. Use a multiline wrapper so line/column are meaningful.
+        const source = 'Row(\n  children: [a.b.c()],\n)';
+        final wr = WidgetRegistry()
+          ..register('Row', _PassthroughRow());
+        final vr = ValueRegistry();
+        final ctx = testContext(widgets: wr, values: vr, source: source);
+        final expr =
+            ExpressionResolver(LiteralResolver(), IdentifierResolver());
+        final inv = InvocationResolver(expr);
+        expr.bind(inv);
+        try {
+          expr.resolve(parser.parse(source), ctx);
+          fail('expected ResolveException');
+        } on ResolveException catch (err) {
+          expect(err.location, isNotNull);
+          expect(err.location!.line, 2);
+          expect(err.location!.excerpt, contains('a.b.c()'));
+        }
+      },
+    );
+  });
+}
+
+final class _PassthroughRow implements RuneWidgetBuilder {
+  @override
+  String get typeName => 'Row';
+  @override
+  Widget build(ResolvedArguments args, RuneContext ctx) =>
+      const SizedBox.shrink();
 }

@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rune/src/core/exceptions.dart';
+import 'package:rune/src/core/source_span.dart';
 import 'package:rune/src/registry/extension_registry.dart';
 
 import '../_helpers/test_context.dart';
@@ -66,6 +67,35 @@ void main() {
         ..register('a', (t, c) => t)
         ..register('b', (t, c) => t);
       expect(r.size, 2);
+    });
+  });
+
+  group('ExtensionRegistry.require — location threading', () {
+    test('require with explicit location threads through to thrown exception',
+        () {
+      const source = 'Row(\n  children: [1.nope],\n)';
+      final r = ExtensionRegistry();
+      // "1.nope" starts after "Row(\n  children: [" at offset 18, length 6.
+      final span = SourceSpan.fromOffset(source, 18, 6);
+      expect(
+        () => r.require(
+          'nope',
+          1,
+          testContext(source: source),
+          source: '1.nope',
+          location: span,
+        ),
+        throwsA(
+          isA<ResolveException>()
+              .having((e) => e.location, 'location', isNotNull)
+              .having((e) => e.location!.line, 'location.line', 2)
+              .having(
+                (e) => e.location!.excerpt,
+                'location.excerpt',
+                contains('1.nope'),
+              ),
+        ),
+      );
     });
   });
 }

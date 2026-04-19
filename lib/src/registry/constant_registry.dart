@@ -1,4 +1,5 @@
 import 'package:rune/src/core/exceptions.dart';
+import 'package:rune/src/core/source_span.dart';
 
 /// A two-level registry of named static constants keyed by
 /// `typeName.memberName` (e.g. `Colors.red`, `MainAxisAlignment.center`).
@@ -59,16 +60,22 @@ final class ConstantRegistry {
 
   /// Returns the value registered under [typeName]/[memberName], or throws
   /// [ResolveException] citing [source] if the pair is unknown.
+  ///
+  /// [location] is an optional [SourceSpan] pointing into the Rune source
+  /// where the offending reference sits. Resolver callers thread one
+  /// through; non-resolver callers may omit it.
   Object? require(
     String typeName,
     String memberName, {
     required String source,
+    SourceSpan? location,
   }) {
     final bucket = _members[typeName];
     if (bucket == null || !bucket.containsKey(memberName)) {
       throw ResolveException(
         source,
         'Unknown constant "$typeName.$memberName"',
+        location: location,
       );
     }
     return bucket[memberName];

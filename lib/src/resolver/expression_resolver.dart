@@ -1,9 +1,47 @@
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:rune/src/core/exceptions.dart';
 import 'package:rune/src/core/rune_context.dart';
+import 'package:rune/src/core/source_span.dart';
 import 'package:rune/src/resolver/identifier_resolver.dart';
 import 'package:rune/src/resolver/literal_resolver.dart';
 import 'package:rune/src/resolver/property_resolver.dart';
+
+/// Length of the wrapper prefix (`'dynamic __rune__ = '`) prepended by
+/// `DartParser` before handing the cleaned source to the analyzer. AST
+/// node offsets are reported into the wrapped string; subtracting this
+/// constant rebases them into the user-facing source stored on
+/// [RuneContext.source]. Duplicated across resolver files to avoid a
+/// cross-layer import on `package:rune/src/parser/`; any change here
+/// must land alongside the sibling copies in `identifier_resolver.dart`,
+/// `property_resolver.dart`, and `invocation_resolver.dart`, and the
+/// master in `src/parser/dart_parser.dart`.
+const int _wrapperPrefixLength = 19; // 'dynamic __rune__ = '.length
+
+/// Builds a [SourceSpan] for the given [node] against the source on
+/// [ctx], rebasing the analyzer-reported offset by
+/// [_wrapperPrefixLength].
+///
+/// When the context holds an empty source string (unit-test contexts
+/// that don't care about diagnostics), returns a zero-length span at
+/// the origin so callers can still thread a non-null location without
+/// branching. When the rebased offset lands outside `[0, source.length]`
+/// for any reason (e.g., an AST parsed from a different source string
+/// in tests), clamps into range and yields a zero-length span at the
+/// clamped position.
+SourceSpan _spanOf(RuneContext ctx, AstNode node) {
+  final source = ctx.source;
+  if (source.isEmpty) {
+    return SourceSpan.fromOffset('', 0, 0);
+  }
+  final rebased = node.offset - _wrapperPrefixLength;
+  if (rebased < 0 || rebased > source.length) {
+    return SourceSpan.fromOffset(source, 0, 0);
+  }
+  final length = rebased + node.length > source.length
+      ? source.length - rebased
+      : node.length;
+  return SourceSpan.fromOffset(source, rebased, length);
+}
 
 /// Contract for the invocation resolver injected via [ExpressionResolver.bind].
 ///
@@ -74,6 +112,7 @@ final class ExpressionResolver {
       _ => throw ResolveException(
           expr.toSource(),
           'Unsupported expression: ${expr.runtimeType}',
+          location: _spanOf(ctx, expr),
         ),
     };
   }
@@ -90,6 +129,7 @@ final class ExpressionResolver {
         throw ResolveException(
           element.toSource(),
           'Unsupported interpolation element: ${element.runtimeType}',
+          location: _spanOf(ctx, element),
         );
       }
     }
@@ -120,6 +160,7 @@ final class ExpressionResolver {
     throw ResolveException(
       element.toSource(),
       'Unsupported list element: ${element.runtimeType}',
+      location: _spanOf(ctx, element),
     );
   }
 
@@ -134,6 +175,7 @@ final class ExpressionResolver {
         node.toSource(),
         'Only for-each with declaration is supported '
         '(for (final x in items)); got ${parts.runtimeType}',
+        location: _spanOf(ctx, node),
       );
     }
     final varName = parts.loopVariable.name.lexeme;
@@ -143,6 +185,7 @@ final class ExpressionResolver {
         node.toSource(),
         'for-element iterable must be Iterable, got '
         '${iterable.runtimeType}',
+        location: _spanOf(ctx, node),
       );
     }
     for (final item in iterable) {
@@ -166,6 +209,7 @@ final class ExpressionResolver {
           throw ResolveException(
             element.toSource(),
             'Mixed Set/Map literal is not supported',
+            location: _spanOf(ctx, element),
           );
         }
       }
@@ -179,6 +223,7 @@ final class ExpressionResolver {
         throw ResolveException(
           element.toSource(),
           'Unsupported set element: ${element.runtimeType}',
+          location: _spanOf(ctx, element),
         );
       }
     }
@@ -191,6 +236,7 @@ final class ExpressionResolver {
       throw ResolveException(
         node.toSource(),
         'Cascade index expressions are not supported',
+        location: _spanOf(ctx, node),
       );
     }
     final target = resolve(targetExpr, ctx);
@@ -201,12 +247,14 @@ final class ExpressionResolver {
         throw ResolveException(
           node.toSource(),
           'List index must be an int, got ${index.runtimeType}',
+          location: _spanOf(ctx, node),
         );
       }
       if (index < 0 || index >= target.length) {
         throw ResolveException(
           node.toSource(),
           'Index $index out of range for list of length ${target.length}',
+          location: _spanOf(ctx, node),
         );
       }
       return target[index];
@@ -219,6 +267,7 @@ final class ExpressionResolver {
     throw ResolveException(
       node.toSource(),
       'Cannot index into ${target.runtimeType}',
+      location: _spanOf(ctx, node),
     );
   }
 

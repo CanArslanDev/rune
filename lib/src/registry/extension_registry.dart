@@ -1,5 +1,6 @@
 import 'package:rune/src/core/exceptions.dart';
 import 'package:rune/src/core/rune_context.dart';
+import 'package:rune/src/core/source_span.dart';
 
 /// The signature every extension handler implements: take the resolved
 /// target value and the current context, return whatever the property
@@ -48,17 +49,23 @@ final class ExtensionRegistry {
 
   /// Invokes the handler for [propertyName] with [target] + [ctx], or
   /// throws [ResolveException] citing [source] if the property is unknown.
+  ///
+  /// [location] is an optional [SourceSpan] pointing into the Rune source
+  /// where the offending property access sits. Resolver callers thread one
+  /// through; non-resolver callers may omit it.
   Object? require(
     String propertyName,
     Object? target,
     RuneContext ctx, {
     required String source,
+    SourceSpan? location,
   }) {
     final handler = _handlers[propertyName];
     if (handler == null) {
       throw ResolveException(
         source,
         'Unknown extension property ".$propertyName"',
+        location: location,
       );
     }
     return handler(target, ctx);

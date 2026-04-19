@@ -129,4 +129,61 @@ void main() {
       );
     });
   });
+
+  group('IdentifierResolver — BindingException.location threading', () {
+    test(
+      'missing simple identifier populates location with line/excerpt',
+      () {
+        const source = 'missingVar';
+        final ctx = testContext(source: source);
+        final e = parser.parse(source) as SimpleIdentifier;
+        try {
+          resolver.resolveSimple(e, ctx);
+          fail('expected BindingException');
+        } on BindingException catch (err) {
+          expect(err.location, isNotNull);
+          expect(err.location!.line, 1);
+          expect(err.location!.column, 1);
+          expect(err.location!.excerpt, 'missingVar');
+        }
+      },
+    );
+
+    test('prefixed identifier type-mismatch populates location', () {
+      const source = 'user.name';
+      final ctx = testContext(
+        source: source,
+        data: RuneDataContext(const {'user': 'not a map'}),
+      );
+      final e = parser.parse(source) as PrefixedIdentifier;
+      try {
+        resolver.resolvePrefixed(e, ctx);
+        fail('expected ResolveException');
+      } on ResolveException catch (err) {
+        expect(err.location, isNotNull);
+        expect(err.location!.line, 1);
+        expect(err.location!.column, 1);
+        expect(err.location!.excerpt, 'user.name');
+      }
+    });
+
+    test(
+      'prefixed identifier unknown constant populates location via '
+      'ConstantRegistry.require',
+      () {
+        const source = 'Colors.nope';
+        final ctx = testContext(source: source);
+        final e = parser.parse(source) as PrefixedIdentifier;
+        try {
+          resolver.resolvePrefixed(e, ctx);
+          fail('expected ResolveException');
+        } on ResolveException catch (err) {
+          expect(err.location, isNotNull);
+          expect(err.location!.line, 1);
+          expect(err.location!.column, 1);
+          expect(err.location!.excerpt, 'Colors.nope');
+        }
+      },
+    );
+  });
 }

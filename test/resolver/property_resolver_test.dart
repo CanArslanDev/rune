@@ -142,4 +142,26 @@ void main() {
       );
     });
   });
+
+  group('PropertyResolver — ResolveException.location threading', () {
+    test(
+      'unknown extension property populates location with line/excerpt',
+      () {
+        final exprResolver = buildExprResolver();
+        final resolver = PropertyResolver(exprResolver);
+        const source = '(1).nope';
+        final ctx = testContext(source: source);
+        final node = parser.parse(source) as PropertyAccess;
+        try {
+          resolver.resolve(node, ctx);
+          fail('expected ResolveException');
+        } on ResolveException catch (err) {
+          expect(err.location, isNotNull);
+          expect(err.location!.line, 1);
+          expect(err.location!.column, 1);
+          expect(err.location!.excerpt, '(1).nope');
+        }
+      },
+    );
+  });
 }

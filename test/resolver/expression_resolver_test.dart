@@ -304,4 +304,42 @@ void main() {
       );
     });
   });
+
+  group('ExpressionResolver — ResolveException.location threading', () {
+    test('unsupported expression populates location with line/excerpt', () {
+      final r = ExpressionResolver(LiteralResolver(), IdentifierResolver());
+      // `1 + 2` is a BinaryExpression — not handled by the resolver's
+      // switch arms, so it hits the `_` default that throws
+      // ResolveException with the span of the unsupported node.
+      const source = '1 + 2';
+      final ctx = testContext(source: source);
+      try {
+        r.resolve(parser.parse(source), ctx);
+        fail('expected ResolveException');
+      } on ResolveException catch (e) {
+        expect(e.location, isNotNull);
+        expect(e.location!.line, 1);
+        expect(e.location!.column, 1);
+        expect(e.location!.excerpt, '1 + 2');
+      }
+    });
+
+    test('for-element with wrong parts shape populates location', () {
+      final r = ExpressionResolver(LiteralResolver(), IdentifierResolver());
+      // c-style `for (var i = 0; i < 3; i++) i` is ForPartsWithDeclarations,
+      // not ForEachPartsWithDeclaration, so it triggers the guard.
+      const source = '[for (var i = 0; i < 3; i++) i]';
+      final ctx = testContext(source: source);
+      try {
+        r.resolve(parser.parse(source), ctx);
+        fail('expected ResolveException');
+      } on ResolveException catch (e) {
+        expect(e.location, isNotNull);
+        expect(e.location!.line, 1);
+        // The ForElement node's offset is right after the opening '['.
+        expect(e.location!.column, 2);
+        expect(e.location!.excerpt, source);
+      }
+    });
+  });
 }

@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rune/src/core/exceptions.dart';
+import 'package:rune/src/core/source_span.dart';
 import 'package:rune/src/registry/constant_registry.dart';
 
 void main() {
@@ -81,6 +82,34 @@ void main() {
         ..registerAll('Colors', const {'red': 0xFFFF0000, 'blue': 0xFF0000FF})
         ..register('Axis', 'horizontal', 0);
       expect(r.size, 3);
+    });
+  });
+
+  group('ConstantRegistry.require — location threading', () {
+    test('require with explicit location threads through to thrown exception',
+        () {
+      const source = 'Text(\n  Axis.vertical,\n)';
+      final r = ConstantRegistry();
+      // "Axis.vertical" starts at offset 7 (after "Text(\n  ") and is 13 chars.
+      final span = SourceSpan.fromOffset(source, 7, 13);
+      expect(
+        () => r.require(
+          'Axis',
+          'vertical',
+          source: 'Axis.vertical',
+          location: span,
+        ),
+        throwsA(
+          isA<ResolveException>()
+              .having((e) => e.location, 'location', isNotNull)
+              .having((e) => e.location!.line, 'location.line', 2)
+              .having(
+                (e) => e.location!.excerpt,
+                'location.excerpt',
+                contains('Axis.vertical'),
+              ),
+        ),
+      );
     });
   });
 }
