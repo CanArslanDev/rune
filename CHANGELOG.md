@@ -6,6 +6,48 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-04-19 - stateful source end-to-end
+
+### Added
+
+- **Named components (Phase F of the v1.0.0 roadmap).** Source can
+  declare reusable components and invoke them by name. New
+  `RuneComponent` value type carries a name, parameter list, and
+  body closure. New `ComponentRegistry` holds components
+  per-RuneView (source-scoped, not global; a fresh registry every
+  render). New `RuneComponentBuilder` (value builder) constructs
+  and registers a component; new `RuneCompose` widget builder
+  accepts a `components: [...]` declaration list and a `root:`
+  widget tree. `InvocationResolver` dispatches against the
+  component registry before the widget and value registries, so a
+  component named `Text` shadows the default Text builder.
+  Invocation is named-arg only; positional args or named
+  constructors raise `ResolveException`; missing or extra named
+  arguments raise as well. Thirty-two new unit tests plus three
+  integration smokes drive single-use, multi-use, and nested
+  components through a live `RuneView`.
+
+### Notes
+
+- Phase E of the v1.0.0 roadmap (collection method chaining with
+  closures) shipped informally during Phase A.3 (v0.9.0) as
+  `.map`, `.where`, `.fold`, `.reduce`, and friends. v1.0.0
+  acknowledges it as complete; no additional resolver work.
+- **Stability commitment.** The public API surface is stable for
+  early adopters. Post-1.0.0 minor releases add new builders,
+  resolver arms, and source-language capabilities; patch releases
+  cover fixes and refinements. Breaking changes warrant a major
+  bump or explicit deprecation cycle.
+- Full public surface from `lib/rune.dart`: `RuneView`,
+  `RuneConfig`, `RuneDefaults`, `RuneContext`, `RuneException`
+  (sealed plus five variants), `RuneBuilder` /
+  `RuneWidgetBuilder` / `RuneValueBuilder`, `ResolvedArguments`,
+  `RuneDataContext`, `RuneEventDispatcher`, `RuneBridge`,
+  `RuneDevOverlay`, `ExtensionRegistry`, `RuneExtensionHandler`,
+  `Registry`, `WidgetRegistry`, `ValueRegistry`,
+  `ConstantRegistry`, `ComponentRegistry`, `RuneComponent`,
+  `RuneClosure`, `RuneScope`, `RuneState`, `SourceSpan`.
+
 ## [0.11.0] - 2026-04-19 - source-level state and setState sugar
 
 ### Added
@@ -662,7 +704,8 @@ All notable changes to this project are documented here. Format follows
 - Example app at `example/lib/main.dart` demonstrating the full Phase 1
   feature set.
 
-[Unreleased]: https://github.com/CanArslanDev/rune/compare/v0.11.0...HEAD
+[Unreleased]: https://github.com/CanArslanDev/rune/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/CanArslanDev/rune/compare/v0.11.0...v1.0.0
 [0.11.0]: https://github.com/CanArslanDev/rune/compare/v0.10.0...v0.11.0
 [0.10.0]: https://github.com/CanArslanDev/rune/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/CanArslanDev/rune/compare/v0.8.0...v0.9.0
