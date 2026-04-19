@@ -142,5 +142,18 @@ void main() {
       expect(r.resolve('Curves', 'elasticOut'), same(Curves.elasticOut));
       expect(r.resolve('Curves', 'fastOutSlowIn'), same(Curves.fastOutSlowIn));
     });
+
+    test('seeds BottomNavigationBarType', () {
+      final r = ConstantRegistry();
+      registerPhase2aConstants(r);
+      expect(
+        r.resolve('BottomNavigationBarType', 'fixed'),
+        BottomNavigationBarType.fixed,
+      );
+      expect(
+        r.resolve('BottomNavigationBarType', 'shifting'),
+        BottomNavigationBarType.shifting,
+      );
+    });
   });
 }

@@ -7,7 +7,7 @@ import 'package:rune/src/registry/constant_registry.dart';
 /// - All enum values in: `MainAxisAlignment`, `CrossAxisAlignment`,
 ///   `MainAxisSize`, `TextAlign`, `BoxFit`, `StackFit`, `Axis`,
 ///   `TextOverflow`, `BoxShape`, `FlexFit`, `WrapAlignment`,
-///   `WrapCrossAlignment`.
+///   `WrapCrossAlignment`, `BottomNavigationBarType`.
 /// - The nine aligned-singleton `Alignment` values.
 /// - The `FontWeight` weights `w100..w900`, `normal`, and `bold`.
 /// - `EdgeInsets.zero`.
@@ -36,6 +36,7 @@ void registerPhase2aConstants(ConstantRegistry registry) {
   _registerWrapCrossAlignment(registry);
   _registerEdgeInsetsSingletons(registry);
   _registerCurves(registry);
+  _registerBottomNavigationBarType(registry);
 }
 
 // Registers every Colors member that is a concrete Color value.
@@ -230,5 +231,13 @@ void _registerCurves(ConstantRegistry r) {
     'elasticIn': Curves.elasticIn,
     'elasticOut': Curves.elasticOut,
     'fastOutSlowIn': Curves.fastOutSlowIn,
+  });
+}
+
+// Registers BottomNavigationBarType enum values (fixed, shifting) —
+// used by BottomNavigationBar's `type:` arg.
+void _registerBottomNavigationBarType(ConstantRegistry r) {
+  r.registerAll('BottomNavigationBarType', <String, Object?>{
+    for (final v in BottomNavigationBarType.values) v.name: v,
   });
 }

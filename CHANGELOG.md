@@ -7,6 +7,16 @@ All notable changes to this project are documented here. Format follows
 ## [Unreleased]
 
 ### Added
+- **Navigation widgets** — `BottomNavigationBar` (with required
+  `items: List<BottomNavigationBarItem>`, `currentIndex: int`,
+  optional `onTap: String` event dispatching `(name, [newIndex])`
+  and theming via `type/selectedItemColor/unselectedItemColor/
+  backgroundColor`), plus `TabBar` and `Tab` widget builders for
+  tab-based navigation. `TabBar` assumes a `DefaultTabController`
+  ancestor provided host-side — Rune source doesn't construct the
+  controller. `BottomNavigationBarItem` is a value builder for
+  declaring the items list. `BottomNavigationBarType.fixed` and
+  `.shifting` join the constants table.
 - **Animated widgets and Duration support** —
   `AnimatedContainer`, `AnimatedOpacity`, and `AnimatedPositioned`
   join the default widget registry. Each takes a required

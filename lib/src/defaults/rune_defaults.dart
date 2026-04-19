@@ -1,4 +1,5 @@
 import 'package:rune/src/builders/values/border_radius_circular_builder.dart';
+import 'package:rune/src/builders/values/bottom_navigation_bar_item_builder.dart';
 import 'package:rune/src/builders/values/box_decoration_builder.dart';
 import 'package:rune/src/builders/values/color_builder.dart';
 import 'package:rune/src/builders/values/duration_builder.dart';
@@ -12,6 +13,7 @@ import 'package:rune/src/builders/widgets/animated_opacity_builder.dart';
 import 'package:rune/src/builders/widgets/animated_positioned_builder.dart';
 import 'package:rune/src/builders/widgets/app_bar_builder.dart';
 import 'package:rune/src/builders/widgets/aspect_ratio_builder.dart';
+import 'package:rune/src/builders/widgets/bottom_navigation_bar_builder.dart';
 import 'package:rune/src/builders/widgets/card_builder.dart';
 import 'package:rune/src/builders/widgets/center_builder.dart';
 import 'package:rune/src/builders/widgets/checkbox_builder.dart';
@@ -40,6 +42,8 @@ import 'package:rune/src/builders/widgets/slider_builder.dart';
 import 'package:rune/src/builders/widgets/spacer_builder.dart';
 import 'package:rune/src/builders/widgets/stack_builder.dart';
 import 'package:rune/src/builders/widgets/switch_builder.dart';
+import 'package:rune/src/builders/widgets/tab_bar_builder.dart';
+import 'package:rune/src/builders/widgets/tab_builder.dart';
 import 'package:rune/src/builders/widgets/text_builder.dart';
 import 'package:rune/src/builders/widgets/text_button_builder.dart';
 import 'package:rune/src/builders/widgets/text_field_builder.dart';
@@ -123,7 +127,11 @@ abstract final class RuneDefaults {
       // Animated widgets.
       ..registerBuilder(const AnimatedContainerBuilder())
       ..registerBuilder(const AnimatedOpacityBuilder())
-      ..registerBuilder(const AnimatedPositionedBuilder());
+      ..registerBuilder(const AnimatedPositionedBuilder())
+      // Navigation.
+      ..registerBuilder(const BottomNavigationBarBuilder())
+      ..registerBuilder(const TabBarBuilder())
+      ..registerBuilder(const TabBuilder());
   }
 
   /// Registers every Phase 1–2c value builder into [registry].
@@ -139,7 +147,8 @@ abstract final class RuneDefaults {
       ..registerBuilder(const BoxDecorationBuilder())
       ..registerBuilder(const ImageNetworkBuilder())
       ..registerBuilder(const ImageAssetBuilder())
-      ..registerBuilder(const DurationBuilder());
+      ..registerBuilder(const DurationBuilder())
+      ..registerBuilder(const BottomNavigationBarItemBuilder());
   }
 
   /// Seeds [registry] with Phase 2a constants (Colors, enums,

@@ -45,6 +45,9 @@ void main() {
         'AnimatedContainer',
         'AnimatedOpacity',
         'AnimatedPositioned',
+        'BottomNavigationBar',
+        'TabBar',
+        'Tab',
       ]) {
         expect(r.contains(name), isTrue, reason: 'missing widget $name');
       }
@@ -65,6 +68,7 @@ void main() {
         'Image.network',
         'Image.asset',
         'Duration',
+        'BottomNavigationBarItem',
       ]) {
         expect(r.contains(key), isTrue, reason: 'missing value $key');
       }
@@ -87,8 +91,8 @@ void main() {
       RuneDefaults.registerWidgets(w);
       RuneDefaults.registerValues(v);
       RuneDefaults.registerConstants(c);
-      expect(w.size, greaterThanOrEqualTo(35));
-      expect(v.size, greaterThanOrEqualTo(11));
+      expect(w.size, greaterThanOrEqualTo(38));
+      expect(v.size, greaterThanOrEqualTo(12));
       expect(c.size, greaterThanOrEqualTo(50));
     });
   });
