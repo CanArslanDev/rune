@@ -1,4 +1,5 @@
 import 'package:analyzer/dart/ast/ast.dart';
+import 'package:rune/src/builders/imperative_helpers.dart';
 import 'package:rune/src/builders/resolved_arguments.dart';
 import 'package:rune/src/core/exceptions.dart';
 import 'package:rune/src/core/rune_component.dart';
@@ -73,6 +74,14 @@ final class InvocationResolver implements InvocationResolverContract {
       if (node.methodName.name == 'setState') {
         return _resolveSetState(node, ctx);
       }
+      // v1.3.0 imperative bridges: bare-identifier calls that route to
+      // Flutter's imperative modal/overlay APIs rather than a builder.
+      // Checked before the registry lookup so a host-registered widget
+      // or value cannot shadow the bridge keyword.
+      final bridge = _imperativeBridges[node.methodName.name];
+      if (bridge != null) {
+        return _resolveImperativeBridge(node, ctx, bridge);
+      }
       // Bare `Text('hi')`.
       return _dispatch(
         typeName: node.methodName.name,
@@ -86,6 +95,14 @@ final class InvocationResolver implements InvocationResolverContract {
     }
 
     if (target is SimpleIdentifier) {
+      // v1.3.0 `Navigator.pop(...)` bridge: a `Navigator`-prefixed call
+      // with the special method name `pop` dispatches to the imperative
+      // Navigator bridge rather than the runtime-method path. Placed
+      // before the component/value/widget lookups so no host-registered
+      // builder named `Navigator` can shadow it.
+      if (target.name == 'Navigator' && node.methodName.name == 'pop') {
+        return _resolveImperativeBridge(node, ctx, runNavigatorPop);
+      }
       // Either `EdgeInsets.all(16)` (builder) or `text.toUpperCase()`
       // (runtime method on a data identifier). Builder registries win.
       final typeName = target.name;
@@ -425,4 +442,44 @@ final class InvocationResolver implements InvocationResolverContract {
     }
     return ResolvedArguments(positional: positional, named: named);
   }
+
+  /// Resolves a v1.3.0 imperative bridge call: walks the argument list
+  /// via the injected expression resolver, then delegates to [bridge]
+  /// with the resulting [ResolvedArguments] and the current
+  /// [RuneContext].
+  ///
+  /// Mirrors the [_runBuilder] wrapper so an [ArgumentException] raised
+  /// by the bridge with no [RuneException.location] set gets rewrapped
+  /// with the invocation's source span before being rethrown. Deeper
+  /// spans already attached to upstream failures are preserved.
+  Object? _resolveImperativeBridge(
+    MethodInvocation node,
+    RuneContext ctx,
+    Object? Function(ResolvedArguments args, RuneContext ctx) bridge,
+  ) {
+    final args = _resolveArguments(node.argumentList, ctx);
+    final location =
+        SourceSpan.fromAstOffset(ctx.source, node.offset, node.length);
+    return _runBuilder(
+      () => bridge(args, ctx),
+      invocationLocation: location,
+    );
+  }
+
+  /// Whitelist of bare-identifier imperative bridge calls.
+  ///
+  /// Entries route from the Rune source identifier (`showDialog`,
+  /// `showModalBottomSheet`, `showSnackBar`) to the top-level helper
+  /// in `imperative_helpers.dart`. `Navigator.pop` is not listed here
+  /// because it is shaped as a `SimpleIdentifier`-target
+  /// [MethodInvocation] and handled in the target-branch above.
+  static final Map<
+      String,
+      Object? Function(ResolvedArguments args, RuneContext ctx)
+  > _imperativeBridges = <String,
+      Object? Function(ResolvedArguments args, RuneContext ctx)>{
+    'showDialog': runShowDialog,
+    'showModalBottomSheet': runShowModalBottomSheet,
+    'showSnackBar': runShowSnackBar,
+  };
 }

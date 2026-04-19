@@ -25,12 +25,14 @@ import 'package:rune/src/builders/values/sliver_grid_count_builder_builder.dart'
 import 'package:rune/src/builders/values/sliver_grid_extent_builder.dart';
 import 'package:rune/src/builders/values/sliver_grid_extent_builder_builder.dart';
 import 'package:rune/src/builders/values/sliver_list_builder_builder.dart';
+import 'package:rune/src/builders/values/snack_bar_builder.dart';
 import 'package:rune/src/builders/values/text_editing_controller_builder.dart';
 import 'package:rune/src/builders/values/text_style_builder.dart';
 import 'package:rune/src/builders/values/transform_flip_builder.dart';
 import 'package:rune/src/builders/values/transform_rotate_builder.dart';
 import 'package:rune/src/builders/values/transform_scale_builder.dart';
 import 'package:rune/src/builders/values/transform_translate_builder.dart';
+import 'package:rune/src/builders/widgets/alert_dialog_builder.dart';
 import 'package:rune/src/builders/widgets/animated_container_builder.dart';
 import 'package:rune/src/builders/widgets/animated_cross_fade_builder.dart';
 import 'package:rune/src/builders/widgets/animated_opacity_builder.dart';
@@ -56,6 +58,7 @@ import 'package:rune/src/builders/widgets/constrained_box_builder.dart';
 import 'package:rune/src/builders/widgets/container_builder.dart';
 import 'package:rune/src/builders/widgets/custom_scroll_view_builder.dart';
 import 'package:rune/src/builders/widgets/decorated_box_builder.dart';
+import 'package:rune/src/builders/widgets/dialog_builder.dart';
 import 'package:rune/src/builders/widgets/divider_builder.dart';
 import 'package:rune/src/builders/widgets/drawer_builder.dart';
 import 'package:rune/src/builders/widgets/dropdown_button_builder.dart';
@@ -86,6 +89,9 @@ import 'package:rune/src/builders/widgets/offstage_builder.dart';
 import 'package:rune/src/builders/widgets/opacity_builder.dart';
 import 'package:rune/src/builders/widgets/orientation_builder_builder.dart';
 import 'package:rune/src/builders/widgets/padding_builder.dart';
+import 'package:rune/src/builders/widgets/popup_menu_button_builder.dart';
+import 'package:rune/src/builders/widgets/popup_menu_divider_builder.dart';
+import 'package:rune/src/builders/widgets/popup_menu_item_builder.dart';
 import 'package:rune/src/builders/widgets/positioned_builder.dart';
 import 'package:rune/src/builders/widgets/radio_builder.dart';
 import 'package:rune/src/builders/widgets/radio_list_tile_builder.dart';
@@ -94,6 +100,8 @@ import 'package:rune/src/builders/widgets/rune_compose_builder.dart';
 import 'package:rune/src/builders/widgets/safe_area_builder.dart';
 import 'package:rune/src/builders/widgets/scaffold_builder.dart';
 import 'package:rune/src/builders/widgets/semantics_builder.dart';
+import 'package:rune/src/builders/widgets/simple_dialog_builder.dart';
+import 'package:rune/src/builders/widgets/simple_dialog_option_builder.dart';
 import 'package:rune/src/builders/widgets/single_child_scroll_view_builder.dart';
 import 'package:rune/src/builders/widgets/sized_box_builder.dart';
 import 'package:rune/src/builders/widgets/slider_builder.dart';
@@ -256,6 +264,14 @@ abstract final class RuneDefaults {
       ..registerBuilder(const StreamBuilderBuilder())
       ..registerBuilder(const LayoutBuilderBuilder())
       ..registerBuilder(const OrientationBuilderBuilder())
+      // Dialogs, overlays, popup menus (v1.3.0).
+      ..registerBuilder(const AlertDialogBuilder())
+      ..registerBuilder(const SimpleDialogBuilder())
+      ..registerBuilder(const SimpleDialogOptionBuilder())
+      ..registerBuilder(const DialogBuilder())
+      ..registerBuilder(const PopupMenuButtonBuilder())
+      ..registerBuilder(const PopupMenuItemBuilder())
+      ..registerBuilder(const PopupMenuDividerBuilder())
       // Components (Phase F).
       ..registerBuilder(const RuneComposeBuilder());
   }
@@ -306,7 +322,9 @@ abstract final class RuneDefaults {
       ..registerBuilder(const TextEditingControllerBuilder())
       ..registerBuilder(const ScrollControllerBuilder())
       ..registerBuilder(const FocusNodeBuilder())
-      ..registerBuilder(const PageControllerBuilder());
+      ..registerBuilder(const PageControllerBuilder())
+      // Modal-UI values (v1.3.0).
+      ..registerBuilder(const SnackBarBuilder());
   }
 
   /// Seeds [registry] with Phase 2a constants (Colors, enums,

@@ -93,6 +93,13 @@ void main() {
         'StreamBuilder',
         'LayoutBuilder',
         'OrientationBuilder',
+        'AlertDialog',
+        'SimpleDialog',
+        'SimpleDialogOption',
+        'Dialog',
+        'PopupMenuButton',
+        'PopupMenuItem',
+        'PopupMenuDivider',
         'RuneCompose',
       ]) {
         expect(r.contains(name), isTrue, reason: 'missing widget $name');
@@ -138,6 +145,7 @@ void main() {
         'ScrollController',
         'FocusNode',
         'PageController',
+        'SnackBar',
       ]) {
         expect(r.contains(key), isTrue, reason: 'missing value $key');
       }
@@ -151,6 +159,8 @@ void main() {
       expect(r.contains('FlexFit', 'tight'), isTrue);
       expect(r.contains('BoxShape', 'circle'), isTrue);
       expect(r.contains('Icons', 'home'), isTrue);
+      expect(r.contains('SnackBarBehavior', 'fixed'), isTrue);
+      expect(r.contains('SnackBarBehavior', 'floating'), isTrue);
     });
 
     test('individual register* calls combined produce the full set', () {
@@ -160,9 +170,9 @@ void main() {
       RuneDefaults.registerWidgets(w);
       RuneDefaults.registerValues(v);
       RuneDefaults.registerConstants(c);
-      expect(w.size, greaterThanOrEqualTo(84));
-      expect(v.size, greaterThanOrEqualTo(34));
-      expect(c.size, greaterThanOrEqualTo(50));
+      expect(w.size, greaterThanOrEqualTo(91));
+      expect(v.size, greaterThanOrEqualTo(35));
+      expect(c.size, greaterThanOrEqualTo(51));
     });
   });
 }

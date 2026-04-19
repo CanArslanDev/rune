@@ -1,4 +1,4 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:rune/src/core/exceptions.dart';
 import 'package:rune/src/resolver/rune_closure.dart';
 
@@ -124,6 +124,58 @@ OrientationWidgetBuilder toOrientationBuilder(
       );
     }
     return result;
+  };
+}
+
+/// Validates a resolved single-parameter `(BuildContext) -> Widget`
+/// closure and returns a [WidgetBuilder] that feeds `(BuildContext)` to
+/// the underlying [RuneClosure].
+///
+/// Shared by the imperative bridges (`showDialog`, `showModalBottomSheet`)
+/// where Flutter's API expects `WidgetBuilder = Widget Function(BuildContext)`.
+///
+/// Failure modes mirror [toIndexedBuilder]: null / wrong runtime type /
+/// wrong arity (expected 1). The returned builder raises
+/// [ResolveException] if the closure body yields a non-[Widget].
+WidgetBuilder toContextWidgetBuilder(Object? source, String widgetName) {
+  final closure = _requireClosure(source, widgetName, 'builder', 1);
+  return (ctx) {
+    final result = closure.call(<Object?>[ctx]);
+    if (result is! Widget) {
+      throw ResolveException(
+        widgetName,
+        '$widgetName.builder closure must return a Widget; '
+        'got ${result.runtimeType}',
+      );
+    }
+    return result;
+  };
+}
+
+/// Validates a resolved `itemBuilder` argument for [PopupMenuButton] and
+/// returns a [PopupMenuItemBuilder] of `Object?` that feeds
+/// `(BuildContext)` into the underlying [RuneClosure].
+///
+/// The closure is expected to return a list whose entries are
+/// [PopupMenuEntry] instances ([PopupMenuItem], [PopupMenuDivider],
+/// etc.). Non-entry values are silently filtered out, matching the
+/// Column/Row children-filter convention. A non-list return raises
+/// [ResolveException].
+PopupMenuItemBuilder<Object?> toPopupMenuItemBuilder(
+  Object? source,
+  String widgetName,
+) {
+  final closure = _requireClosure(source, widgetName, 'itemBuilder', 1);
+  return (ctx) {
+    final result = closure.call(<Object?>[ctx]);
+    if (result is! List) {
+      throw ResolveException(
+        widgetName,
+        '$widgetName.itemBuilder closure must return a List; '
+        'got ${result.runtimeType}',
+      );
+    }
+    return result.whereType<PopupMenuEntry<Object?>>().toList(growable: false);
   };
 }
 

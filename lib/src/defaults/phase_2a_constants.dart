@@ -44,6 +44,7 @@ void registerPhase2aConstants(ConstantRegistry registry) {
   _registerNavigationRailLabelType(registry);
   _registerConnectionState(registry);
   _registerOrientation(registry);
+  _registerSnackBarBehavior(registry);
 }
 
 // Registers every Colors member that is a concrete Color value.
@@ -310,5 +311,13 @@ void _registerConnectionState(ConstantRegistry r) {
 void _registerOrientation(ConstantRegistry r) {
   r.registerAll('Orientation', <String, Object?>{
     for (final v in Orientation.values) v.name: v,
+  });
+}
+
+// Registers SnackBarBehavior enum values (fixed, floating); consumed by
+// SnackBar's `behavior:` argument.
+void _registerSnackBarBehavior(ConstantRegistry r) {
+  r.registerAll('SnackBarBehavior', <String, Object?>{
+    for (final v in SnackBarBehavior.values) v.name: v,
   });
 }
