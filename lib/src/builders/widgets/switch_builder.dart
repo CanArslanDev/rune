@@ -23,7 +23,7 @@ final class SwitchBuilder implements RuneWidgetBuilder {
     return Switch(
       value: args.getOr<bool>('value', false),
       onChanged: valueEventCallback<bool>(
-        args.get<String>('onChanged'),
+        args.named['onChanged'],
         ctx.events,
       ),
     );

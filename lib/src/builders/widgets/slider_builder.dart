@@ -39,7 +39,7 @@ final class SliderBuilder implements RuneWidgetBuilder {
       divisions: args.get<int>('divisions'),
       label: args.get<String>('label'),
       onChanged: valueEventCallback<double>(
-        args.get<String>('onChanged'),
+        args.named['onChanged'],
         ctx.events,
       ),
     );

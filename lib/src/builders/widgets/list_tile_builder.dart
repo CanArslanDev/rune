@@ -24,7 +24,7 @@ final class ListTileBuilder implements RuneWidgetBuilder {
       subtitle: args.get<Widget>('subtitle'),
       leading: args.get<Widget>('leading'),
       trailing: args.get<Widget>('trailing'),
-      onTap: voidEventCallback(args.get<String>('onTap'), ctx.events),
+      onTap: voidEventCallback(args.named['onTap'], ctx.events),
       dense: args.get<bool>('dense'),
       enabled: args.getOr<bool>('enabled', true),
       selected: args.getOr<bool>('selected', false),

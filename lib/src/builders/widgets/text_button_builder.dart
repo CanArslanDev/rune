@@ -16,7 +16,7 @@ final class TextButtonBuilder implements RuneWidgetBuilder {
   @override
   Widget build(ResolvedArguments args, RuneContext ctx) {
     return TextButton(
-      onPressed: voidEventCallback(args.get<String>('onPressed'), ctx.events),
+      onPressed: voidEventCallback(args.named['onPressed'], ctx.events),
       child: args.get<Widget>('child') ?? const SizedBox.shrink(),
     );
   }

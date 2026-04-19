@@ -53,7 +53,7 @@ final class NavigationBarBuilder implements RuneWidgetBuilder {
         source: 'NavigationBar',
       ),
       onDestinationSelected: valueEventCallback<int>(
-        args.get<String>('onDestinationSelected'),
+        args.named['onDestinationSelected'],
         ctx.events,
       ),
       backgroundColor: args.get<Color>('backgroundColor'),

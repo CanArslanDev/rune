@@ -44,7 +44,7 @@ final class CheckboxListTileBuilder implements RuneWidgetBuilder {
     return CheckboxListTile(
       value: value,
       onChanged: valueEventCallback<bool?>(
-        args.get<String>('onChanged'),
+        args.named['onChanged'],
         ctx.events,
       ),
       title: args.get<Widget>('title'),

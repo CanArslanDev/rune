@@ -38,7 +38,7 @@ final class SwitchListTileBuilder implements RuneWidgetBuilder {
     return SwitchListTile(
       value: args.require<bool>('value', source: 'SwitchListTile'),
       onChanged: valueEventCallback<bool>(
-        args.get<String>('onChanged'),
+        args.named['onChanged'],
         ctx.events,
       ),
       title: args.get<Widget>('title'),

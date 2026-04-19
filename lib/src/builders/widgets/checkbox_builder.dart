@@ -30,7 +30,7 @@ final class CheckboxBuilder implements RuneWidgetBuilder {
       value: args.get<bool>('value'),
       tristate: args.getOr<bool>('tristate', false),
       onChanged: valueEventCallback<bool?>(
-        args.get<String>('onChanged'),
+        args.named['onChanged'],
         ctx.events,
       ),
     );

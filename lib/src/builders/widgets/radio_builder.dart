@@ -65,7 +65,7 @@ final class RadioBuilder implements RuneWidgetBuilder {
       toggleable: toggleable,
       // ignore: deprecated_member_use
       onChanged: valueEventCallback<Object?>(
-        args.get<String>('onChanged'),
+        args.named['onChanged'],
         ctx.events,
       ),
     );

@@ -22,7 +22,7 @@ final class ChoiceChipBuilder implements RuneWidgetBuilder {
       label: args.require<Widget>('label', source: 'ChoiceChip'),
       selected: args.require<bool>('selected', source: 'ChoiceChip'),
       onSelected: valueEventCallback<bool>(
-        args.get<String>('onSelected'),
+        args.named['onSelected'],
         ctx.events,
       ),
       avatar: args.get<Widget>('avatar'),

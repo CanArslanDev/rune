@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:rune/src/binding/rune_event_dispatcher.dart';
 import 'package:rune/src/builders/builder.dart';
+import 'package:rune/src/builders/event_callback.dart';
 import 'package:rune/src/builders/resolved_arguments.dart';
 import 'package:rune/src/core/rune_context.dart';
 
@@ -12,10 +13,12 @@ import 'package:rune/src/core/rune_context.dart';
 ///   when the new text matches what the field already shows; a genuine
 ///   external change (e.g. the host cleared the field) resets the
 ///   selection to the end.
-/// - `onChanged` (`String`) — event name to dispatch on each keystroke
-///   with the new text as the sole argument. Absence renders the field
-///   editable locally (the controller still accepts input) but keeps
-///   [TextField.onChanged] `null`, so the host is never notified.
+/// - `onChanged` (`String` or closure): either a named-event String to
+///   dispatch on each keystroke with the new text as the sole argument,
+///   or a closure `(text) => ...` invoked with the new text on each
+///   keystroke. Absence renders the field editable locally (the
+///   controller still accepts input) but keeps [TextField.onChanged]
+///   `null`, so the host is never notified.
 /// - `hintText` (`String`) — placeholder shown when the field is empty.
 /// - `labelText` (`String`) — floating label above the field.
 /// - `obscureText` (`bool`) — `true` for password-style entry. Defaults
@@ -40,7 +43,7 @@ final class TextFieldBuilder implements RuneWidgetBuilder {
   Widget build(ResolvedArguments args, RuneContext ctx) {
     return _RuneTextField(
       value: args.get<String>('value'),
-      onChangedEventName: args.get<String>('onChanged'),
+      onChangedSource: args.named['onChanged'],
       hintText: args.get<String>('hintText'),
       labelText: args.get<String>('labelText'),
       obscureText: args.getOr<bool>('obscureText', false),
@@ -56,7 +59,7 @@ final class TextFieldBuilder implements RuneWidgetBuilder {
 class _RuneTextField extends StatefulWidget {
   const _RuneTextField({
     required this.value,
-    required this.onChangedEventName,
+    required this.onChangedSource,
     required this.hintText,
     required this.labelText,
     required this.obscureText,
@@ -66,7 +69,7 @@ class _RuneTextField extends StatefulWidget {
   });
 
   final String? value;
-  final String? onChangedEventName;
+  final Object? onChangedSource;
   final String? hintText;
   final String? labelText;
   final bool obscureText;
@@ -111,7 +114,6 @@ class _RuneTextFieldState extends State<_RuneTextField> {
 
   @override
   Widget build(BuildContext context) {
-    final eventName = widget.onChangedEventName;
     return TextField(
       controller: _controller,
       obscureText: widget.obscureText,
@@ -121,10 +123,10 @@ class _RuneTextFieldState extends State<_RuneTextField> {
         hintText: widget.hintText,
         labelText: widget.labelText,
       ),
-      onChanged: eventName == null
-          ? null
-          : (text) =>
-              widget.dispatcher.dispatch(eventName, <Object?>[text]),
+      onChanged: valueEventCallback<String>(
+        widget.onChangedSource,
+        widget.dispatcher,
+      ),
     );
   }
 }

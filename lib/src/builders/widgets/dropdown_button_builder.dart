@@ -48,7 +48,7 @@ final class DropdownButtonBuilder implements RuneWidgetBuilder {
       // null, which is what DropdownButton expects for "no selection".
       value: args.named['value'],
       onChanged: valueEventCallback<Object?>(
-        args.get<String>('onChanged'),
+        args.named['onChanged'],
         ctx.events,
       ),
       hint: args.get<Widget>('hint'),

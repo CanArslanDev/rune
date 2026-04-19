@@ -53,7 +53,7 @@ final class BottomNavigationBarBuilder implements RuneWidgetBuilder {
         'currentIndex',
         source: 'BottomNavigationBar',
       ),
-      onTap: valueEventCallback<int>(args.get<String>('onTap'), ctx.events),
+      onTap: valueEventCallback<int>(args.named['onTap'], ctx.events),
       type: args.get<BottomNavigationBarType>('type'),
       selectedItemColor: args.get<Color>('selectedItemColor'),
       unselectedItemColor: args.get<Color>('unselectedItemColor'),

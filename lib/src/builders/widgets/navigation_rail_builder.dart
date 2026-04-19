@@ -53,7 +53,7 @@ final class NavigationRailBuilder implements RuneWidgetBuilder {
       destinations: destinations,
       selectedIndex: args.get<int>('selectedIndex'),
       onDestinationSelected: valueEventCallback<int>(
-        args.get<String>('onDestinationSelected'),
+        args.named['onDestinationSelected'],
         ctx.events,
       ),
       extended: args.getOr<bool>('extended', false),

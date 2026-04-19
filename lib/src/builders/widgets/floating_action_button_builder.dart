@@ -20,7 +20,7 @@ final class FloatingActionButtonBuilder implements RuneWidgetBuilder {
   Widget build(ResolvedArguments args, RuneContext ctx) {
     return FloatingActionButton(
       onPressed: voidEventCallback(
-        args.get<String>('onPressed'),
+        args.named['onPressed'],
         ctx.events,
       ),
       tooltip: args.get<String>('tooltip'),

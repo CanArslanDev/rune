@@ -61,7 +61,7 @@ final class RadioListTileBuilder implements RuneWidgetBuilder {
       value: value,
       groupValue: groupValue,
       onChanged: valueEventCallback<Object?>(
-        args.get<String>('onChanged'),
+        args.named['onChanged'],
         ctx.events,
       ),
       toggleable: args.getOr<bool>('toggleable', false),

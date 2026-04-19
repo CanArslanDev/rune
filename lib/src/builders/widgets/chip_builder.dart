@@ -22,7 +22,7 @@ final class ChipBuilder implements RuneWidgetBuilder {
       label: label,
       avatar: args.get<Widget>('avatar'),
       onDeleted: voidEventCallback(
-        args.get<String>('onDeleted'),
+        args.named['onDeleted'],
         ctx.events,
       ),
       deleteIcon: args.get<Widget>('deleteIcon'),

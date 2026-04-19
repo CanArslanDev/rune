@@ -5,9 +5,10 @@ import 'package:rune/src/builders/resolved_arguments.dart';
 import 'package:rune/src/core/rune_context.dart';
 
 /// Builds [GestureDetector] — wraps any child widget with discrete tap
-/// event handlers. Each `on*` argument in source is a `String` event
-/// name that dispatches through [RuneContext.events] with empty args
-/// on gesture.
+/// event handlers. Each `on*` argument in source is either a `String`
+/// event name or a closure; the handler dispatches through
+/// [RuneContext.events] with empty args on gesture, or invokes the
+/// closure's body.
 ///
 /// Supported callbacks: `onTap`, `onDoubleTap`, `onLongPress`. Pointer-
 /// carrying callbacks (`onPanUpdate`, `onScaleUpdate`, etc.) are out of
@@ -23,13 +24,13 @@ final class GestureDetectorBuilder implements RuneWidgetBuilder {
   @override
   Widget build(ResolvedArguments args, RuneContext ctx) {
     return GestureDetector(
-      onTap: voidEventCallback(args.get<String>('onTap'), ctx.events),
+      onTap: voidEventCallback(args.named['onTap'], ctx.events),
       onDoubleTap: voidEventCallback(
-        args.get<String>('onDoubleTap'),
+        args.named['onDoubleTap'],
         ctx.events,
       ),
       onLongPress: voidEventCallback(
-        args.get<String>('onLongPress'),
+        args.named['onLongPress'],
         ctx.events,
       ),
       child: args.get<Widget>('child'),

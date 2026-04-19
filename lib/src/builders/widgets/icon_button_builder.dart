@@ -17,7 +17,7 @@ final class IconButtonBuilder implements RuneWidgetBuilder {
   @override
   Widget build(ResolvedArguments args, RuneContext ctx) {
     return IconButton(
-      onPressed: voidEventCallback(args.get<String>('onPressed'), ctx.events),
+      onPressed: voidEventCallback(args.named['onPressed'], ctx.events),
       icon: args.require<Widget>('icon', source: 'IconButton'),
       iconSize: args.get<num>('iconSize')?.toDouble(),
       color: args.get<Color>('color'),

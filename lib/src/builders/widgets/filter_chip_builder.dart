@@ -23,7 +23,7 @@ final class FilterChipBuilder implements RuneWidgetBuilder {
       label: args.require<Widget>('label', source: 'FilterChip'),
       selected: args.require<bool>('selected', source: 'FilterChip'),
       onSelected: valueEventCallback<bool>(
-        args.get<String>('onSelected'),
+        args.named['onSelected'],
         ctx.events,
       ),
       avatar: args.get<Widget>('avatar'),

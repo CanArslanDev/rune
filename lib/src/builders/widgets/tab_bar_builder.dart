@@ -38,7 +38,7 @@ final class TabBarBuilder implements RuneWidgetBuilder {
         : rawTabs.whereType<Widget>().toList(growable: false);
     return TabBar(
       tabs: tabs,
-      onTap: valueEventCallback<int>(args.get<String>('onTap'), ctx.events),
+      onTap: valueEventCallback<int>(args.named['onTap'], ctx.events),
       indicatorColor: args.get<Color>('indicatorColor'),
       labelColor: args.get<Color>('labelColor'),
       unselectedLabelColor: args.get<Color>('unselectedLabelColor'),
