@@ -6,6 +6,52 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-04-19 - lifecycle and controllers
+
+### Added
+
+- **StatefulBuilder lifecycle closures.** `initState`, `dispose`,
+  and `didUpdateWidget` optional closure params let source own the
+  full mount / unmount / rebuild lifecycle of its state bag.
+  `autoDisposeListenables: true` (default `false`) calls `dispose`
+  on any `initial` entry that implements `ChangeNotifier` when the
+  widget unmounts. The source-level dispose closure runs first, then
+  auto-disposal, so the source can perform ordered cleanup.
+- **Controller value builders.** `TextEditingController(text)`,
+  `ScrollController(initialScrollOffset, keepScrollOffset,
+  debugLabel)`, `FocusNode(debugLabel, skipTraversal,
+  canRequestFocus, descendantsAreFocusable,
+  descendantsAreTraversable)`, and `PageController(initialPage,
+  keepPage, viewportFraction)` join the default value-builder set.
+  `TabController` stays deferred pending v1.9.0's vsync story
+  (shared with `AnimationController`).
+- **Controller method whitelist.** `invokeBuiltinMethod` gains
+  controller dispatch for `TextEditingController.clear` plus
+  `.text` / `.value` getters; `ScrollController.jumpTo` and
+  `.animateTo`; `FocusNode.requestFocus`, `.unfocus`, `.hasFocus`;
+  `PageController.jumpToPage` and `.animateToPage`;
+  `TabController.animateTo` and `.index` for host-provided
+  instances.
+- **Widget controller wiring.** `TextField`, `ListView`,
+  `SingleChildScrollView`, `CustomScrollView`, and `TabBar` accept
+  an optional `controller:` arg so source-constructed controllers
+  reach the widgets that should own them. `TextField`'s private
+  state keeps the existing internal-controller path as the default
+  and switches to the external controller when supplied; disposal
+  stays with whichever side constructed the controller.
+
+### Notes
+
+- Value count 24 to 28. No new widget count growth (the controller
+  wiring extends existing builders' arg surface without adding new
+  typeNames). About 43 new tests across the controller builders,
+  the lifecycle hooks, the method whitelist, and two integration
+  smokes (controller lifecycle with a persistent TextEditingController,
+  programmatic scroll with source-owned ScrollController).
+- The v1.0.0 stability commitment holds. No breaking changes;
+  existing source that did not supply a controller continues to
+  work unchanged.
+
 ## [1.0.0] - 2026-04-19 - stateful source end-to-end
 
 ### Added
@@ -704,7 +750,8 @@ All notable changes to this project are documented here. Format follows
 - Example app at `example/lib/main.dart` demonstrating the full Phase 1
   feature set.
 
-[Unreleased]: https://github.com/CanArslanDev/rune/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/CanArslanDev/rune/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/CanArslanDev/rune/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/CanArslanDev/rune/compare/v0.11.0...v1.0.0
 [0.11.0]: https://github.com/CanArslanDev/rune/compare/v0.10.0...v0.11.0
 [0.10.0]: https://github.com/CanArslanDev/rune/compare/v0.9.0...v0.10.0
