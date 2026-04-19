@@ -37,7 +37,7 @@ Deliver UI from a server, a CMS, or a designer tool without shipping a new app b
 
 ```yaml
 dependencies:
-  rune: ^0.7.0
+  rune: ^0.8.0
 ```
 
 The package is pre-publication; use a `git:` or `path:` dependency until a tagged `pub.dev` release lands. `dart pub publish --dry-run` currently reports 0 errors / 0 warnings.
@@ -102,7 +102,7 @@ A runnable version lives in [`example/`](example/).
 
 ## Supported source syntax
 
-Current release: **`v0.7.0`**. Adds wrapper widgets (`Drawer`, `SafeArea`, `Visibility`, `Opacity`, `ClipRRect`/`ClipOval`, `Tooltip`), the full sliver family + `CustomScrollView`, and display/transform primitives (`FittedBox`, `ColoredBox`, `DecoratedBox`, `Offstage`, `Semantics`, `Transform.scale/.rotate`).
+Current release: **`v0.8.0`**. Adds Transform completion (`Transform.translate`, `Transform.flip`, `Offset`), sizing primitives (`ConstrainedBox`/`LimitedBox`/`UnconstrainedBox`/`FractionallySizedBox` plus `BoxConstraints`), form input tiles (`CheckboxListTile`/`SwitchListTile`/`RadioListTile`), `MaterialColor[shade]` indexing, Material 3 navigation (`NavigationBar`/`NavigationRail`), and Chip variants (`ChoiceChip`/`FilterChip`).
 
 | Category              | Elements                                                                                                                                                                                                     |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |

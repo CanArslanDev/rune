@@ -6,26 +6,19 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-04-19 - pragmatic gaps
+
 ### Added
-- **Chip variants**. `ChoiceChip` (single-select) and `FilterChip`
-  (multi-select toggle) complement the existing `Chip` info-tag
-  builder. Both require `label` (Widget) and `selected` (bool);
-  optional `onSelected` event name dispatches `(name, [newBool])`
-  on tap plus avatar and colour theming. `FilterChip` also accepts
-  `checkmarkColor` and `showCheckmark` (default true). ActionChip
-  and InputChip remain deferred pending a concrete use case.
-- **Material 3 navigation**. `NavigationBar` with
-  `NavigationDestination` replaces the Material 2 pattern
-  (`BottomNavigationBar` / `BottomNavigationBarItem` still ship for
-  consumers that need Material 2 theming). Required `destinations`
-  (at least 2) and `selectedIndex`; optional `onDestinationSelected`
-  event, plus theming via `backgroundColor`, `elevation`, `height`,
-  `indicatorColor`. `NavigationRail` is the landscape / tablet
-  variant with `extended` toggle, optional `labelType`
-  (`NavigationRailLabelType` enum: `none`, `selected`, `all`),
-  `leading`, `trailing`, and sizing (`minWidth`, `elevation`).
-  `NavigationRailDestination` carries `icon` + `label` Widgets plus
-  optional `selectedIcon` and `padding`.
+- **Transform.translate, Transform.flip, and Offset**. Closes the
+  Transform value-builder family started in v0.7.0 (which shipped
+  `Transform.scale` and `Transform.rotate` but deferred translate
+  pending an `Offset` value builder). `Offset(dx, dy)` takes two
+  positional nums coerced to double. `Transform.translate` requires
+  an `offset` plus optional `child` and `transformHitTests`.
+  `Transform.flip` takes optional `flipX` / `flipY` booleans (both
+  default false) plus `transformHitTests` and optional `child`;
+  alignment is fixed to `Alignment.center` by Flutter's own
+  constructor.
 - **Sizing primitives**. Four constraint-manipulation widgets plus
   one value builder for the constraints themselves.
   `ConstrainedBox` applies arbitrary `BoxConstraints` to its child
@@ -39,16 +32,6 @@ All notable changes to this project are documented here. Format follows
   `alignment`. `BoxConstraints(minWidth, maxWidth, minHeight,
   maxHeight)` joins the value-builder set; all four edges default
   to Flutter's own (0 for mins, infinity for maxes).
-- **Transform.translate, Transform.flip, and Offset**. Closes the
-  Transform value-builder family started in v0.7.0 (which shipped
-  `Transform.scale` and `Transform.rotate` but deferred translate
-  pending an `Offset` value builder). `Offset(dx, dy)` takes two
-  positional nums coerced to double. `Transform.translate` requires
-  an `offset` plus optional `child` and `transformHitTests`.
-  `Transform.flip` takes optional `flipX` / `flipY` booleans (both
-  default false) plus `transformHitTests` and optional `child`;
-  alignment is fixed to `Alignment.center` by Flutter's own
-  constructor.
 - **Form input tiles**. `CheckboxListTile`, `SwitchListTile`,
   `RadioListTile` combine the existing Checkbox / Switch / Radio
   builders with a `ListTile` layout (title, subtitle, secondary,
@@ -64,6 +47,25 @@ All notable changes to this project are documented here. Format follows
   Non-int indices raise `ResolveException`; unknown shades return
   `null`, matching Flutter's own `MaterialColor.operator[]`
   semantics.
+- **Material 3 navigation**. `NavigationBar` with
+  `NavigationDestination` replaces the Material 2 pattern
+  (`BottomNavigationBar` / `BottomNavigationBarItem` still ship for
+  consumers that need Material 2 theming). Required `destinations`
+  (at least 2) and `selectedIndex`; optional `onDestinationSelected`
+  event, plus theming via `backgroundColor`, `elevation`, `height`,
+  `indicatorColor`. `NavigationRail` is the landscape / tablet
+  variant with `extended` toggle, optional `labelType`
+  (`NavigationRailLabelType` enum: `none`, `selected`, `all`),
+  `leading`, `trailing`, and sizing (`minWidth`, `elevation`).
+  `NavigationRailDestination` carries `icon` + `label` Widgets plus
+  optional `selectedIcon` and `padding`.
+- **Chip variants**. `ChoiceChip` (single-select) and `FilterChip`
+  (multi-select toggle) complement the existing `Chip` info-tag
+  builder. Both require `label` (Widget) and `selected` (bool);
+  optional `onSelected` event name dispatches `(name, [newBool])`
+  on tap plus avatar and colour theming. `FilterChip` also accepts
+  `checkmarkColor` and `showCheckmark` (default true). ActionChip
+  and InputChip remain deferred pending a concrete use case.
 
 ## [0.7.0] - 2026-04-19 - wrappers, slivers, transforms
 
@@ -539,7 +541,8 @@ All notable changes to this project are documented here. Format follows
 - Example app at `example/lib/main.dart` demonstrating the full Phase 1
   feature set.
 
-[Unreleased]: https://github.com/CanArslanDev/rune/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/CanArslanDev/rune/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/CanArslanDev/rune/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/CanArslanDev/rune/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/CanArslanDev/rune/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/CanArslanDev/rune/compare/v0.4.0...v0.5.0
