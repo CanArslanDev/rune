@@ -7,6 +7,18 @@ All notable changes to this project are documented here. Format follows
 ## [Unreleased]
 
 ### Added
+- **Slivers and CustomScrollView** — compose advanced scrollable
+  layouts that plain `ListView` / `GridView` can't express.
+  `CustomScrollView` drives the `slivers` list; sliver primitives
+  include `SliverList` (children-based, closure variant deferred),
+  `SliverGrid.count` and `SliverGrid.extent` (value-builder named
+  ctors), `SliverToBoxAdapter` (wrap any non-sliver widget),
+  `SliverAppBar` (collapsing app bar with `pinned`/`floating`/
+  `snap` + `expandedHeight` + `flexibleSpace`), `SliverPadding`
+  (edge padding around a sliver), `SliverFillRemaining` (fills the
+  rest of the viewport). Closure-param sliver variants
+  (`SliverList.builder`, `SliverGrid.builder`, etc.) stay deferred
+  pending function-literal support in source.
 - **Wrapper and utility widgets** — seven everyday builders for
   composition, visibility, and masking: `Drawer` (side menu
   content for `Scaffold.drawer`; optional `backgroundColor`,

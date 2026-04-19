@@ -9,6 +9,8 @@ import 'package:rune/src/builders/values/edge_insets_only_builder.dart';
 import 'package:rune/src/builders/values/edge_insets_symmetric_builder.dart';
 import 'package:rune/src/builders/values/grid_view_count_builder.dart';
 import 'package:rune/src/builders/values/grid_view_extent_builder.dart';
+import 'package:rune/src/builders/values/sliver_grid_count_builder.dart';
+import 'package:rune/src/builders/values/sliver_grid_extent_builder.dart';
 import 'package:rune/src/builders/values/text_style_builder.dart';
 import 'package:rune/src/builders/widgets/animated_container_builder.dart';
 import 'package:rune/src/builders/widgets/animated_cross_fade_builder.dart';
@@ -29,6 +31,7 @@ import 'package:rune/src/builders/widgets/clip_oval_builder.dart';
 import 'package:rune/src/builders/widgets/clip_rrect_builder.dart';
 import 'package:rune/src/builders/widgets/column_builder.dart';
 import 'package:rune/src/builders/widgets/container_builder.dart';
+import 'package:rune/src/builders/widgets/custom_scroll_view_builder.dart';
 import 'package:rune/src/builders/widgets/divider_builder.dart';
 import 'package:rune/src/builders/widgets/drawer_builder.dart';
 import 'package:rune/src/builders/widgets/dropdown_button_builder.dart';
@@ -57,6 +60,11 @@ import 'package:rune/src/builders/widgets/scaffold_builder.dart';
 import 'package:rune/src/builders/widgets/single_child_scroll_view_builder.dart';
 import 'package:rune/src/builders/widgets/sized_box_builder.dart';
 import 'package:rune/src/builders/widgets/slider_builder.dart';
+import 'package:rune/src/builders/widgets/sliver_app_bar_builder.dart';
+import 'package:rune/src/builders/widgets/sliver_fill_remaining_builder.dart';
+import 'package:rune/src/builders/widgets/sliver_list_builder.dart';
+import 'package:rune/src/builders/widgets/sliver_padding_builder.dart';
+import 'package:rune/src/builders/widgets/sliver_to_box_adapter_builder.dart';
 import 'package:rune/src/builders/widgets/spacer_builder.dart';
 import 'package:rune/src/builders/widgets/stack_builder.dart';
 import 'package:rune/src/builders/widgets/switch_builder.dart';
@@ -172,7 +180,14 @@ abstract final class RuneDefaults {
       ..registerBuilder(const OpacityBuilder())
       ..registerBuilder(const ClipRRectBuilder())
       ..registerBuilder(const ClipOvalBuilder())
-      ..registerBuilder(const TooltipBuilder());
+      ..registerBuilder(const TooltipBuilder())
+      // Slivers.
+      ..registerBuilder(const CustomScrollViewBuilder())
+      ..registerBuilder(const SliverListBuilder())
+      ..registerBuilder(const SliverToBoxAdapterBuilder())
+      ..registerBuilder(const SliverAppBarBuilder())
+      ..registerBuilder(const SliverPaddingBuilder())
+      ..registerBuilder(const SliverFillRemainingBuilder());
   }
 
   /// Registers every Phase 1–2c value builder into [registry].
@@ -192,7 +207,10 @@ abstract final class RuneDefaults {
       ..registerBuilder(const BottomNavigationBarItemBuilder())
       // Grid views (GridView.builder needs closure syntax — deferred).
       ..registerBuilder(const GridViewCountBuilder())
-      ..registerBuilder(const GridViewExtentBuilder());
+      ..registerBuilder(const GridViewExtentBuilder())
+      // Slivers (grid variants).
+      ..registerBuilder(const SliverGridCountBuilder())
+      ..registerBuilder(const SliverGridExtentBuilder());
   }
 
   /// Seeds [registry] with Phase 2a constants (Colors, enums,
