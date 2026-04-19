@@ -32,7 +32,7 @@ Deliver UI from a server, a CMS, or a designer tool without shipping a new app b
 
 ```yaml
 dependencies:
-  rune: ^0.3.0
+  rune: ^0.4.0
 ```
 
 The package is pre-publication; use a `git:` or `path:` dependency until a tagged `pub.dev` release lands. `dart pub publish --dry-run` currently reports 0 errors / 0 warnings.
@@ -97,7 +97,7 @@ A runnable version lives in [`example/`](example/).
 
 ## Supported source syntax
 
-Current release: **`v0.3.0`** — idiomatic runtime-value expressions (`.length`, `.toUpperCase()`, `.contains(...)`) and three new widget builders (`ListTile`, `Divider`, `Spacer`).
+Current release: **`v0.4.0`** — gesture handlers (`GestureDetector`/`InkWell`), layout helpers (`SingleChildScrollView`/`Wrap`/`AspectRatio`/`Positioned`), and extended form inputs (`Slider`/`Radio`).
 
 | Category              | Elements                                                                                                                                                                                                     |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |

@@ -6,6 +6,8 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [0.4.0] — 2026-04-19 — interactive + layout polish
+
 ### Added
 - **Gesture handlers** — `GestureDetector` and `InkWell` widget
   builders, each wrapping a child with `onTap`, `onDoubleTap`, and
@@ -31,6 +33,14 @@ All notable changes to this project are documented here. Format follows
   contract established by TextField/Switch/Checkbox — the host
   owns state, interactions fire named events with the new value
   as the single argument.
+
+### Fixed
+- Radio builder's test file used `hide RadioBuilder` to avoid a
+  naming collision with a Flutter internal symbol on newer Flutter
+  versions, which broke compilation on the Flutter 3.24.0 pinned
+  in CI (where that symbol isn't exported). Switched to a
+  `show`-import of just the needed names so the test compiles on
+  any Flutter >= 3.22.
 
 ## [0.3.0] — 2026-04-19 — runtime-value members + layout helpers
 
@@ -353,7 +363,8 @@ All notable changes to this project are documented here. Format follows
 - Example app at `example/lib/main.dart` demonstrating the full Phase 1
   feature set.
 
-[Unreleased]: https://github.com/CanArslanDev/rune/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/CanArslanDev/rune/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/CanArslanDev/rune/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/CanArslanDev/rune/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/CanArslanDev/rune/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/CanArslanDev/rune/compare/v0.0.10-phase3c...v0.1.0
