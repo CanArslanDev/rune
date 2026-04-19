@@ -6,14 +6,16 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [0.3.0] — 2026-04-19 — runtime-value members + layout helpers
+
 ### Added
-- **Built-in properties on runtime values** — `.length`, `.isEmpty`,
+- **Built-in properties on runtime values.** `.length`, `.isEmpty`,
   `.isNotEmpty`, `.first`, `.last`, `.keys`, `.values` on the Dart
   primitives they apply to (String, List, Map). `PropertyResolver`
   consults the new table after the Map-key fast-path and before the
   extension registry, so bridge-registered extensions still win on
   custom names.
-- **Whitelisted built-in method invocation on runtime values** —
+- **Whitelisted built-in method invocation on runtime values.**
   `toString()` on anything; `toUpperCase/toLowerCase/trim/contains/
   startsWith/endsWith/split/substring/replaceAll` on strings;
   `contains/indexOf/join` on lists; `containsKey/containsValue` on
@@ -34,7 +36,7 @@ All notable changes to this project are documented here. Format follows
   built-in property (if the pair is recognised) → extension
   registry. Previously a Map with an absent key returned `null`
   silently; now if the absent key happens to match a built-in
-  property (e.g. `cart.length` on a Map with no `length` key),
+  property name (e.g. `cart.length` on a Map with no `length` key),
   the Map's own size is returned. Callers relying on the old
   null-for-absent behaviour for keys that collide with built-in
   property names should use explicit `[…]` indexing instead.
@@ -325,7 +327,8 @@ All notable changes to this project are documented here. Format follows
 - Example app at `example/lib/main.dart` demonstrating the full Phase 1
   feature set.
 
-[Unreleased]: https://github.com/CanArslanDev/rune/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/CanArslanDev/rune/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/CanArslanDev/rune/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/CanArslanDev/rune/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/CanArslanDev/rune/compare/v0.0.10-phase3c...v0.1.0
 [0.0.10]: https://github.com/CanArslanDev/rune/compare/v0.0.9-phase3b...v0.0.10-phase3c
