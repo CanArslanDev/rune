@@ -6,10 +6,10 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
-## [0.7.0] — 2026-04-19 — wrappers, slivers, transforms
+## [0.7.0] - 2026-04-19 - wrappers, slivers, transforms
 
 ### Added
-- **Wrapper and utility widgets** — seven everyday builders for
+- **Wrapper and utility widgets.** Seven everyday builders for
   composition, visibility, and masking: `Drawer` (side menu
   content for `Scaffold.drawer`; optional `backgroundColor`,
   `elevation`, `width`), `SafeArea` (system-inset avoidance;
@@ -22,7 +22,7 @@ All notable changes to this project are documented here. Format follows
   padding; `richMessage` deferred). `Clip.none/hardEdge/antiAlias/
   antiAliasWithSaveLayer` join the constants table for the two
   clip builders.
-- **Slivers and CustomScrollView** — compose advanced scrollable
+- **Slivers and CustomScrollView.** Compose advanced scrollable
   layouts that plain `ListView` / `GridView` can't express.
   `CustomScrollView` drives the `slivers` list; sliver primitives
   include `SliverList` (children-based, closure variant deferred),
@@ -34,7 +34,7 @@ All notable changes to this project are documented here. Format follows
   rest of the viewport). Closure-param sliver variants
   (`SliverList.builder`, `SliverGrid.builder`, etc.) stay deferred
   pending function-literal support in source.
-- **Display wrappers and programmatic transforms** — five
+- **Display wrappers and programmatic transforms.** Five
   display-layer widget builders and two Transform value ctors.
   `FittedBox` (scale child to fit; `fit: BoxFit`, `alignment`),
   `ColoredBox` (efficient leaf for solid color fills),
@@ -49,10 +49,10 @@ All notable changes to this project are documented here. Format follows
   `Transform.translate` is deferred until the Offset value
   builder lands alongside.
 
-## [0.6.0] — 2026-04-19 — widget breadth (Material, animations, grids)
+## [0.6.0] - 2026-04-19 - widget breadth (Material, animations, grids)
 
 ### Added
-- **Material widget breadth** — five more everyday builders.
+- **Material widget breadth.** Five more everyday builders.
   `FloatingActionButton` (onPressed event, optional child/tooltip/
   colors/mini), `Chip` (required label, optional avatar, onDeleted
   event, colors/style), `Badge` (wraps a child with an optional
@@ -60,7 +60,7 @@ All notable changes to this project are documented here. Format follows
   largeSize/isLabelVisible), `CircularProgressIndicator` and
   `LinearProgressIndicator` (both indeterminate by default, set
   `value: 0.0-1.0` for determinate).
-- **Animation expansions** — four more animated widget builders
+- **Animation expansions.** Four more animated widget builders
   complementing the AnimatedContainer/Opacity/Positioned trio from
   v0.5.0: `Hero` (cross-route shared-element transitions; required
   non-null `tag` + `child`, optional `transitionOnUserGestures`),
@@ -76,7 +76,7 @@ All notable changes to this project are documented here. Format follows
   table. Closure-shaped args (`createRectTween`,
   `flightShuttleBuilder`, etc.) remain out of scope pending
   function-literal support in source.
-- **Grid views** — `GridView.count` (fixed column count) and
+- **Grid views.** `GridView.count` (fixed column count) and
   `GridView.extent` (max cell extent) join the default value-builder
   registry. Both require their primary sizing arg
   (`crossAxisCount: int` / `maxCrossAxisExtent: num`); optional
@@ -85,10 +85,10 @@ All notable changes to this project are documented here. Format follows
   `shrinkWrap`, `reverse`. `GridView.builder` is deferred pending
   function-literal support in source.
 
-## [0.5.0] — 2026-04-19 — animations + navigation + dropdown
+## [0.5.0] - 2026-04-19 - animations + navigation + dropdown
 
 ### Added
-- **Animated widgets and Duration support** — `AnimatedContainer`,
+- **Animated widgets and Duration support.** `AnimatedContainer`,
   `AnimatedOpacity`, `AnimatedPositioned`. Each takes a required
   `duration: Duration(...)` and optional `curve` (defaulting to
   `Curves.linear`). When the host rebuilds `RuneView` with new
@@ -98,14 +98,14 @@ All notable changes to this project are documented here. Format follows
   canonical `Curves.*` instances (`linear`, `easeIn/Out/InOut`,
   `bounceIn/Out`, `elasticIn/Out`, `fastOutSlowIn`) join the
   constants table.
-- **Navigation widgets** — `BottomNavigationBar` (required `items`
+- **Navigation widgets.** `BottomNavigationBar` (required `items`
   + `currentIndex`, optional `onTap` dispatching `(name, [newIndex])`,
   theming via `type/selectedItemColor/unselectedItemColor/
   backgroundColor`), `TabBar` + `Tab` (assume a host-side
   `DefaultTabController` ancestor), plus `BottomNavigationBarItem`
   as a value builder. `BottomNavigationBarType.fixed` /
   `.shifting` join the constants table.
-- **Dropdown select** — `DropdownButton` with `DropdownMenuItem`.
+- **Dropdown select.** `DropdownButton` with `DropdownMenuItem`.
   Both parametric on `Object?` so item values can be any runtime
   type. Required `items: List<DropdownMenuItem<Object?>>`; optional
   `value` (absent or explicit null renders the hint),
@@ -121,18 +121,18 @@ All notable changes to this project are documented here. Format follows
   shared helpers in `lib/src/builders/event_callback.dart`:
   `voidEventCallback(name, events)` and
   `valueEventCallback<T>(name, events)`. Every existing builder
-  test continues to pass unchanged — pure refactor.
+  test continues to pass unchanged (pure refactor).
 
-## [0.4.0] — 2026-04-19 — interactive + layout polish
+## [0.4.0] - 2026-04-19 - interactive + layout polish
 
 ### Added
-- **Gesture handlers** — `GestureDetector` and `InkWell` widget
+- **Gesture handlers.** `GestureDetector` and `InkWell` widget
   builders, each wrapping a child with `onTap`, `onDoubleTap`, and
   `onLongPress` named-event dispatch. `InkWell` adds Material
   ink-splash feedback plus an optional `borderRadius` arg to shape
   the splash to a rounded container. Any widget now becomes
   tappable in Rune source without having to be a `*Button`.
-- **Layout and scroll helpers** — `SingleChildScrollView` (wraps
+- **Layout and scroll helpers.** `SingleChildScrollView` (wraps
   overflowing content in a scroll region along a chosen `Axis`),
   `Wrap` (Row-like layout that flows to the next line when out of
   space; supports `direction`/`spacing`/`runSpacing`/`alignment`/
@@ -147,7 +147,7 @@ All notable changes to this project are documented here. Format follows
   dispatches the selected button's own `value` (any runtime type)
   so the host can update `groupValue`; supports `toggleable` for
   tap-to-deselect semantics. Both follow the two-way data-binding
-  contract established by TextField/Switch/Checkbox — the host
+  contract established by TextField/Switch/Checkbox: the host
   owns state, interactions fire named events with the new value
   as the single argument.
 
@@ -159,7 +159,7 @@ All notable changes to this project are documented here. Format follows
   `show`-import of just the needed names so the test compiles on
   any Flutter >= 3.22.
 
-## [0.3.0] — 2026-04-19 — runtime-value members + layout helpers
+## [0.3.0] - 2026-04-19 - runtime-value members + layout helpers
 
 ### Added
 - **Built-in properties on runtime values.** `.length`, `.isEmpty`,
@@ -174,9 +174,9 @@ All notable changes to this project are documented here. Format follows
   `contains/indexOf/join` on lists; `containsKey/containsValue` on
   maps; `abs/round/floor/ceil/toInt/toDouble` on num. Any other
   (type, method) pair raises `ResolveException`. Arbitrary method
-  invocation stays forbidden — whitelist only, matching the
+  invocation stays forbidden (whitelist only), matching the
   store-compliance posture.
-- **Three new widget builders** — `ListTile`, `Divider`, `Spacer`.
+- **Three new widget builders.** `ListTile`, `Divider`, `Spacer`.
   `ListTile` covers the common slots (`title`, `subtitle`, `leading`,
   `trailing`) plus `onTap` as a named event and `dense`/`enabled`/
   `selected` flags. `Divider` accepts `height`, `thickness`, `indent`,
@@ -185,8 +185,8 @@ All notable changes to this project are documented here. Format follows
   verbatim against `RuneConfig.defaults()`.
 
 ### Changed
-- `PropertyResolver` precedence is now: Map key (if present) →
-  built-in property (if the pair is recognised) → extension
+- `PropertyResolver` precedence is now: Map key (if present), then
+  built-in property (if the pair is recognised), then extension
   registry. Previously a Map with an absent key returned `null`
   silently; now if the absent key happens to match a built-in
   property name (e.g. `cart.length` on a Map with no `length` key),
@@ -195,7 +195,7 @@ All notable changes to this project are documented here. Format follows
   property names should use explicit `[…]` indexing instead.
 - `IdentifierResolver.resolvePrefixed` gained the same built-in
   awareness so `items.length` (a `PrefixedIdentifier`) behaves
-  identically to `cart.items.length` (a `PropertyAccess`) — both
+  identically to `cart.items.length` (a `PropertyAccess`); both
   consult the built-in table when the data value is a non-Map
   type or when a Map lacks the requested key.
 - `InvocationResolver` now dispatches runtime method calls on
@@ -206,7 +206,7 @@ All notable changes to this project are documented here. Format follows
   Builder dispatch still wins for `TypeName.ctor(...)` shapes when
   `TypeName` is in the widget or value registry.
 
-## [0.2.0] — 2026-04-19 — diagnostics + richer source language
+## [0.2.0] - 2026-04-19 - diagnostics + richer source language
 
 ### Added
 - **Binary and prefix expression operators.** Equality (`==`, `!=`),
@@ -220,7 +220,7 @@ All notable changes to this project are documented here. Format follows
   (`[if (cond) widget]`, `[if (cond) a else b]`). Both short-circuit
   the un-taken branch, so data keys that are only present in one
   branch don't need to be defensively populated in the other.
-- **Form input widget builders with two-way data binding** —
+- **Form input widget builders with two-way data binding.**
   `TextField`, `Switch`, `Checkbox`. Each accepts a `value` (from
   the host's `data` map) and an `onChanged` event name; user
   interactions dispatch the new value as a single-element args list
@@ -236,7 +236,7 @@ All notable changes to this project are documented here. Format follows
   resolver throw site, and bubbled builder argument failures; `null`
   on defensive invariant checks.
 - **`SourceSpan.fromAstOffset(source, astOffset, astLength)`
-  factory** — the single source of truth for
+  factory.** The single source of truth for
   AST-offset-to-source-location conversion, rebasing
   analyzer-wrapper offsets and clamping EOF-shaped diagnostics into
   usable spans.
@@ -255,15 +255,15 @@ All notable changes to this project are documented here. Format follows
 - `Registry.require`, `ConstantRegistry.require`, and
   `ExtensionRegistry.require` each gained an optional
   `SourceSpan? location` named parameter, threaded through to the
-  thrown exception. Backwards-compatible — existing callers without
+  thrown exception. Backwards-compatible: existing callers without
   location keep working.
 
 ### Fixed
 - Internal code in `lib/src/builders/values/` no longer imports
-  `package:rune/rune.dart` — barrel imports are reserved for
+  `package:rune/rune.dart`; barrel imports are reserved for
   external consumers, matching the unidirectional layering guarded
   by `test/architecture/import_flow_test.dart`.
-- Root `flutter analyze` no longer crawls `packages/**` — the
+- Root `flutter analyze` no longer crawls `packages/**`; the
   sibling package owns its own analyze step with its own
   `analysis_options.yaml`. Previously, CI failed on root analyze
   because the sibling's `pub get` hadn't run before root analyze.
@@ -275,17 +275,17 @@ All notable changes to this project are documented here. Format follows
   views) must supply the source string that the AST originates
   from, or `''` if the context is used in a path where diagnostics
   aren't needed. Callers going through `RuneView` / `RuneConfig`
-  are unaffected — the production path threads `widget.source`
+  are unaffected; the production path threads `widget.source`
   automatically.
 
-## [0.1.0] — 2026-04-18 — Phase 4
+## [0.1.0] - 2026-04-18 - Phase 4
 
 ### Added
-- `benchmark/parse_resolve_bench.dart` — runnable Dart script that
+- `benchmark/parse_resolve_bench.dart`: runnable Dart script that
   measures parse + resolve time on a canonical ~30-node widget tree
   over 500 iterations. Reports cold (cache-miss) and warm (cache-hit)
   stats; soft-checks cold p95 against a 16ms / 60fps budget.
-- `RuneDevOverlay` — opt-in `StatelessWidget` wrapper that, on
+- `RuneDevOverlay`: opt-in `StatelessWidget` wrapper that, on
   long-press in debug/profile builds, opens a bottom sheet with the
   source string and a descendant count. Pass-through in release
   builds. Exported from `package:rune/rune.dart`.
@@ -301,29 +301,29 @@ All notable changes to this project are documented here. Format follows
   0.x minors focus on widget / value / extension additions without
   breaking existing consumers.
 
-## [0.0.10] — 2026-04-18 — Phase 3c
+## [0.0.10] - 2026-04-18 - Phase 3c
 
 ### Added
-- Sibling package `rune_responsive_sizer` at `packages/rune_responsive_sizer/`
-  — a `RuneBridge` implementation that registers four responsive-sizing
+- Sibling package `rune_responsive_sizer` at `packages/rune_responsive_sizer/`:
+  a `RuneBridge` implementation that registers four responsive-sizing
   property extensions: `.w` (percent of screen width), `.h` (percent of
   screen height), `.sp` (text-scaled pixels), `.dm` (percent of
   `min(width, height)`). Applied via
   `RuneConfig.defaults().withBridges([const ResponsiveSizerBridge()])`.
   Independent version track; ships at `0.0.1` alongside this root bump.
 
-## [0.0.9] — 2026-04-18 — Phase 3b
+## [0.0.9] - 2026-04-18 - Phase 3b
 
 ### Added
-- Deep dot-path data access — `user.profile.name` and arbitrary-depth
+- Deep dot-path data access: `user.profile.name` and arbitrary-depth
   traversal now work through `PropertyResolver`'s new map-first
   branch. Each `PropertyAccess` segment walks one map level; missing
   keys return `null`.
-- Index access — `items[0]`, `map['key']`, `items[0].title` via a new
+- Index access: `items[0]`, `map['key']`, `items[0].title` via a new
   `IndexExpression` dispatch arm. List out-of-range throws
   `ResolveException`; non-list/map targets throw with a type-mismatch
   message.
-- `for`-element in list literals — `[for (final item in items)
+- `for`-element in list literals: `[for (final item in items)
   Text(item.title)]`. Loop variable binds into a scoped
   `RuneDataContext` via `extend`, so `item.title` resolves against
   the merged data. Static elements around the for-element are
@@ -332,23 +332,23 @@ All notable changes to this project are documented here. Format follows
   `IfElement` throw `ResolveException`).
 
 ### Changed
-- `PropertyResolver.resolve` — when the target is a
+- `PropertyResolver.resolve`: when the target is a
   `Map<String, Object?>`, the map value wins over any same-named
   extension. Data beats extensions on conflict (matches the
   data-first rule established by `IdentifierResolver.resolvePrefixed`
   in Phase 3a).
 
-## [0.0.8] — 2026-04-18 — Phase 3a
+## [0.0.8] - 2026-04-18 - Phase 3a
 
 ### Added
-- `ExtensionRegistry` — property-name-keyed registry of
+- `ExtensionRegistry`: property-name-keyed registry of
   `(target, ctx) => Object?` handlers. Used by the new
   `PropertyResolver` to evaluate receiver-style property access like
   `10.px`, `(5).doubled`.
-- `RuneBridge` — single-method contract (`void registerInto(RuneConfig)`)
+- `RuneBridge`: single-method contract (`void registerInto(RuneConfig)`)
   that third-party packages implement to bundle widget/value/constant/
   extension contributions. Applied via `RuneConfig.withBridges([...])`.
-- `PropertyResolver` — dispatcher arm for `PropertyAccess` AST nodes;
+- `PropertyResolver`: dispatcher arm for `PropertyAccess` AST nodes;
   resolves target via the expression resolver then delegates to
   `ctx.extensions`.
 - `RuneContext.extensions` field (required); `RuneConfig.extensions`
@@ -362,7 +362,7 @@ All notable changes to this project are documented here. Format follows
   to the constants registry. Non-`Map` data values at the prefix raise
   `ResolveException` with a type-mismatch message.
 
-## [0.0.7] — 2026-04-18
+## [0.0.7] - 2026-04-18
 
 ### Changed
 - Linter floor raised from `flutter_lints ^4.0.0` to
@@ -374,7 +374,7 @@ All notable changes to this project are documented here. Format follows
 - `pubspec.yaml` metadata: `homepage`, `topics` for richer `pub.dev`
   presentation.
 
-## [0.0.6] — 2026-04-18 — Phase 2e
+## [0.0.6] - 2026-04-18 - Phase 2e
 
 ### Added
 - `RuneDefaults` abstract-final helper class with four static entry
@@ -392,7 +392,7 @@ All notable changes to this project are documented here. Format follows
   `config.dart`).
 - `pubspec.yaml` version bumped to `0.0.6`.
 
-## [0.0.5] — 2026-04-18 — Phase 2d
+## [0.0.5] - 2026-04-18 - Phase 2d
 
 ### Added
 - Three button widget builders: `ElevatedButton`, `TextButton`,
@@ -404,19 +404,19 @@ All notable changes to this project are documented here. Format follows
   dispatcher's catch-all when non-null, closing the gap that left
   source-declared events unobservable.
 
-## [0.0.4] — 2026-04-18 — Phase 2c
+## [0.0.4] - 2026-04-18 - Phase 2c
 
 ### Added
 - Ten widget builders: `Padding`, `Center`, `Stack`, `Expanded`,
   `Flexible`, `Card`, `Icon`, `ListView`, `AppBar`, `Scaffold`.
-- Two `Image` value builders (`Image.network`, `Image.asset`) —
+- Two `Image` value builders (`Image.network`, `Image.asset`),
   registered via `ValueRegistry` so they can coexist under the shared
   `typeName == 'Image'` and disambiguate on constructor name.
 - `FlexFit` enum seeded into the Phase 2a constants module.
 - Phase 2c icons seed (`phase_2c_icons.dart`): ~60 common `Icons.*`
   constants.
 
-## [0.0.3] — 2026-04-18 — Phase 2b
+## [0.0.3] - 2026-04-18 - Phase 2b
 
 ### Added
 - Seven value builders: `EdgeInsets.symmetric`, `EdgeInsets.only`,
@@ -426,16 +426,16 @@ All notable changes to this project are documented here. Format follows
 
 ### Fixed
 - `ContainerBuilder` was silently dropping the `decoration` named
-  argument — discovered via Phase 2b integration tests and fixed as
+  argument. Discovered via Phase 2b integration tests and fixed as
   part of the same phase.
 
-## [0.0.2] — 2026-04-18 — Phase 2a
+## [0.0.2] - 2026-04-18 - Phase 2a
 
 ### Added
-- `ConstantRegistry` — two-level `typeName.memberName` keyed store
+- `ConstantRegistry`: two-level `typeName.memberName` keyed store
   (independent of the generic `Registry<T>` base because the
   two-level shape lets error messages cite both halves).
-- `IdentifierResolver` — handles `SimpleIdentifier` (data lookup in
+- `IdentifierResolver`: handles `SimpleIdentifier` (data lookup in
   `RuneDataContext`) and `PrefixedIdentifier` (constants lookup).
 - `ExpressionResolver` dispatcher extensions for `SetOrMapLiteral`,
   `StringInterpolation`, and `AdjacentStrings`.
@@ -455,7 +455,7 @@ All notable changes to this project are documented here. Format follows
   logs via `debugPrint`, so arity mismatches or handler throws do not
   escape into the render pipeline.
 
-## [0.0.1] — 2026-04-18 — Phase 1 MVP
+## [0.0.1] - 2026-04-18 - Phase 1 MVP
 
 ### Added
 - Core: `sealed class RuneException` with five variants
@@ -475,7 +475,7 @@ All notable changes to this project are documented here. Format follows
   `Row`.
 - One value builder: `EdgeInsets.all`.
 - `RuneConfig.defaults()` factory wiring Phase 1 builders.
-- `RuneView` public `StatefulWidget` — parses, caches (LRU), resolves,
+- `RuneView` public `StatefulWidget`: parses, caches (LRU), resolves,
   renders; `onError` callback + `fallback` widget for failures.
 - Example app at `example/lib/main.dart` demonstrating the full Phase 1
   feature set.

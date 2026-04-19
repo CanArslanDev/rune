@@ -10,23 +10,23 @@
 
 Rune parses a string of Dart widget syntax (e.g. `Column(children: [Text('Hello')])`), walks the resulting AST via the official [`analyzer`](https://pub.dev/packages/analyzer) package, and constructs real Flutter widgets through pre-registered builders.
 
-No `dart:mirrors`. No `eval`. No runtime code execution. The widgets that come out are ordinary Flutter widgets — they compose, animate, and perform like hand-written code.
+No `dart:mirrors`. No `eval`. No runtime code execution. The widgets that come out are ordinary Flutter widgets: they compose, animate, and perform like hand-written code.
 
 
 <img width="1200" alt="Banner (1)" src="https://github.com/user-attachments/assets/8bd42ffa-e9ce-41ba-a0af-a85552c7d332" />
 
 ## Why
 
-Deliver UI from a server, a CMS, or a designer tool without shipping a new app binary. The `source` you pass to a `RuneView` can be edited, A/B-tested, or user-authored. Because Rune only interprets a constrained subset of Dart expression syntax — never executing arbitrary code — it's compatible with Apple App Store and Google Play store-review policies.
+Deliver UI from a server, a CMS, or a designer tool without shipping a new app binary. The `source` you pass to a `RuneView` can be edited, A/B-tested, or user-authored. Because Rune only interprets a constrained subset of Dart expression syntax (never executing arbitrary code), it's compatible with Apple App Store and Google Play store-review policies.
 
 ## Features
 
 - **Runtime interpretation, not compilation.** `analyzer` produces the AST; Rune walks it.
 - **Store-compliant.** No `dart:mirrors`, no eval, no on-device code generation.
-- **Layered and open/closed.** Adding a new widget is one builder file, one registration, one test — no core change.
+- **Layered and open/closed.** Adding a new widget is one builder file, one registration, one test, with no core change.
 - **Strict typing.** Dart 3 sealed exceptions, pattern matching, `final class`, `@immutable`. `dynamic` is banned outside the parser boundary.
 - **Single runtime dependency** besides Flutter: `analyzer`. All other integrations (responsive scaling, state management, routing, ...) live in separate bridge packages.
-- **Rich data binding.** Free identifiers (`userName`), deep dot-path (`user.profile.name`), list/map indexing (`items[0].title`), and data-driven widget lists (`for (final item in items) ...`) — all resolved against a `Map<String, Object?>` you supply.
+- **Rich data binding.** Free identifiers (`userName`), deep dot-path (`user.profile.name`), list/map indexing (`items[0].title`), and data-driven widget lists (`for (final item in items) ...`), all resolved against a `Map<String, Object?>` you supply.
 - **String interpolation.** `'Hello, $name!'` and `'Count: ${n}'` substitute data-context values into literal strings.
 - **Named events.** `ElevatedButton(onPressed: "submit")` routes taps through `RuneView.onEvent(name, args)` to the host app.
 - **Extensible.** A `RuneBridge` package registers widget/value/constant/extension handlers with one `registerInto(config)` call. `10.w`, `size.half`, and similar receiver-style property access go through `PropertyResolver` → `ExtensionRegistry`.
@@ -102,7 +102,7 @@ A runnable version lives in [`example/`](example/).
 
 ## Supported source syntax
 
-Current release: **`v0.7.0`** — wrapper widgets (`Drawer`, `SafeArea`, `Visibility`, `Opacity`, `ClipRRect`/`ClipOval`, `Tooltip`), the full sliver family + `CustomScrollView`, and display/transform primitives (`FittedBox`, `ColoredBox`, `DecoratedBox`, `Offstage`, `Semantics`, `Transform.scale/.rotate`).
+Current release: **`v0.7.0`**. Adds wrapper widgets (`Drawer`, `SafeArea`, `Visibility`, `Opacity`, `ClipRRect`/`ClipOval`, `Tooltip`), the full sliver family + `CustomScrollView`, and display/transform primitives (`FittedBox`, `ColoredBox`, `DecoratedBox`, `Offstage`, `Semantics`, `Transform.scale/.rotate`).
 
 | Category              | Elements                                                                                                                                                                                                     |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -110,16 +110,16 @@ Current release: **`v0.7.0`** — wrapper widgets (`Drawer`, `SafeArea`, `Visibi
 | Value ctors           | `EdgeInsets.all/symmetric/only/fromLTRB/zero`, `Color(hex)`, `TextStyle(...)`, `BorderRadius.circular(n)`, `BoxDecoration(...)`, `Image.network(url)`, `Image.asset(path)`, `Duration(...)`, `BottomNavigationBarItem(...)`, `Transform.scale/.rotate`                 |
 | Constants             | `Colors.*`, `MainAxisAlignment.*`, `CrossAxisAlignment.*`, `MainAxisSize.*`, `TextAlign.*`, `TextOverflow.*`, `Alignment.*`, `BoxFit.*`, `StackFit.*`, `Axis.*`, `FontWeight.*`, `BoxShape.*`, `FlexFit.*`, `BottomNavigationBarType.*`, `CrossFadeState.*`, `Clip.*`, `DecorationPosition.*`, `Curves.linear/easeIn/easeOut/easeInOut/bounce*/elastic*/fastOutSlowIn`, ~60 common `Icons.*` |
 | Literals              | int, double, bool, null, string, list `[...]`, set/map `{...}`, adjacent string concat                                                                                                                       |
-| Interpolation         | `'Hello $name'`, `'Count: ${n}'` — expressions resolve against data + constants                                                                                                                              |
+| Interpolation         | `'Hello $name'`, `'Count: ${n}'` (expressions resolve against data + constants)                                                                                                                              |
 | Identifiers           | Bare `name` → `data['name']`; `Type.member` → data `Map` traversal OR constants registry                                                                                                                     |
-| Deep data paths       | `user.profile.name`, `items[0].title` — any depth of nested maps + list/map indexing                                                                                                                         |
-| Collections           | `[for (final item in items) Text(item.title)]` — data-driven widget lists, nested for-elements, static + for elements interleaved                                                                            |
+| Deep data paths       | `user.profile.name`, `items[0].title` (any depth of nested maps + list/map indexing)                                                                                                                         |
+| Collections           | `[for (final item in items) Text(item.title)]` (data-driven widget lists, nested for-elements, static + for elements interleaved)                                                                            |
 | Built-in properties   | `.length`, `.isEmpty`, `.isNotEmpty`, `.first`, `.last` on lists; `.length`, `.isEmpty`, `.isNotEmpty` on strings; `.length`, `.isEmpty`, `.isNotEmpty`, `.keys`, `.values` on maps                                 |
 | Built-in methods      | `toString()` (any); `toUpperCase/toLowerCase/trim/contains/startsWith/endsWith/split/substring/replaceAll` on strings; `contains/indexOf/join` on lists; `containsKey/containsValue` on maps; `abs/round/floor/ceil/toInt/toDouble` on num  |
 | Events                | `ElevatedButton(onPressed: 'submit', ...)` → `RuneView.onEvent('submit', [])`                                                                                                                                |
-| Property extensions   | `10.w`, `size.half` — via `RuneBridge` packages registering handlers                                                                                                                                         |
+| Property extensions   | `10.w`, `size.half` (via `RuneBridge` packages registering handlers)                                                                                                                                         |
 | Operators             | `==` `!=` `<` `<=` `>` `>=` on num+num or String+String; `&&` `\|\|` (short-circuit); `+` `-` `*` `/` `%` on num; `!` on bool; unary `-` on num                                                              |
-| Conditionals          | Ternary `cond ? a : b`; list-literal `[if (cond) widget]` / `[if (cond) a else b]` — both short-circuit the un-taken branch                                                                                  |
+| Conditionals          | Ternary `cond ? a : b`; list-literal `[if (cond) widget]` / `[if (cond) a else b]` (both short-circuit the un-taken branch)                                                                                  |
 
 Anything outside this surface raises a `RuneException` (parse, resolve, or unregistered-builder variant). The plans in `docs/superpowers/plans/` enumerate the phases that built this set.
 
@@ -132,11 +132,11 @@ RuneView (StatefulWidget)
   │
   ▼
 RuneConfig
-  ├─ WidgetRegistry        — Phase 1-2d widget builders
-  ├─ ValueRegistry         — Phase 1-2c value ctors
-  ├─ ConstantRegistry      — Colors, enums, Icons
-  └─ ExtensionRegistry     — Phase 3a .w/.px/.half handlers
-  (+ withBridges([...])    — RuneBridge-packaged third-party contributions)
+  ├─ WidgetRegistry        : Phase 1-2d widget builders
+  ├─ ValueRegistry         : Phase 1-2c value ctors
+  ├─ ConstantRegistry      : Colors, enums, Icons
+  └─ ExtensionRegistry     : Phase 3a .w/.px/.half handlers
+  (+ withBridges([...])    : RuneBridge-packaged third-party contributions)
   │
   ▼
 RuneContext  (carries data, events, all four registries, optional Flutter BuildContext)
@@ -146,11 +146,11 @@ DartParser ─────────▶ AstCache (LRU)
   │
   ▼
 ExpressionResolver (dispatcher on Expression AST subtype)
-  ├─ LiteralResolver       — literals + adjacent-string concat
-  ├─ IdentifierResolver    — SimpleIdentifier / PrefixedIdentifier (data-first, constants fallback)
-  ├─ PropertyResolver      — PropertyAccess (Map-first for deep paths, extensions for scalars)
-  ├─ InvocationResolver    — MethodInvocation / InstanceCreationExpression
-  └─ (inline)              — ListLiteral + ForElement, SetOrMapLiteral, IndexExpression, StringInterpolation
+  ├─ LiteralResolver       : literals + adjacent-string concat
+  ├─ IdentifierResolver    : SimpleIdentifier / PrefixedIdentifier (data-first, constants fallback)
+  ├─ PropertyResolver      : PropertyAccess (Map-first for deep paths, extensions for scalars)
+  ├─ InvocationResolver    : MethodInvocation / InstanceCreationExpression
+  └─ (inline)              : ListLiteral + ForElement, SetOrMapLiteral, IndexExpression, StringInterpolation
                               │
                               ▼
                         Registered widget/value builder
@@ -204,7 +204,7 @@ config.extensions.register('pct', (target, ctx) {
 });
 ```
 
-Source strings can then use `SizedBox(width: (50).pct * MediaQuery.of(...))` — or, more realistically, a bridge that uses `ctx.flutterContext` to do proper responsive math.
+Source strings can then use `SizedBox(width: (50).pct * MediaQuery.of(...))`, or, more realistically, a bridge that uses `ctx.flutterContext` to do proper responsive math.
 
 ### Ship a reusable bundle as a bridge
 
@@ -231,23 +231,23 @@ final config = RuneConfig.defaults()
 
 The `RuneDefaults` helper exposes the same surface internally: `RuneDefaults.registerWidgets(registry)` / `registerValues` / `registerConstants` / `registerAll(config)`. Handy for custom configs that want only a subset of defaults.
 
-A live working bridge ships at [`packages/rune_responsive_sizer`](packages/rune_responsive_sizer) — a ~70-line implementation that adds `.w` / `.h` / `.sp` / `.dm` responsive-sizing extensions. Use it as both a consumer (pair it with `rune` via path dep) and a reference for writing your own bridges.
+A live working bridge ships at [`packages/rune_responsive_sizer`](packages/rune_responsive_sizer): a ~70-line implementation that adds `.w` / `.h` / `.sp` / `.dm` responsive-sizing extensions. Use it as both a consumer (pair it with `rune` via path dep) and a reference for writing your own bridges.
 
 ## Error handling
 
 - `RuneException` is a `sealed class` with five variants:
-  - `ParseException` — `analyzer` could not produce an AST.
-  - `ResolveException` — a resolver encountered an unsupported shape or missing extension.
-  - `UnregisteredBuilderException` — a type name has no matching builder (exposes `typeName`).
-  - `ArgumentException` — a required builder argument was missing or of the wrong type.
-  - `BindingException` — an identifier referenced a key that is not present in `RuneDataContext`.
+  - `ParseException`: `analyzer` could not produce an AST.
+  - `ResolveException`: a resolver encountered an unsupported shape or missing extension.
+  - `UnregisteredBuilderException`: a type name has no matching builder (exposes `typeName`).
+  - `ArgumentException`: a required builder argument was missing or of the wrong type.
+  - `BindingException`: an identifier referenced a key that is not present in `RuneDataContext`.
 - Every exception carries the offending `source` substring plus a human-readable `message`.
 - `RuneView` catches all exceptions, calls the optional `onError` callback, then renders `fallback`. In debug builds with no `fallback`, Flutter's red-screen `ErrorWidget` is shown; in release builds the view silently collapses to an empty `SizedBox`.
 - `RuneEventDispatcher.dispatch` is crash-safe: handler throws (including arity mismatches) are caught and `debugPrint`-logged; they never escape into the render pipeline.
 
 ### Source-location diagnostics
 
-Every `RuneException` carries an optional `location` field — a `SourceSpan` pointing into the `RuneView.source` where the error originates. When present, `toString()` renders a caret pointer beneath the one-line summary:
+Every `RuneException` carries an optional `location` field: a `SourceSpan` pointing into the `RuneView.source` where the error originates. When present, `toString()` renders a caret pointer beneath the one-line summary:
 
 ```
 ResolveException: Unknown identifier "userNmae" (not present in RuneDataContext) (source: "userNmae")
@@ -290,4 +290,4 @@ See [`example/`](example/) for a runnable demo that exercises the full current f
 
 ## License
 
-MIT — see [`LICENSE`](LICENSE).
+MIT. See [`LICENSE`](LICENSE).
