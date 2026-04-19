@@ -21,6 +21,13 @@ All notable changes to this project are documented here. Format follows
   (type, method) pair raises `ResolveException`. Arbitrary method
   invocation stays forbidden — whitelist only, matching the
   store-compliance posture.
+- **Three new widget builders** — `ListTile`, `Divider`, `Spacer`.
+  `ListTile` covers the common slots (`title`, `subtitle`, `leading`,
+  `trailing`) plus `onTap` as a named event and `dense`/`enabled`/
+  `selected` flags. `Divider` accepts `height`, `thickness`, `indent`,
+  `endIndent`, `color`. `Spacer` accepts `flex` (default 1). With
+  these registered, the Quickstart snippet in the README now runs
+  verbatim against `RuneConfig.defaults()`.
 
 ### Changed
 - `PropertyResolver` precedence is now: Map key (if present) →

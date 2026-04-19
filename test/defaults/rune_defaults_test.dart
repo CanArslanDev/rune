@@ -31,6 +31,9 @@ void main() {
         'TextField',
         'Switch',
         'Checkbox',
+        'ListTile',
+        'Divider',
+        'Spacer',
       ]) {
         expect(r.contains(name), isTrue, reason: 'missing widget $name');
       }
@@ -72,7 +75,7 @@ void main() {
       RuneDefaults.registerWidgets(w);
       RuneDefaults.registerValues(v);
       RuneDefaults.registerConstants(c);
-      expect(w.size, greaterThanOrEqualTo(21));
+      expect(w.size, greaterThanOrEqualTo(24));
       expect(v.size, greaterThanOrEqualTo(10));
       expect(c.size, greaterThanOrEqualTo(50));
     });

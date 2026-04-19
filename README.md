@@ -93,8 +93,6 @@ void main() {
 }
 ```
 
-> Note: `ListTile` is Flutter's convenience tile — it is not yet in the default builder set and would need registration. The snippet above is illustrative of the syntax shape; swap to `Padding(padding: EdgeInsets.all(8), child: Text(...))` if you want to run it verbatim against the stock defaults.
-
 A runnable version lives in [`example/`](example/).
 
 ## Supported source syntax
@@ -103,7 +101,7 @@ Current release: **`v0.2.0`** — richer source language (operators, conditional
 
 | Category              | Elements                                                                                                                                                                                                     |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Widgets               | `Text`, `SizedBox`, `Container`, `Column`, `Row`, `Padding`, `Center`, `Stack`, `Expanded`, `Flexible`, `Card`, `Icon`, `ListView`, `AppBar`, `Scaffold`, `ElevatedButton`, `TextButton`, `IconButton`, `TextField`, `Switch`, `Checkbox` |
+| Widgets               | `Text`, `SizedBox`, `Container`, `Column`, `Row`, `Padding`, `Center`, `Stack`, `Expanded`, `Flexible`, `Card`, `Icon`, `ListView`, `AppBar`, `Scaffold`, `ElevatedButton`, `TextButton`, `IconButton`, `TextField`, `Switch`, `Checkbox`, `ListTile`, `Divider`, `Spacer` |
 | Value ctors           | `EdgeInsets.all/symmetric/only/fromLTRB/zero`, `Color(hex)`, `TextStyle(...)`, `BorderRadius.circular(n)`, `BoxDecoration(...)`, `Image.network(url)`, `Image.asset(path)`                                   |
 | Constants             | `Colors.*`, `MainAxisAlignment.*`, `CrossAxisAlignment.*`, `MainAxisSize.*`, `TextAlign.*`, `TextOverflow.*`, `Alignment.*`, `BoxFit.*`, `StackFit.*`, `Axis.*`, `FontWeight.*`, `BoxShape.*`, `FlexFit.*`, ~60 common `Icons.*` |
 | Literals              | int, double, bool, null, string, list `[...]`, set/map `{...}`, adjacent string concat                                                                                                                       |
