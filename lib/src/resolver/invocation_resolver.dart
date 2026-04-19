@@ -5,6 +5,7 @@ import 'package:rune/src/core/rune_context.dart';
 import 'package:rune/src/core/source_span.dart';
 import 'package:rune/src/resolver/builtin_members.dart';
 import 'package:rune/src/resolver/expression_resolver.dart';
+import 'package:rune/src/resolver/rune_closure.dart';
 
 /// Resolves constructor-call expressions — both bare `Text('hi')` shape
 /// (parses as [MethodInvocation]) and explicit `new Text('hi')` shape
@@ -63,6 +64,14 @@ final class InvocationResolver implements InvocationResolverContract {
     final target = node.target;
 
     if (target == null) {
+      // Flutter-idiomatic `setState(() { ... })` sugar. Phase C mutations
+      // already trigger rebuilds via RuneState.onMutation, so the wrapper
+      // is semantically a passthrough; its purpose is to let source read
+      // naturally. Handle it before the registry lookup so a host-
+      // registered `setState` builder cannot shadow the keyword.
+      if (node.methodName.name == 'setState') {
+        return _resolveSetState(node, ctx);
+      }
       // Bare `Text('hi')`.
       return _dispatch(
         typeName: node.methodName.name,
@@ -110,6 +119,60 @@ final class InvocationResolver implements InvocationResolverContract {
     // ParenthesizedExpression, chained MethodInvocation, etc. — goes
     // directly to runtime method dispatch.
     return _dispatchRuntimeMethod(node: node, ctx: ctx);
+  }
+
+  /// Resolves the Flutter-idiomatic `setState(() { ... })` sugar.
+  ///
+  /// Because Phase C state mutations already schedule a rebuild via
+  /// `RuneState.onMutation`, the wrapper is semantically a passthrough:
+  /// it evaluates the single no-arg closure argument and returns its
+  /// result. It exists to let source code read like standard Flutter
+  /// (`setState(() { state.counter = state.counter + 1; })`) and to
+  /// group related mutations visually.
+  ///
+  /// Validates:
+  ///   * exactly one argument;
+  ///   * the argument resolves to a [RuneClosure];
+  ///   * the closure declares no parameters.
+  ///
+  /// Any violation raises [ResolveException] with a span pointing at
+  /// the `setState(...)` call.
+  Object? _resolveSetState(MethodInvocation node, RuneContext ctx) {
+    final args = node.argumentList.arguments;
+    final loc = SourceSpan.fromAstOffset(ctx.source, node.offset, node.length);
+    if (args.length != 1) {
+      throw ResolveException(
+        node.toSource(),
+        'setState expects exactly one closure argument, got ${args.length}',
+        location: loc,
+      );
+    }
+    final arg = args.single;
+    if (arg is NamedExpression) {
+      throw ResolveException(
+        node.toSource(),
+        'setState expects a positional closure argument, '
+        'got a named argument "${arg.name.label.name}"',
+        location: loc,
+      );
+    }
+    final resolved = _expr.resolve(arg, ctx);
+    if (resolved is! RuneClosure) {
+      throw ResolveException(
+        node.toSource(),
+        'setState expects a closure; got ${resolved.runtimeType}',
+        location: loc,
+      );
+    }
+    if (resolved.parameterNames.isNotEmpty) {
+      throw ResolveException(
+        node.toSource(),
+        'setState closure must take no parameters; '
+        'got ${resolved.parameterNames.length}',
+        location: loc,
+      );
+    }
+    return resolved.call(const <Object?>[]);
   }
 
   /// Resolves a runtime method call on a non-builder target.

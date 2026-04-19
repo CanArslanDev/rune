@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rune/src/binding/rune_data_context.dart';
 import 'package:rune/src/core/exceptions.dart';
+import 'package:rune/src/core/rune_state.dart';
 import 'package:rune/src/parser/dart_parser.dart';
 import 'package:rune/src/registry/constant_registry.dart';
 import 'package:rune/src/registry/extension_registry.dart';
@@ -887,7 +888,7 @@ void main() {
     });
 
     test('assignment with non-identifier LHS is rejected', () {
-      // `a[0] = 1`: Phase B only supports SimpleIdentifier LHS.
+      // `a[0] = 1`: IndexExpression LHS is out of scope through Phase D.
       final r = makeResolver();
       const source = '(a) { a[0] = 1; return a; }';
       try {
@@ -900,5 +901,154 @@ void main() {
         expect(e.message, contains('Unsupported assignment target'));
       }
     });
+  });
+
+  group('property-access assignment on RuneState', () {
+    RuneState makeState(
+      Map<String, Object?> entries, {
+      void Function()? onMutation,
+    }) {
+      return RuneState(
+        entries: entries,
+        onMutation: onMutation ?? () {},
+      );
+    }
+
+    test('state.counter = 5 writes through RuneState.set', () {
+      final r = makeResolver();
+      final state = makeState({'counter': 0});
+      const source = 'state.counter = 5';
+      final ctx = testContext(
+        data: RuneDataContext(<String, Object?>{'state': state}),
+        source: source,
+      );
+      final result = r.resolve(parser.parse(source), ctx);
+      expect(result, 5);
+      expect(state.get('counter'), 5);
+    });
+
+    test('state.counter = 5 triggers onMutation exactly once', () {
+      final r = makeResolver();
+      var fires = 0;
+      final state = makeState({'counter': 0}, onMutation: () => fires++);
+      const source = 'state.counter = 5';
+      final ctx = testContext(
+        data: RuneDataContext(<String, Object?>{'state': state}),
+        source: source,
+      );
+      r.resolve(parser.parse(source), ctx);
+      expect(fires, 1);
+    });
+
+    test('state.counter = state.counter + 1 increments by 1', () {
+      final r = makeResolver();
+      final state = makeState({'counter': 7});
+      const source = 'state.counter = state.counter + 1';
+      final ctx = testContext(
+        data: RuneDataContext(<String, Object?>{'state': state}),
+        source: source,
+      );
+      r.resolve(parser.parse(source), ctx);
+      expect(state.get('counter'), 8);
+    });
+
+    test(
+      'assigning into a non-RuneState prefix raises ResolveException',
+      () {
+        final r = makeResolver();
+        // `holder` is a plain Map, not a RuneState. Phase D only writes
+        // through RuneState; plain Map targets stay read-only from source.
+        const source = 'holder.counter = 5';
+        final ctx = testContext(
+          data: RuneDataContext(const <String, Object?>{
+            'holder': <String, Object?>{'counter': 0},
+          }),
+          source: source,
+        );
+        expect(
+          () => r.resolve(parser.parse(source), ctx),
+          throwsA(
+            isA<ResolveException>().having(
+              (e) => e.message,
+              'message',
+              contains('must resolve to a RuneState'),
+            ),
+          ),
+        );
+      },
+    );
+
+    test(
+      'PropertyAccess LHS with parenthesized RuneState target works',
+      () {
+        final r = makeResolver();
+        final state = makeState({'counter': 0});
+        const source = '(state).counter = 9';
+        final ctx = testContext(
+          data: RuneDataContext(<String, Object?>{'state': state}),
+          source: source,
+        );
+        r.resolve(parser.parse(source), ctx);
+        expect(state.get('counter'), 9);
+      },
+    );
+
+    test(
+      'deep chain state.inner.counter = 5 writes through inner RuneState',
+      () {
+        // The LHS parses as PropertyAccess(target=PrefixedIdentifier(
+        // 'state','inner'), propertyName='counter'). Resolving the
+        // target gives the inner RuneState (via PropertyResolver), and
+        // _assignPropertyAccess writes into that.
+        final r = makeResolver();
+        final inner = makeState({'counter': 0});
+        final outer = makeState({'inner': inner});
+        const source = 'state.inner.counter = 5';
+        final ctx = testContext(
+          data: RuneDataContext(<String, Object?>{'state': outer}),
+          source: source,
+        );
+        r.resolve(parser.parse(source), ctx);
+        expect(inner.get('counter'), 5);
+      },
+    );
+
+    test('compound operator state.counter += 1 is rejected', () {
+      final r = makeResolver();
+      final state = makeState({'counter': 0});
+      const source = 'state.counter += 1';
+      final ctx = testContext(
+        data: RuneDataContext(<String, Object?>{'state': state}),
+        source: source,
+      );
+      try {
+        r.resolve(parser.parse(source), ctx);
+        fail('expected ResolveException');
+      } on ResolveException catch (e) {
+        expect(e.message, contains('Unsupported assignment operator'));
+      }
+    });
+
+    test(
+      'bare-identifier assignment to a RuneState-bound name is rejected '
+      '(data read-only; state API required)',
+      () {
+        // `s = 5` where `s` is bound to a RuneState in data: the
+        // SimpleIdentifier branch refuses to write to host-supplied data
+        // even when the value happens to be a RuneState. Users who want
+        // to mutate must use `s.key = value` or `s.set(...)`.
+        final r = makeResolver();
+        final state = makeState(<String, Object?>{});
+        const source = 's = 5';
+        final ctx = testContext(
+          data: RuneDataContext(<String, Object?>{'s': state}),
+          source: source,
+        );
+        expect(
+          () => r.resolve(parser.parse(source), ctx),
+          throwsA(isA<ResolveException>()),
+        );
+      },
+    );
   });
 }

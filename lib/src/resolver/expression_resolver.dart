@@ -2,6 +2,7 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:flutter/material.dart';
 import 'package:rune/src/core/exceptions.dart';
 import 'package:rune/src/core/rune_context.dart';
+import 'package:rune/src/core/rune_state.dart';
 import 'package:rune/src/core/source_span.dart';
 import 'package:rune/src/resolver/identifier_resolver.dart';
 import 'package:rune/src/resolver/literal_resolver.dart';
@@ -554,41 +555,64 @@ final class ExpressionResolver {
   }
 
   /// Resolves an [AssignmentExpression]. Only the plain `=` operator is
-  /// supported in Phase B. Compound operators (`+=`, `-=`, etc.) and
-  /// null-aware assignment (`??=`) fall through to the unsupported arm
-  /// and raise [ResolveException].
+  /// supported. Compound operators (`+=`, `-=`, etc.) and null-aware
+  /// assignment (`??=`) fall through to the unsupported arm and raise
+  /// [ResolveException].
   ///
-  /// Left-hand-side shapes supported in Phase B:
-  ///   * [SimpleIdentifier]: writes to [RuneContext.scope] if the name
-  ///     is declared there, walking outward through parent scopes.
-  ///     Assigning to a name that lives in [RuneContext.data] is
+  /// Left-hand-side shapes supported:
+  ///   * [SimpleIdentifier] (Phase B): writes to [RuneContext.scope] if
+  ///     the name is declared there, walking outward through parent
+  ///     scopes. Assigning to a name that lives in [RuneContext.data] is
   ///     forbidden: host-supplied data is read-only from the source's
   ///     perspective. Assigning to a name declared nowhere raises
   ///     [BindingException].
+  ///   * [PrefixedIdentifier] (Phase D): `state.counter = value`. The
+  ///     prefix must resolve to a [RuneState]; the assignment routes
+  ///     through [RuneState.set] so mutation tracking stays
+  ///     single-sourced with the Phase C mutation pipeline.
+  ///   * [PropertyAccess] (Phase D): `(expr).counter = value` /
+  ///     `state.inner.counter = value`. The resolved target must be a
+  ///     [RuneState] and the assignment likewise routes through
+  ///     [RuneState.set].
   ///
-  /// Other LHS shapes (PropertyAccess, IndexExpression) are out of
-  /// scope for Phase B and raise [ResolveException].
+  /// Any other LHS shape (e.g. [IndexExpression]) raises
+  /// [ResolveException].
   Object? _resolveAssignment(AssignmentExpression node, RuneContext ctx) {
     final op = node.operator.lexeme;
     if (op != '=') {
       throw ResolveException(
         node.toSource(),
         'Unsupported assignment operator "$op"; '
-        'only plain "=" is supported in Phase B',
+        'only plain "=" is supported',
         location:
             SourceSpan.fromAstOffset(ctx.source, node.offset, node.length),
       );
     }
     final lhs = node.leftHandSide;
-    if (lhs is! SimpleIdentifier) {
-      throw ResolveException(
-        node.toSource(),
-        'Unsupported assignment target: ${lhs.runtimeType}; '
-        'only SimpleIdentifier (local variable) is supported in Phase B',
-        location:
-            SourceSpan.fromAstOffset(ctx.source, node.offset, node.length),
-      );
+    if (lhs is SimpleIdentifier) {
+      return _assignSimpleIdentifier(lhs, node, ctx);
     }
+    if (lhs is PrefixedIdentifier) {
+      return _assignPrefixedIdentifier(lhs, node, ctx);
+    }
+    if (lhs is PropertyAccess) {
+      return _assignPropertyAccess(lhs, node, ctx);
+    }
+    throw ResolveException(
+      node.toSource(),
+      'Unsupported assignment target: ${lhs.runtimeType}; '
+      'supported LHS shapes are SimpleIdentifier (local variable), '
+      'PrefixedIdentifier (state.member), and PropertyAccess '
+      '((expr).member on RuneState)',
+      location: SourceSpan.fromAstOffset(ctx.source, node.offset, node.length),
+    );
+  }
+
+  Object? _assignSimpleIdentifier(
+    SimpleIdentifier lhs,
+    AssignmentExpression node,
+    RuneContext ctx,
+  ) {
     final name = lhs.name;
     final value = resolve(node.rightHandSide, ctx);
     final scope = ctx.scope;
@@ -609,9 +633,61 @@ final class ExpressionResolver {
     throw BindingException(
       node.toSource(),
       'Cannot assign to undeclared local variable "$name"',
-      location:
-          SourceSpan.fromAstOffset(ctx.source, node.offset, node.length),
+      location: SourceSpan.fromAstOffset(ctx.source, node.offset, node.length),
     );
+  }
+
+  Object? _assignPrefixedIdentifier(
+    PrefixedIdentifier lhs,
+    AssignmentExpression node,
+    RuneContext ctx,
+  ) {
+    final prefixName = lhs.prefix.name;
+    final memberName = lhs.identifier.name;
+    final prefixValue = _identifier.resolveSimple(lhs.prefix, ctx);
+    if (prefixValue is! RuneState) {
+      throw ResolveException(
+        node.toSource(),
+        'Assignment target "$prefixName.$memberName": the prefix '
+        '"$prefixName" must resolve to a RuneState, got '
+        '${prefixValue.runtimeType}',
+        location:
+            SourceSpan.fromAstOffset(ctx.source, node.offset, node.length),
+      );
+    }
+    final value = resolve(node.rightHandSide, ctx);
+    prefixValue.set(memberName, value);
+    return value;
+  }
+
+  Object? _assignPropertyAccess(
+    PropertyAccess lhs,
+    AssignmentExpression node,
+    RuneContext ctx,
+  ) {
+    final targetExpr = lhs.target;
+    if (targetExpr == null) {
+      throw ResolveException(
+        node.toSource(),
+        'Cascade assignment (..member = value) is not supported',
+        location:
+            SourceSpan.fromAstOffset(ctx.source, node.offset, node.length),
+      );
+    }
+    final target = resolve(targetExpr, ctx);
+    if (target is! RuneState) {
+      throw ResolveException(
+        node.toSource(),
+        'Assignment target "${lhs.toSource()}": the left-hand side '
+        'must resolve to a RuneState, got ${target.runtimeType}',
+        location:
+            SourceSpan.fromAstOffset(ctx.source, node.offset, node.length),
+      );
+    }
+    final memberName = lhs.propertyName.name;
+    final value = resolve(node.rightHandSide, ctx);
+    target.set(memberName, value);
+    return value;
   }
 
   /// Returns the bound [StatementResolver], constructing one lazily on

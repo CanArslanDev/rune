@@ -5,6 +5,7 @@ import 'package:rune/src/builders/builder.dart';
 import 'package:rune/src/builders/resolved_arguments.dart';
 import 'package:rune/src/core/exceptions.dart';
 import 'package:rune/src/core/rune_context.dart';
+import 'package:rune/src/core/rune_state.dart';
 import 'package:rune/src/parser/dart_parser.dart';
 import 'package:rune/src/registry/value_registry.dart';
 import 'package:rune/src/registry/widget_registry.dart';
@@ -476,6 +477,8 @@ void main() {
       expect((out! as Text).data, 'ok');
     });
   });
+
+  _setStateTests();
 }
 
 /// Captures an [ArgumentException] raised by driving a real parser →
@@ -566,4 +569,102 @@ final class _PassthroughRow implements RuneWidgetBuilder {
   @override
   Widget build(ResolvedArguments args, RuneContext ctx) =>
       const SizedBox.shrink();
+}
+
+void _setStateTests() {
+  final parser = DartParser();
+
+  RuneState makeState(
+    Map<String, Object?> entries, {
+    void Function()? onMutation,
+  }) {
+    return RuneState(
+      entries: entries,
+      onMutation: onMutation ?? () {},
+    );
+  }
+
+  group('setState() sugar', () {
+    test('setState(() {}) resolves without error and returns null', () {
+      final p = _buildPipeline();
+      const source = 'setState(() {})';
+      final result = p.expr.resolve(parser.parse(source), p.ctx);
+      expect(result, isNull);
+    });
+
+    test(
+      'setState mutates RuneState through a body that writes state.counter',
+      () {
+        final state = makeState({'counter': 0});
+        final p = _buildPipeline(data: <String, Object?>{'state': state});
+        const source =
+            'setState(() { state.counter = state.counter + 1; })';
+        p.expr.resolve(parser.parse(source), p.ctx);
+        expect(state.get('counter'), 1);
+      },
+    );
+
+    test(
+      'setState with multiple mutations fires onMutation once per set',
+      () {
+        // Phase C semantics: every RuneState.set fires onMutation.
+        // setState is a passthrough wrapper that does not batch.
+        // Batching can be added in a future phase without breaking this.
+        var fires = 0;
+        final state =
+            makeState({'a': 0, 'b': 0}, onMutation: () => fires++);
+        final p = _buildPipeline(data: <String, Object?>{'state': state});
+        const source = 'setState(() { state.a = 1; state.b = 2; })';
+        p.expr.resolve(parser.parse(source), p.ctx);
+        expect(state.get('a'), 1);
+        expect(state.get('b'), 2);
+        expect(fires, 2);
+      },
+    );
+
+    test('setState with a closure of wrong arity raises ResolveException', () {
+      final p = _buildPipeline();
+      const source = 'setState((x) => x)';
+      expect(
+        () => p.expr.resolve(parser.parse(source), p.ctx),
+        throwsA(
+          isA<ResolveException>().having(
+            (e) => e.message,
+            'message',
+            contains('no parameters'),
+          ),
+        ),
+      );
+    });
+
+    test('setState with a non-closure argument raises ResolveException', () {
+      final p = _buildPipeline();
+      const source = 'setState(42)';
+      expect(
+        () => p.expr.resolve(parser.parse(source), p.ctx),
+        throwsA(
+          isA<ResolveException>().having(
+            (e) => e.message,
+            'message',
+            contains('expects a closure'),
+          ),
+        ),
+      );
+    });
+
+    test('setState with no arguments raises ResolveException', () {
+      final p = _buildPipeline();
+      const source = 'setState()';
+      expect(
+        () => p.expr.resolve(parser.parse(source), p.ctx),
+        throwsA(
+          isA<ResolveException>().having(
+            (e) => e.message,
+            'message',
+            contains('exactly one'),
+          ),
+        ),
+      );
+    });
+  });
 }
