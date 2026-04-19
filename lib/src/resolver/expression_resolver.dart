@@ -6,6 +6,7 @@ import 'package:rune/src/core/source_span.dart';
 import 'package:rune/src/resolver/identifier_resolver.dart';
 import 'package:rune/src/resolver/literal_resolver.dart';
 import 'package:rune/src/resolver/property_resolver.dart';
+import 'package:rune/src/resolver/rune_closure.dart';
 
 /// Contract for the invocation resolver injected via [ExpressionResolver.bind].
 ///
@@ -76,6 +77,7 @@ final class ExpressionResolver {
       SimpleIdentifier() => _identifier.resolveSimple(expr, ctx),
       NamedExpression(:final expression) => resolve(expression, ctx),
       ParenthesizedExpression(:final expression) => resolve(expression, ctx),
+      FunctionExpression() => _resolveFunctionExpression(expr, ctx),
       InstanceCreationExpression() ||
       MethodInvocation() =>
         _requireInvocation().resolveInvocation(expr, ctx),
@@ -471,6 +473,56 @@ final class ExpressionResolver {
       );
     }
     return resolve(cond ? node.thenExpression : node.elseExpression, ctx);
+  }
+
+  /// Resolves a [FunctionExpression] into a [RuneClosure].
+  ///
+  /// Phase A.1 accepts arrow-body closures only: `(x) => expr`. Block
+  /// bodies (`(x) { return expr; }`) raise [ResolveException] citing a
+  /// future phase. Empty parameter lists (`() => expr`) are allowed.
+  ///
+  /// Parameter names are extracted from [FormalParameter.name] tokens
+  /// in declaration order. A null parameter name is a malformed AST and
+  /// raises [ResolveException].
+  RuneClosure _resolveFunctionExpression(
+    FunctionExpression node,
+    RuneContext ctx,
+  ) {
+    final body = node.body;
+    if (body is! ExpressionFunctionBody) {
+      throw ResolveException(
+        node.toSource(),
+        'Only arrow-body closures are supported in Phase A.1: '
+        '(x) => expr. Block bodies arrive in a later phase.',
+        location:
+            SourceSpan.fromAstOffset(ctx.source, node.offset, node.length),
+      );
+    }
+    final parameterList = node.parameters;
+    final paramNames = <String>[];
+    if (parameterList != null) {
+      for (final param in parameterList.parameters) {
+        final nameToken = param.name;
+        if (nameToken == null) {
+          throw ResolveException(
+            node.toSource(),
+            'Closure parameter at offset ${param.offset} has no name',
+            location: SourceSpan.fromAstOffset(
+              ctx.source,
+              param.offset,
+              param.length,
+            ),
+          );
+        }
+        paramNames.add(nameToken.lexeme);
+      }
+    }
+    return RuneClosure(
+      parameterNames: paramNames,
+      body: body.expression,
+      capturedContext: ctx,
+      resolver: this,
+    );
   }
 
   PropertyResolver _requireProperty() {

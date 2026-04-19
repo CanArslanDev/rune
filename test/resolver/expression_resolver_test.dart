@@ -9,6 +9,7 @@ import 'package:rune/src/resolver/expression_resolver.dart';
 import 'package:rune/src/resolver/identifier_resolver.dart';
 import 'package:rune/src/resolver/literal_resolver.dart';
 import 'package:rune/src/resolver/property_resolver.dart';
+import 'package:rune/src/resolver/rune_closure.dart';
 
 import '../_helpers/test_context.dart';
 
@@ -779,6 +780,57 @@ void main() {
         expect(e.message, contains('int'));
         expect(e.location, isNotNull);
       }
+    });
+  });
+
+  group('FunctionExpression resolution', () {
+    test('(x) => x + 1 resolves to a RuneClosure with one parameter', () {
+      final r = makeResolver();
+      final result = r.resolve(parser.parse('(x) => x + 1'), testContext());
+      expect(result, isA<RuneClosure>());
+      final closure = result! as RuneClosure;
+      expect(closure.parameterNames, ['x']);
+    });
+
+    test('() => 42 resolves to a zero-parameter closure that returns 42', () {
+      final r = makeResolver();
+      final result = r.resolve(parser.parse('() => 42'), testContext());
+      expect(result, isA<RuneClosure>());
+      final closure = result! as RuneClosure;
+      expect(closure.parameterNames, isEmpty);
+      expect(closure.call(const <Object?>[]), 42);
+    });
+
+    test('(a, b) => a < b produces a two-arg closure evaluating the body', () {
+      final r = makeResolver();
+      final result = r.resolve(parser.parse('(a, b) => a < b'), testContext());
+      final closure = result! as RuneClosure;
+      expect(closure.parameterNames, ['a', 'b']);
+      expect(closure.call(const <Object?>[1, 2]), true);
+      expect(closure.call(const <Object?>[3, 2]), false);
+    });
+
+    test('block-body closure is rejected with arrow-only message', () {
+      final r = makeResolver();
+      const source = '(x) { return x; }';
+      final ctx = testContext(source: source);
+      try {
+        r.resolve(parser.parse(source), ctx);
+        fail('expected ResolveException');
+      } on ResolveException catch (e) {
+        expect(e.message, contains('arrow-body'));
+        expect(e.message, contains('Phase A.1'));
+      }
+    });
+
+    test('closure captures outer data binding', () {
+      final r = makeResolver();
+      final ctx = testContext(
+        data: RuneDataContext(const {'msg': 'hi'}),
+      );
+      final result = r.resolve(parser.parse('() => msg'), ctx);
+      final closure = result! as RuneClosure;
+      expect(closure.call(const <Object?>[]), 'hi');
     });
   });
 }
