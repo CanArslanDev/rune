@@ -95,5 +95,65 @@ void main() {
             .having((e) => e.source, 'source', 'Text('),),
       );
     });
+
+    group('ParseException.location threading', () {
+      test('parse error on line 1 carries a span pointing at line 1', () {
+        const source = 'Text(';
+        ParseException? captured;
+        try {
+          parser.parse(source);
+        } on ParseException catch (e) {
+          captured = e;
+        }
+        expect(captured, isNotNull);
+        expect(captured!.location, isNotNull);
+        final loc = captured.location!;
+        expect(loc.line, 1);
+        expect(loc.column, greaterThanOrEqualTo(1));
+        expect(loc.column, lessThanOrEqualTo(source.length + 1));
+        expect(loc.excerpt, 'Text(');
+      });
+
+      test('parse error on line 2 carries line == 2', () {
+        const source = 'Text(\nfoo(,';
+        ParseException? captured;
+        try {
+          parser.parse(source);
+        } on ParseException catch (e) {
+          captured = e;
+        }
+        expect(captured, isNotNull);
+        expect(captured!.location, isNotNull);
+        final loc = captured.location!;
+        expect(loc.line, 2);
+        expect(loc.excerpt, 'foo(,');
+      });
+
+      test('empty-source error has location == null', () {
+        ParseException? captured;
+        try {
+          parser.parse('   ');
+        } on ParseException catch (e) {
+          captured = e;
+        }
+        expect(captured, isNotNull);
+        expect(captured!.location, isNull);
+      });
+
+      test('span offset is non-negative and within cleaned source bounds', () {
+        const source = 'Text(';
+        ParseException? captured;
+        try {
+          parser.parse(source);
+        } on ParseException catch (e) {
+          captured = e;
+        }
+        expect(captured, isNotNull);
+        expect(captured!.location, isNotNull);
+        final loc = captured.location!;
+        expect(loc.offset, greaterThanOrEqualTo(0));
+        expect(loc.offset, lessThanOrEqualTo(source.length));
+      });
+    });
   });
 }

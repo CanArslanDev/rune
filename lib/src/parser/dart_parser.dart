@@ -2,6 +2,13 @@ import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/analysis/utilities.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:rune/src/core/exceptions.dart';
+import 'package:rune/src/core/source_span.dart';
+
+/// Length of the `'dynamic __rune__ = '` prefix prepended to every cleaned
+/// source before handing it to the analyzer. Analyzer diagnostic offsets
+/// are reported into this wrapped string; subtracting this constant
+/// rebases them into the cleaned (user-facing) source.
+const int _wrapperPrefixLength = 19; // 'dynamic __rune__ = '.length
 
 /// Wraps `package:analyzer`'s `parseString` to turn a raw Dart expression
 /// string into an [Expression] AST node.
@@ -10,6 +17,13 @@ import 'package:rune/src/core/exceptions.dart';
 /// can treat it as a well-formed top-level variable declaration. The
 /// initializer of that declaration is then returned as the parsed
 /// expression.
+///
+/// Any analyzer-reported syntax error is surfaced as a [ParseException]
+/// whose [ParseException.location] points into the *cleaned* source
+/// (user input minus surrounding whitespace / trailing `;`). Non-syntax
+/// failures (empty source, analyzer raised an exception, structural
+/// wrapper invariants) pass `location: null` because there is no
+/// user-visible offset to report.
 final class DartParser {
   /// Constructs a [DartParser]. Stateless; instances are cheap.
   DartParser();
@@ -37,7 +51,18 @@ final class DartParser {
     }
 
     if (result.errors.isNotEmpty) {
-      throw ParseException(source, result.errors.first.message);
+      final err = result.errors.first;
+      final rawOffset = err.offset - _wrapperPrefixLength;
+      SourceSpan? location;
+      if (rawOffset >= 0) {
+        // Analyzer may report offsets one past the end of [cleaned] (they
+        // land on the wrapper's trailing `;`). Clamp to [cleaned.length]
+        // so EOF-shaped diagnostics still produce a usable span at the
+        // end of the user input.
+        final clamped = rawOffset > cleaned.length ? cleaned.length : rawOffset;
+        location = SourceSpan.fromOffset(cleaned, clamped, err.length);
+      }
+      throw ParseException(source, err.message, location: location);
     }
 
     final declarations = result.unit.declarations;
