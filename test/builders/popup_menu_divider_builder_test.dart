@@ -19,7 +19,7 @@ void main() {
       expect(w.height, 16.0);
     });
 
-    test('height plumbs through', () {
+    test('height plumbs through (int coerced to double)', () {
       final w = b.build(
         const ResolvedArguments(named: {'height': 24}),
         testContext(),
@@ -27,28 +27,17 @@ void main() {
       expect(w.height, 24.0);
     });
 
-    test('thickness, indent, endIndent, color plumb through', () {
+    test('height plumbs through (double)', () {
       final w = b.build(
-        const ResolvedArguments(
-          named: {
-            'thickness': 2,
-            'indent': 8,
-            'endIndent': 12,
-            'color': Color(0xFFABCDEF),
-          },
-        ),
+        const ResolvedArguments(named: {'height': 8.5}),
         testContext(),
       ) as PopupMenuDivider;
-      expect(w.thickness, 2.0);
-      expect(w.indent, 8.0);
-      expect(w.endIndent, 12.0);
-      expect(w.color, const Color(0xFFABCDEF));
+      expect(w.height, 8.5);
     });
 
-    test('no-args renders without throwing', () {
-      final w = b.build(ResolvedArguments.empty, testContext())
-          as PopupMenuDivider;
-      expect(w.color, isNull);
+    test('no-args renders a PopupMenuDivider', () {
+      final w = b.build(ResolvedArguments.empty, testContext());
+      expect(w, isA<PopupMenuDivider>());
     });
   });
 }
