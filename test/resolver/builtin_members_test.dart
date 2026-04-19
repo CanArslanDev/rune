@@ -637,7 +637,7 @@ void main() {
         p.name!.lexeme,
     ];
     final pipeline = buildPipeline();
-    return RuneClosure(
+    return RuneClosure.expression(
       parameterNames: names,
       body: body,
       capturedContext: ctx ?? testContext(),

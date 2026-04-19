@@ -19,9 +19,19 @@ final class IdentifierResolver {
   /// Constructs an [IdentifierResolver]. Stateless; cheap to instantiate.
   IdentifierResolver();
 
-  /// Resolves [node] to the value bound under `node.name` in `ctx.data`.
+  /// Resolves [node] to the value bound under `node.name`.
+  ///
+  /// Dispatch order: local scope (if any) → data. Local-scope
+  /// declarations introduced by block-body closures take precedence
+  /// over host-supplied data of the same name, matching Dart's lexical
+  /// scoping rules. A missing name in BOTH scope and data raises
+  /// [BindingException].
   Object? resolveSimple(SimpleIdentifier node, RuneContext ctx) {
     final key = node.name;
+    final scope = ctx.scope;
+    if (scope != null && scope.has(key)) {
+      return scope.lookup(key);
+    }
     if (!ctx.data.has(key)) {
       throw BindingException(
         node.toSource(),

@@ -34,7 +34,7 @@ RuneClosure _closureOf(
     }
   }
   final resolver = ExpressionResolver(LiteralResolver(), IdentifierResolver());
-  return RuneClosure(
+  return RuneClosure.expression(
     parameterNames: paramNames,
     body: body,
     capturedContext: testContext(data: RuneDataContext(data)),

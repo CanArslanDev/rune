@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:rune/src/binding/rune_data_context.dart';
 import 'package:rune/src/binding/rune_event_dispatcher.dart';
+import 'package:rune/src/core/rune_scope.dart';
 import 'package:rune/src/registry/constant_registry.dart';
 import 'package:rune/src/registry/extension_registry.dart';
 import 'package:rune/src/registry/value_registry.dart';
@@ -37,6 +38,7 @@ final class RuneContext {
     required this.extensions,
     required this.source,
     this.flutterContext,
+    this.scope,
   });
 
   /// Registry of widget builders consulted by `InvocationResolver` when the
@@ -75,14 +77,23 @@ final class RuneContext {
   /// tests where no real widget tree exists.
   final BuildContext? flutterContext;
 
+  /// Mutable local scope threaded through block-body closure execution.
+  ///
+  /// `null` at top level (expressions outside a closure body); non-null
+  /// inside a block-body closure call. Resolver arms consulting a
+  /// `SimpleIdentifier` must check this scope *before* `data` so local
+  /// declarations shadow host-provided data of the same name.
+  final RuneScope? scope;
+
   /// Returns a copy of this context with any of the provided fields
   /// replaced.
   ///
-  /// Limitation: passing an explicit `null` for [flutterContext] will NOT
-  /// clear the existing value — it is indistinguishable from passing no
-  /// argument. Callers needing a null [flutterContext] should construct a
-  /// new [RuneContext] directly. This matches Phase 1 usage; a sentinel
-  /// pattern can replace it later if a live call path needs that capability.
+  /// Limitation: passing an explicit `null` for [flutterContext] or
+  /// [scope] will NOT clear the existing value (it is indistinguishable
+  /// from passing no argument). Callers needing a null value should
+  /// construct a new [RuneContext] directly. This is acceptable in Phase B
+  /// because each block-body closure call sets a fresh non-null scope on
+  /// top of the captured context; the context does not outlive the block.
   RuneContext copyWith({
     WidgetRegistry? widgets,
     ValueRegistry? values,
@@ -92,6 +103,7 @@ final class RuneContext {
     ExtensionRegistry? extensions,
     String? source,
     BuildContext? flutterContext,
+    RuneScope? scope,
   }) {
     return RuneContext(
       widgets: widgets ?? this.widgets,
@@ -102,6 +114,7 @@ final class RuneContext {
       extensions: extensions ?? this.extensions,
       source: source ?? this.source,
       flutterContext: flutterContext ?? this.flutterContext,
+      scope: scope ?? this.scope,
     );
   }
 }

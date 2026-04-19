@@ -810,17 +810,31 @@ void main() {
       expect(closure.call(const <Object?>[3, 2]), false);
     });
 
-    test('block-body closure is rejected with arrow-only message', () {
+    test(
+        'block-body closure resolves to a RuneClosure.block and executes '
+        'its statement list on call', () {
+      // Phase B lifts the Phase A.1 arrow-only rejection. `(x) { return x; }`
+      // now materialises into a block-body closure that returns its sole
+      // argument.
       final r = makeResolver();
       const source = '(x) { return x; }';
       final ctx = testContext(source: source);
-      try {
-        r.resolve(parser.parse(source), ctx);
-        fail('expected ResolveException');
-      } on ResolveException catch (e) {
-        expect(e.message, contains('arrow-body'));
-        expect(e.message, contains('Phase A.1'));
-      }
+      final result = r.resolve(parser.parse(source), ctx);
+      expect(result, isA<RuneClosure>());
+      final closure = result! as RuneClosure;
+      expect(closure.parameterNames, ['x']);
+      expect(closure.body, isNull);
+      expect(closure.bodyBlock, isNotNull);
+      expect(closure.call(const <Object?>[42]), 42);
+    });
+
+    test('block-body closure with a local declaration returns the local',
+        () {
+      final r = makeResolver();
+      const source = '(x) { final y = x + 1; return y; }';
+      final result = r.resolve(parser.parse(source), testContext());
+      final closure = result! as RuneClosure;
+      expect(closure.call(const <Object?>[10]), 11);
     });
 
     test('closure captures outer data binding', () {
@@ -831,6 +845,60 @@ void main() {
       final result = r.resolve(parser.parse('() => msg'), ctx);
       final closure = result! as RuneClosure;
       expect(closure.call(const <Object?>[]), 'hi');
+    });
+  });
+
+  group('AssignmentExpression resolution', () {
+    test('reassigns a previously-declared local inside a block-body closure',
+        () {
+      // `(x) { var y = x; y = y + 1; return y; }` (after execution the
+      // local `y` is 6 when called with 5).
+      final r = makeResolver();
+      const source = '(x) { var y = x; y = y + 1; return y; }';
+      final result = r.resolve(parser.parse(source), testContext());
+      final closure = result! as RuneClosure;
+      expect(closure.call(const <Object?>[5]), 6);
+    });
+
+    test(
+        'top-level AssignmentExpression (no scope) raises a clear '
+        'diagnostic', () {
+      // Outside a closure body there is no scope to write to and the
+      // name is not in data: should surface as a BindingException.
+      final r = makeResolver();
+      const source = 'x = 5';
+      final ctx = testContext(source: source);
+      expect(
+        () => r.resolve(parser.parse(source), ctx),
+        throwsA(isA<BindingException>()),
+      );
+    });
+
+    test('compound assignment operators are rejected', () {
+      final r = makeResolver();
+      const source = '(x) { var y = x; y += 1; return y; }';
+      try {
+        final result = r.resolve(parser.parse(source), testContext());
+        (result! as RuneClosure).call(const <Object?>[1]);
+        fail('expected ResolveException');
+      } on ResolveException catch (e) {
+        expect(e.message, contains('Unsupported assignment operator'));
+      }
+    });
+
+    test('assignment with non-identifier LHS is rejected', () {
+      // `a[0] = 1`: Phase B only supports SimpleIdentifier LHS.
+      final r = makeResolver();
+      const source = '(a) { a[0] = 1; return a; }';
+      try {
+        final result = r.resolve(parser.parse(source), testContext());
+        (result! as RuneClosure).call(const <Object?>[
+          [0],
+        ]);
+        fail('expected ResolveException');
+      } on ResolveException catch (e) {
+        expect(e.message, contains('Unsupported assignment target'));
+      }
     });
   });
 }

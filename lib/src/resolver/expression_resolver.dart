@@ -7,6 +7,7 @@ import 'package:rune/src/resolver/identifier_resolver.dart';
 import 'package:rune/src/resolver/literal_resolver.dart';
 import 'package:rune/src/resolver/property_resolver.dart';
 import 'package:rune/src/resolver/rune_closure.dart';
+import 'package:rune/src/resolver/statement_resolver.dart';
 
 /// Contract for the invocation resolver injected via [ExpressionResolver.bind].
 ///
@@ -37,6 +38,7 @@ final class ExpressionResolver {
   final IdentifierResolver _identifier;
   InvocationResolverContract? _invocation;
   PropertyResolver? _property;
+  StatementResolver? _statements;
 
   /// Installs the invocation resolver. Must be called exactly once before
   /// any [InstanceCreationExpression] or [MethodInvocation] is resolved.
@@ -48,6 +50,17 @@ final class ExpressionResolver {
   /// be called before any `PropertyAccess` expression is resolved.
   void bindProperty(PropertyResolver property) {
     _property = property;
+  }
+
+  /// Installs the statement resolver used to execute block-body closure
+  /// bodies. Optional: if this method is never called, the resolver
+  /// lazily constructs its own [StatementResolver] on first block-body
+  /// closure encountered. This mirrors the `bind` / `bindProperty`
+  /// pattern but with a safe default, so wiring is not required for
+  /// live-pipeline callers. Injection is useful in unit tests that
+  /// need to observe or replace statement-level dispatch.
+  void bindStatements(StatementResolver statements) {
+    _statements = statements;
   }
 
   /// Resolves [expr] within [ctx] and returns the Dart value it denotes.
@@ -78,6 +91,7 @@ final class ExpressionResolver {
       NamedExpression(:final expression) => resolve(expression, ctx),
       ParenthesizedExpression(:final expression) => resolve(expression, ctx),
       FunctionExpression() => _resolveFunctionExpression(expr, ctx),
+      AssignmentExpression() => _resolveAssignment(expr, ctx),
       InstanceCreationExpression() ||
       MethodInvocation() =>
         _requireInvocation().resolveInvocation(expr, ctx),
@@ -477,9 +491,15 @@ final class ExpressionResolver {
 
   /// Resolves a [FunctionExpression] into a [RuneClosure].
   ///
-  /// Phase A.1 accepts arrow-body closures only: `(x) => expr`. Block
-  /// bodies (`(x) { return expr; }`) raise [ResolveException] citing a
-  /// future phase. Empty parameter lists (`() => expr`) are allowed.
+  /// Accepts both arrow-body closures (`(x) => expr`) and block-body
+  /// closures (`(x) { ...; return expr; }`). Empty parameter lists
+  /// (`() => expr`, `() { }`) are allowed.
+  ///
+  /// Arrow bodies produce [RuneClosure.expression]; block bodies
+  /// produce [RuneClosure.block], which at call time allocates a fresh
+  /// `RuneScope` and walks the statement list via [StatementResolver].
+  /// Other [FunctionBody] shapes (empty `;`, native, external) raise
+  /// [ResolveException].
   ///
   /// Parameter names are extracted from [FormalParameter.name] tokens
   /// in declaration order. A null parameter name is a malformed AST and
@@ -489,15 +509,6 @@ final class ExpressionResolver {
     RuneContext ctx,
   ) {
     final body = node.body;
-    if (body is! ExpressionFunctionBody) {
-      throw ResolveException(
-        node.toSource(),
-        'Only arrow-body closures are supported in Phase A.1: '
-        '(x) => expr. Block bodies arrive in a later phase.',
-        location:
-            SourceSpan.fromAstOffset(ctx.source, node.offset, node.length),
-      );
-    }
     final parameterList = node.parameters;
     final paramNames = <String>[];
     if (parameterList != null) {
@@ -517,12 +528,98 @@ final class ExpressionResolver {
         paramNames.add(nameToken.lexeme);
       }
     }
-    return RuneClosure(
-      parameterNames: paramNames,
-      body: body.expression,
-      capturedContext: ctx,
-      resolver: this,
+    if (body is ExpressionFunctionBody) {
+      return RuneClosure.expression(
+        parameterNames: paramNames,
+        body: body.expression,
+        capturedContext: ctx,
+        resolver: this,
+      );
+    }
+    if (body is BlockFunctionBody) {
+      return RuneClosure.block(
+        parameterNames: paramNames,
+        bodyBlock: body.block,
+        capturedContext: ctx,
+        resolver: this,
+        statementResolver: _requireStatements(),
+      );
+    }
+    throw ResolveException(
+      node.toSource(),
+      'Unsupported function body: ${body.runtimeType}',
+      location:
+          SourceSpan.fromAstOffset(ctx.source, node.offset, node.length),
     );
+  }
+
+  /// Resolves an [AssignmentExpression]. Only the plain `=` operator is
+  /// supported in Phase B. Compound operators (`+=`, `-=`, etc.) and
+  /// null-aware assignment (`??=`) fall through to the unsupported arm
+  /// and raise [ResolveException].
+  ///
+  /// Left-hand-side shapes supported in Phase B:
+  ///   * [SimpleIdentifier]: writes to [RuneContext.scope] if the name
+  ///     is declared there, walking outward through parent scopes.
+  ///     Assigning to a name that lives in [RuneContext.data] is
+  ///     forbidden: host-supplied data is read-only from the source's
+  ///     perspective. Assigning to a name declared nowhere raises
+  ///     [BindingException].
+  ///
+  /// Other LHS shapes (PropertyAccess, IndexExpression) are out of
+  /// scope for Phase B and raise [ResolveException].
+  Object? _resolveAssignment(AssignmentExpression node, RuneContext ctx) {
+    final op = node.operator.lexeme;
+    if (op != '=') {
+      throw ResolveException(
+        node.toSource(),
+        'Unsupported assignment operator "$op"; '
+        'only plain "=" is supported in Phase B',
+        location:
+            SourceSpan.fromAstOffset(ctx.source, node.offset, node.length),
+      );
+    }
+    final lhs = node.leftHandSide;
+    if (lhs is! SimpleIdentifier) {
+      throw ResolveException(
+        node.toSource(),
+        'Unsupported assignment target: ${lhs.runtimeType}; '
+        'only SimpleIdentifier (local variable) is supported in Phase B',
+        location:
+            SourceSpan.fromAstOffset(ctx.source, node.offset, node.length),
+      );
+    }
+    final name = lhs.name;
+    final value = resolve(node.rightHandSide, ctx);
+    final scope = ctx.scope;
+    if (scope != null && scope.has(name)) {
+      scope.assign(name, value);
+      return value;
+    }
+    if (ctx.data.has(name)) {
+      throw ResolveException(
+        node.toSource(),
+        'Cannot assign to "$name": host-supplied data is read-only from '
+        'source. Declare a local with `var` or `final` to mutate, or use '
+        'the state API.',
+        location:
+            SourceSpan.fromAstOffset(ctx.source, node.offset, node.length),
+      );
+    }
+    throw BindingException(
+      node.toSource(),
+      'Cannot assign to undeclared local variable "$name"',
+      location:
+          SourceSpan.fromAstOffset(ctx.source, node.offset, node.length),
+    );
+  }
+
+  /// Returns the bound [StatementResolver], constructing one lazily on
+  /// first use when [bindStatements] was never called. This lets the
+  /// live pipeline (which does not call [bindStatements]) still execute
+  /// block-body closures with no explicit wiring step.
+  StatementResolver _requireStatements() {
+    return _statements ??= StatementResolver(this);
   }
 
   PropertyResolver _requireProperty() {
