@@ -59,6 +59,13 @@ void main() {
         'Badge',
         'CircularProgressIndicator',
         'LinearProgressIndicator',
+        'Drawer',
+        'SafeArea',
+        'Visibility',
+        'Opacity',
+        'ClipRRect',
+        'ClipOval',
+        'Tooltip',
       ]) {
         expect(r.contains(name), isTrue, reason: 'missing widget $name');
       }
@@ -104,7 +111,7 @@ void main() {
       RuneDefaults.registerWidgets(w);
       RuneDefaults.registerValues(v);
       RuneDefaults.registerConstants(c);
-      expect(w.size, greaterThanOrEqualTo(49));
+      expect(w.size, greaterThanOrEqualTo(56));
       expect(v.size, greaterThanOrEqualTo(14));
       expect(c.size, greaterThanOrEqualTo(50));
     });

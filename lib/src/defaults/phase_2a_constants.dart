@@ -7,7 +7,7 @@ import 'package:rune/src/registry/constant_registry.dart';
 /// - All enum values in: `MainAxisAlignment`, `CrossAxisAlignment`,
 ///   `MainAxisSize`, `TextAlign`, `BoxFit`, `StackFit`, `Axis`,
 ///   `TextOverflow`, `BoxShape`, `FlexFit`, `WrapAlignment`,
-///   `WrapCrossAlignment`, `BottomNavigationBarType`.
+///   `WrapCrossAlignment`, `BottomNavigationBarType`, `Clip`.
 /// - The nine aligned-singleton `Alignment` values.
 /// - The `FontWeight` weights `w100..w900`, `normal`, and `bold`.
 /// - `EdgeInsets.zero`.
@@ -38,6 +38,7 @@ void registerPhase2aConstants(ConstantRegistry registry) {
   _registerCurves(registry);
   _registerBottomNavigationBarType(registry);
   _registerCrossFadeState(registry);
+  _registerClip(registry);
 }
 
 // Registers every Colors member that is a concrete Color value.
@@ -248,5 +249,14 @@ void _registerBottomNavigationBarType(ConstantRegistry r) {
 void _registerCrossFadeState(ConstantRegistry r) {
   r.registerAll('CrossFadeState', <String, Object?>{
     for (final v in CrossFadeState.values) v.name: v,
+  });
+}
+
+// Registers Clip enum values (none, hardEdge, antiAlias,
+// antiAliasWithSaveLayer) — used by ClipRRect / ClipOval builders'
+// `clipBehavior:` arg.
+void _registerClip(ConstantRegistry r) {
+  r.registerAll('Clip', <String, Object?>{
+    for (final v in Clip.values) v.name: v,
   });
 }

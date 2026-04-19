@@ -6,6 +6,21 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+### Added
+- **Wrapper and utility widgets** — seven everyday builders for
+  composition, visibility, and masking: `Drawer` (side menu
+  content for `Scaffold.drawer`; optional `backgroundColor`,
+  `elevation`, `width`), `SafeArea` (system-inset avoidance;
+  per-edge toggles + `minimum`/`maintainBottomViewPadding`),
+  `Visibility` (conditional render with replacement + optional
+  maintainState/Animation/Size), `Opacity` (static non-animated
+  complement to `AnimatedOpacity`), `ClipRRect` (rounded-corner
+  clip with `borderRadius` + `clipBehavior`), `ClipOval` (circular
+  clip), `Tooltip` (message + preferBelow/wait/show durations +
+  padding; `richMessage` deferred). `Clip.none/hardEdge/antiAlias/
+  antiAliasWithSaveLayer` join the constants table for the two
+  clip builders.
+
 ## [0.6.0] — 2026-04-19 — widget breadth (Material, animations, grids)
 
 ### Added

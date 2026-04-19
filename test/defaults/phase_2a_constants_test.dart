@@ -168,5 +168,11 @@ void main() {
         CrossFadeState.showSecond,
       );
     });
+
+    test('seeds Clip', () {
+      final r = ConstantRegistry();
+      registerPhase2aConstants(r);
+      expect(r.resolve('Clip', 'antiAlias'), Clip.antiAlias);
+    });
   });
 }

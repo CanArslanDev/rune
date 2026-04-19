@@ -25,9 +25,12 @@ import 'package:rune/src/builders/widgets/center_builder.dart';
 import 'package:rune/src/builders/widgets/checkbox_builder.dart';
 import 'package:rune/src/builders/widgets/chip_builder.dart';
 import 'package:rune/src/builders/widgets/circular_progress_indicator_builder.dart';
+import 'package:rune/src/builders/widgets/clip_oval_builder.dart';
+import 'package:rune/src/builders/widgets/clip_rrect_builder.dart';
 import 'package:rune/src/builders/widgets/column_builder.dart';
 import 'package:rune/src/builders/widgets/container_builder.dart';
 import 'package:rune/src/builders/widgets/divider_builder.dart';
+import 'package:rune/src/builders/widgets/drawer_builder.dart';
 import 'package:rune/src/builders/widgets/dropdown_button_builder.dart';
 import 'package:rune/src/builders/widgets/dropdown_menu_item_builder.dart';
 import 'package:rune/src/builders/widgets/elevated_button_builder.dart';
@@ -44,10 +47,12 @@ import 'package:rune/src/builders/widgets/ink_well_builder.dart';
 import 'package:rune/src/builders/widgets/linear_progress_indicator_builder.dart';
 import 'package:rune/src/builders/widgets/list_tile_builder.dart';
 import 'package:rune/src/builders/widgets/list_view_builder.dart';
+import 'package:rune/src/builders/widgets/opacity_builder.dart';
 import 'package:rune/src/builders/widgets/padding_builder.dart';
 import 'package:rune/src/builders/widgets/positioned_builder.dart';
 import 'package:rune/src/builders/widgets/radio_builder.dart';
 import 'package:rune/src/builders/widgets/row_builder.dart';
+import 'package:rune/src/builders/widgets/safe_area_builder.dart';
 import 'package:rune/src/builders/widgets/scaffold_builder.dart';
 import 'package:rune/src/builders/widgets/single_child_scroll_view_builder.dart';
 import 'package:rune/src/builders/widgets/sized_box_builder.dart';
@@ -60,6 +65,8 @@ import 'package:rune/src/builders/widgets/tab_builder.dart';
 import 'package:rune/src/builders/widgets/text_builder.dart';
 import 'package:rune/src/builders/widgets/text_button_builder.dart';
 import 'package:rune/src/builders/widgets/text_field_builder.dart';
+import 'package:rune/src/builders/widgets/tooltip_builder.dart';
+import 'package:rune/src/builders/widgets/visibility_builder.dart';
 import 'package:rune/src/builders/widgets/wrap_builder.dart';
 import 'package:rune/src/config.dart';
 import 'package:rune/src/defaults/phase_2a_constants.dart';
@@ -157,7 +164,15 @@ abstract final class RuneDefaults {
       ..registerBuilder(const ChipBuilder())
       ..registerBuilder(const BadgeBuilder())
       ..registerBuilder(const CircularProgressIndicatorBuilder())
-      ..registerBuilder(const LinearProgressIndicatorBuilder());
+      ..registerBuilder(const LinearProgressIndicatorBuilder())
+      // Wrapper + utility widgets.
+      ..registerBuilder(const DrawerBuilder())
+      ..registerBuilder(const SafeAreaBuilder())
+      ..registerBuilder(const VisibilityBuilder())
+      ..registerBuilder(const OpacityBuilder())
+      ..registerBuilder(const ClipRRectBuilder())
+      ..registerBuilder(const ClipOvalBuilder())
+      ..registerBuilder(const TooltipBuilder());
   }
 
   /// Registers every Phase 1–2c value builder into [registry].
