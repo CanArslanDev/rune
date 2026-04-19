@@ -36,6 +36,10 @@ void main() {
         'Spacer',
         'GestureDetector',
         'InkWell',
+        'SingleChildScrollView',
+        'Wrap',
+        'AspectRatio',
+        'Positioned',
       ]) {
         expect(r.contains(name), isTrue, reason: 'missing widget $name');
       }
@@ -77,7 +81,7 @@ void main() {
       RuneDefaults.registerWidgets(w);
       RuneDefaults.registerValues(v);
       RuneDefaults.registerConstants(c);
-      expect(w.size, greaterThanOrEqualTo(26));
+      expect(w.size, greaterThanOrEqualTo(30));
       expect(v.size, greaterThanOrEqualTo(10));
       expect(c.size, greaterThanOrEqualTo(50));
     });

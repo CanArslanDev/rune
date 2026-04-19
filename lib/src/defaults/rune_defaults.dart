@@ -7,6 +7,7 @@ import 'package:rune/src/builders/values/edge_insets_only_builder.dart';
 import 'package:rune/src/builders/values/edge_insets_symmetric_builder.dart';
 import 'package:rune/src/builders/values/text_style_builder.dart';
 import 'package:rune/src/builders/widgets/app_bar_builder.dart';
+import 'package:rune/src/builders/widgets/aspect_ratio_builder.dart';
 import 'package:rune/src/builders/widgets/card_builder.dart';
 import 'package:rune/src/builders/widgets/center_builder.dart';
 import 'package:rune/src/builders/widgets/checkbox_builder.dart';
@@ -25,8 +26,10 @@ import 'package:rune/src/builders/widgets/ink_well_builder.dart';
 import 'package:rune/src/builders/widgets/list_tile_builder.dart';
 import 'package:rune/src/builders/widgets/list_view_builder.dart';
 import 'package:rune/src/builders/widgets/padding_builder.dart';
+import 'package:rune/src/builders/widgets/positioned_builder.dart';
 import 'package:rune/src/builders/widgets/row_builder.dart';
 import 'package:rune/src/builders/widgets/scaffold_builder.dart';
+import 'package:rune/src/builders/widgets/single_child_scroll_view_builder.dart';
 import 'package:rune/src/builders/widgets/sized_box_builder.dart';
 import 'package:rune/src/builders/widgets/spacer_builder.dart';
 import 'package:rune/src/builders/widgets/stack_builder.dart';
@@ -34,6 +37,7 @@ import 'package:rune/src/builders/widgets/switch_builder.dart';
 import 'package:rune/src/builders/widgets/text_builder.dart';
 import 'package:rune/src/builders/widgets/text_button_builder.dart';
 import 'package:rune/src/builders/widgets/text_field_builder.dart';
+import 'package:rune/src/builders/widgets/wrap_builder.dart';
 import 'package:rune/src/config.dart';
 import 'package:rune/src/defaults/phase_2a_constants.dart';
 import 'package:rune/src/defaults/phase_2c_icons.dart';
@@ -101,7 +105,12 @@ abstract final class RuneDefaults {
       ..registerBuilder(const SpacerBuilder())
       // Gesture handlers.
       ..registerBuilder(const GestureDetectorBuilder())
-      ..registerBuilder(const InkWellBuilder());
+      ..registerBuilder(const InkWellBuilder())
+      // Layout + scroll helpers.
+      ..registerBuilder(const SingleChildScrollViewBuilder())
+      ..registerBuilder(const WrapBuilder())
+      ..registerBuilder(const AspectRatioBuilder())
+      ..registerBuilder(const PositionedBuilder());
   }
 
   /// Registers every Phase 1–2c value builder into [registry].

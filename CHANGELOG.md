@@ -13,6 +13,15 @@ All notable changes to this project are documented here. Format follows
   ink-splash feedback plus an optional `borderRadius` arg to shape
   the splash to a rounded container. Any widget now becomes
   tappable in Rune source without having to be a `*Button`.
+- **Layout and scroll helpers** — `SingleChildScrollView` (wraps
+  overflowing content in a scroll region along a chosen `Axis`),
+  `Wrap` (Row-like layout that flows to the next line when out of
+  space; supports `direction`/`spacing`/`runSpacing`/`alignment`/
+  `runAlignment`/`crossAxisAlignment`), `AspectRatio` (forces a
+  child to a fixed width-to-height ratio), and `Positioned` (absolute
+  placement inside a `Stack`). `WrapAlignment` and `WrapCrossAlignment`
+  enums join the default constants table so source code can reference
+  `WrapAlignment.center` and friends.
 
 ## [0.3.0] — 2026-04-19 — runtime-value members + layout helpers
 

@@ -6,7 +6,8 @@ import 'package:rune/src/registry/constant_registry.dart';
 ///   base tone of each `MaterialColor`, which is itself a `Color`).
 /// - All enum values in: `MainAxisAlignment`, `CrossAxisAlignment`,
 ///   `MainAxisSize`, `TextAlign`, `BoxFit`, `StackFit`, `Axis`,
-///   `TextOverflow`, `BoxShape`, `FlexFit`.
+///   `TextOverflow`, `BoxShape`, `FlexFit`, `WrapAlignment`,
+///   `WrapCrossAlignment`.
 /// - The nine aligned-singleton `Alignment` values.
 /// - The `FontWeight` weights `w100..w900`, `normal`, and `bold`.
 /// - `EdgeInsets.zero`.
@@ -27,6 +28,8 @@ void registerPhase2aConstants(ConstantRegistry registry) {
   _registerFontWeight(registry);
   _registerBoxShape(registry); // Phase 2b addition
   _registerFlexFit(registry);
+  _registerWrapAlignment(registry);
+  _registerWrapCrossAlignment(registry);
   _registerEdgeInsetsSingletons(registry);
 }
 
@@ -187,6 +190,20 @@ void _registerBoxShape(ConstantRegistry r) {
 void _registerFlexFit(ConstantRegistry r) {
   r.registerAll('FlexFit', <String, Object?>{
     for (final v in FlexFit.values) v.name: v,
+  });
+}
+
+// Registers all WrapAlignment enum values by name.
+void _registerWrapAlignment(ConstantRegistry r) {
+  r.registerAll('WrapAlignment', <String, Object?>{
+    for (final v in WrapAlignment.values) v.name: v,
+  });
+}
+
+// Registers all WrapCrossAlignment enum values by name.
+void _registerWrapCrossAlignment(ConstantRegistry r) {
+  r.registerAll('WrapCrossAlignment', <String, Object?>{
+    for (final v in WrapCrossAlignment.values) v.name: v,
   });
 }
 

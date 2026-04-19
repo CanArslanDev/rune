@@ -104,5 +104,29 @@ void main() {
       expect(r.resolve('FlexFit', 'tight'), FlexFit.tight);
       expect(r.resolve('FlexFit', 'loose'), FlexFit.loose);
     });
+
+    test('seeds WrapAlignment', () {
+      final r = ConstantRegistry();
+      registerPhase2aConstants(r);
+      expect(r.resolve('WrapAlignment', 'start'), WrapAlignment.start);
+      expect(r.resolve('WrapAlignment', 'center'), WrapAlignment.center);
+      expect(
+        r.resolve('WrapAlignment', 'spaceBetween'),
+        WrapAlignment.spaceBetween,
+      );
+    });
+
+    test('seeds WrapCrossAlignment', () {
+      final r = ConstantRegistry();
+      registerPhase2aConstants(r);
+      expect(
+        r.resolve('WrapCrossAlignment', 'center'),
+        WrapCrossAlignment.center,
+      );
+      expect(
+        r.resolve('WrapCrossAlignment', 'start'),
+        WrapCrossAlignment.start,
+      );
+    });
   });
 }
