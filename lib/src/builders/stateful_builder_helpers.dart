@@ -41,3 +41,38 @@ Object? Function(RuneState) validateStatefulBuilderClosure(
   }
   return (state) => rawBuilder.call(<Object?>[state]);
 }
+
+/// Validates a resolved lifecycle-hook argument (`initState`, `dispose`,
+/// `didUpdateWidget`) for `StatefulBuilder`.
+///
+/// Returns `null` when [rawClosure] is `null`. Every lifecycle hook is
+/// optional. Returns a plain Dart invoker otherwise that feeds a single
+/// [RuneState] argument into the underlying [RuneClosure].
+///
+/// [paramName] is the name of the named argument (e.g. `'dispose'`); it
+/// is used only for error-message construction so a diagnostic reads
+/// `dispose closure must accept ...`.
+///
+/// Throws [ArgumentException] when [rawClosure] is present but not a
+/// [RuneClosure] or declares an arity other than 1.
+Object? Function(RuneState)? validateStatefulBuilderLifecycleClosure(
+  Object? rawClosure, {
+  required String paramName,
+}) {
+  if (rawClosure == null) return null;
+  if (rawClosure is! RuneClosure) {
+    throw ArgumentException(
+      'StatefulBuilder',
+      '`$paramName` must be a closure (state) => ...; got '
+      '${rawClosure.runtimeType}',
+    );
+  }
+  if (rawClosure.parameterNames.length != 1) {
+    throw ArgumentException(
+      'StatefulBuilder',
+      '`$paramName` closure must accept exactly one parameter '
+      '(the state), got ${rawClosure.parameterNames.length}',
+    );
+  }
+  return (state) => rawClosure.call(<Object?>[state]);
+}

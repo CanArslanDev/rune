@@ -23,6 +23,7 @@
 library;
 
 import 'package:analyzer/dart/ast/ast.dart';
+import 'package:flutter/material.dart';
 import 'package:rune/src/core/exceptions.dart';
 import 'package:rune/src/core/rune_context.dart';
 import 'package:rune/src/core/rune_state.dart';
@@ -42,6 +43,9 @@ import 'package:rune/src/resolver/rune_closure.dart';
 /// - `List`: `length`, `isEmpty`, `isNotEmpty`, `first`, `last`
 /// - `Map`: `length`, `isEmpty`, `isNotEmpty`, `keys` (materialised to a
 ///   `List`), `values` (materialised to a `List`)
+/// - `TextEditingController`: `text`, `value`
+/// - `FocusNode`: `hasFocus`
+/// - `TabController`: `index`
 ///
 /// `.first` and `.last` on an empty list propagate Dart's own
 /// [StateError] unchanged — the diagnostic is identical to what a
@@ -75,6 +79,26 @@ import 'package:rune/src/resolver/rune_closure.dart';
       _ => (false, null),
     };
   }
+  // Controller getters (v1.1.0). Every getter is side-effect-free.
+  if (target is TextEditingController) {
+    return switch (propertyName) {
+      'text' => (true, target.text),
+      'value' => (true, target.value),
+      _ => (false, null),
+    };
+  }
+  if (target is FocusNode) {
+    return switch (propertyName) {
+      'hasFocus' => (true, target.hasFocus),
+      _ => (false, null),
+    };
+  }
+  if (target is TabController) {
+    return switch (propertyName) {
+      'index' => (true, target.index),
+      _ => (false, null),
+    };
+  }
   return (false, null);
 }
 
@@ -99,6 +123,13 @@ import 'package:rune/src/resolver/rune_closure.dart';
 ///   only; the named-arg form is deferred.
 /// - `Map`: `containsKey`, `containsValue` (1 arg of any type).
 /// - `num`: `abs`, `round`, `floor`, `ceil`, `toInt`, `toDouble` (0 args).
+/// - `TextEditingController`: `clear`, `dispose` (0 args).
+/// - `ScrollController`: `jumpTo(num)`; `animateTo(num, Duration, Curve)`;
+///   `dispose` (0 args).
+/// - `FocusNode`: `requestFocus`, `unfocus`, `dispose` (0 args).
+/// - `PageController`: `jumpToPage(int)`;
+///   `animateToPage(int, Duration, Curve)`; `dispose` (0 args).
+/// - `TabController`: `animateTo(int)`.
 ///
 /// Any other `(type, method)` pair raises [ResolveException].
 ///
@@ -184,6 +215,51 @@ Object? invokeBuiltinMethod({
   }
   if (target is RuneState) {
     return _invokeRuneStateMethod(
+      target: target,
+      methodName: methodName,
+      positionalArgs: positionalArgs,
+      source: source,
+      locationOf: locationOf,
+    );
+  }
+  if (target is TextEditingController) {
+    return _invokeTextEditingControllerMethod(
+      target: target,
+      methodName: methodName,
+      positionalArgs: positionalArgs,
+      source: source,
+      locationOf: locationOf,
+    );
+  }
+  if (target is ScrollController) {
+    return _invokeScrollControllerMethod(
+      target: target,
+      methodName: methodName,
+      positionalArgs: positionalArgs,
+      source: source,
+      locationOf: locationOf,
+    );
+  }
+  if (target is FocusNode) {
+    return _invokeFocusNodeMethod(
+      target: target,
+      methodName: methodName,
+      positionalArgs: positionalArgs,
+      source: source,
+      locationOf: locationOf,
+    );
+  }
+  if (target is PageController) {
+    return _invokePageControllerMethod(
+      target: target,
+      methodName: methodName,
+      positionalArgs: positionalArgs,
+      source: source,
+      locationOf: locationOf,
+    );
+  }
+  if (target is TabController) {
+    return _invokeTabControllerMethod(
       target: target,
       methodName: methodName,
       positionalArgs: positionalArgs,
@@ -768,6 +844,348 @@ Object? _invokeNumMethod({
   throw ResolveException(
     source,
     'No built-in method "$methodName" on num',
+    location: locationOf(),
+  );
+}
+
+/// Shared arity guard for positional-only controller method dispatch.
+void _requireControllerArity({
+  required String typeName,
+  required String methodName,
+  required int expected,
+  required List<Object?> positionalArgs,
+  required String source,
+  required SourceSpan Function() locationOf,
+}) {
+  if (positionalArgs.length != expected) {
+    throw ResolveException(
+      source,
+      '$typeName.$methodName expects $expected positional '
+      'arg${expected == 1 ? "" : "s"}, got ${positionalArgs.length}',
+      location: locationOf(),
+    );
+  }
+}
+
+/// Extracts a value at [index] from [positionalArgs], enforcing its
+/// runtime type [T]. Used by controller method dispatchers for
+/// arg-type validation with uniform diagnostics.
+T _requireControllerArg<T>({
+  required String typeName,
+  required String methodName,
+  required int index,
+  required List<Object?> positionalArgs,
+  required String source,
+  required SourceSpan Function() locationOf,
+}) {
+  final v = positionalArgs[index];
+  if (v is! T) {
+    throw ResolveException(
+      source,
+      '$typeName.$methodName expects $T at position $index, '
+      'got ${v.runtimeType}',
+      location: locationOf(),
+    );
+  }
+  return v;
+}
+
+Object? _invokeTextEditingControllerMethod({
+  required TextEditingController target,
+  required String methodName,
+  required List<Object?> positionalArgs,
+  required String source,
+  required SourceSpan Function() locationOf,
+}) {
+  switch (methodName) {
+    case 'clear':
+      _requireControllerArity(
+        typeName: 'TextEditingController',
+        methodName: 'clear',
+        expected: 0,
+        positionalArgs: positionalArgs,
+        source: source,
+        locationOf: locationOf,
+      );
+      target.clear();
+      return null;
+    case 'dispose':
+      _requireControllerArity(
+        typeName: 'TextEditingController',
+        methodName: 'dispose',
+        expected: 0,
+        positionalArgs: positionalArgs,
+        source: source,
+        locationOf: locationOf,
+      );
+      target.dispose();
+      return null;
+  }
+
+  throw ResolveException(
+    source,
+    'No built-in method "$methodName" on TextEditingController',
+    location: locationOf(),
+  );
+}
+
+Object? _invokeScrollControllerMethod({
+  required ScrollController target,
+  required String methodName,
+  required List<Object?> positionalArgs,
+  required String source,
+  required SourceSpan Function() locationOf,
+}) {
+  switch (methodName) {
+    case 'jumpTo':
+      _requireControllerArity(
+        typeName: 'ScrollController',
+        methodName: 'jumpTo',
+        expected: 1,
+        positionalArgs: positionalArgs,
+        source: source,
+        locationOf: locationOf,
+      );
+      final offset = _requireControllerArg<num>(
+        typeName: 'ScrollController',
+        methodName: 'jumpTo',
+        index: 0,
+        positionalArgs: positionalArgs,
+        source: source,
+        locationOf: locationOf,
+      );
+      target.jumpTo(offset.toDouble());
+      return null;
+    case 'animateTo':
+      _requireControllerArity(
+        typeName: 'ScrollController',
+        methodName: 'animateTo',
+        expected: 3,
+        positionalArgs: positionalArgs,
+        source: source,
+        locationOf: locationOf,
+      );
+      final offset = _requireControllerArg<num>(
+        typeName: 'ScrollController',
+        methodName: 'animateTo',
+        index: 0,
+        positionalArgs: positionalArgs,
+        source: source,
+        locationOf: locationOf,
+      );
+      final duration = _requireControllerArg<Duration>(
+        typeName: 'ScrollController',
+        methodName: 'animateTo',
+        index: 1,
+        positionalArgs: positionalArgs,
+        source: source,
+        locationOf: locationOf,
+      );
+      final curve = _requireControllerArg<Curve>(
+        typeName: 'ScrollController',
+        methodName: 'animateTo',
+        index: 2,
+        positionalArgs: positionalArgs,
+        source: source,
+        locationOf: locationOf,
+      );
+      return target.animateTo(
+        offset.toDouble(),
+        duration: duration,
+        curve: curve,
+      );
+    case 'dispose':
+      _requireControllerArity(
+        typeName: 'ScrollController',
+        methodName: 'dispose',
+        expected: 0,
+        positionalArgs: positionalArgs,
+        source: source,
+        locationOf: locationOf,
+      );
+      target.dispose();
+      return null;
+  }
+
+  throw ResolveException(
+    source,
+    'No built-in method "$methodName" on ScrollController',
+    location: locationOf(),
+  );
+}
+
+Object? _invokeFocusNodeMethod({
+  required FocusNode target,
+  required String methodName,
+  required List<Object?> positionalArgs,
+  required String source,
+  required SourceSpan Function() locationOf,
+}) {
+  switch (methodName) {
+    case 'requestFocus':
+      _requireControllerArity(
+        typeName: 'FocusNode',
+        methodName: 'requestFocus',
+        expected: 0,
+        positionalArgs: positionalArgs,
+        source: source,
+        locationOf: locationOf,
+      );
+      target.requestFocus();
+      return null;
+    case 'unfocus':
+      _requireControllerArity(
+        typeName: 'FocusNode',
+        methodName: 'unfocus',
+        expected: 0,
+        positionalArgs: positionalArgs,
+        source: source,
+        locationOf: locationOf,
+      );
+      target.unfocus();
+      return null;
+    case 'dispose':
+      _requireControllerArity(
+        typeName: 'FocusNode',
+        methodName: 'dispose',
+        expected: 0,
+        positionalArgs: positionalArgs,
+        source: source,
+        locationOf: locationOf,
+      );
+      target.dispose();
+      return null;
+  }
+
+  throw ResolveException(
+    source,
+    'No built-in method "$methodName" on FocusNode',
+    location: locationOf(),
+  );
+}
+
+Object? _invokePageControllerMethod({
+  required PageController target,
+  required String methodName,
+  required List<Object?> positionalArgs,
+  required String source,
+  required SourceSpan Function() locationOf,
+}) {
+  switch (methodName) {
+    case 'jumpToPage':
+      _requireControllerArity(
+        typeName: 'PageController',
+        methodName: 'jumpToPage',
+        expected: 1,
+        positionalArgs: positionalArgs,
+        source: source,
+        locationOf: locationOf,
+      );
+      final page = _requireControllerArg<int>(
+        typeName: 'PageController',
+        methodName: 'jumpToPage',
+        index: 0,
+        positionalArgs: positionalArgs,
+        source: source,
+        locationOf: locationOf,
+      );
+      target.jumpToPage(page);
+      return null;
+    case 'animateToPage':
+      _requireControllerArity(
+        typeName: 'PageController',
+        methodName: 'animateToPage',
+        expected: 3,
+        positionalArgs: positionalArgs,
+        source: source,
+        locationOf: locationOf,
+      );
+      final page = _requireControllerArg<int>(
+        typeName: 'PageController',
+        methodName: 'animateToPage',
+        index: 0,
+        positionalArgs: positionalArgs,
+        source: source,
+        locationOf: locationOf,
+      );
+      final duration = _requireControllerArg<Duration>(
+        typeName: 'PageController',
+        methodName: 'animateToPage',
+        index: 1,
+        positionalArgs: positionalArgs,
+        source: source,
+        locationOf: locationOf,
+      );
+      final curve = _requireControllerArg<Curve>(
+        typeName: 'PageController',
+        methodName: 'animateToPage',
+        index: 2,
+        positionalArgs: positionalArgs,
+        source: source,
+        locationOf: locationOf,
+      );
+      return target.animateToPage(
+        page,
+        duration: duration,
+        curve: curve,
+      );
+    case 'dispose':
+      _requireControllerArity(
+        typeName: 'PageController',
+        methodName: 'dispose',
+        expected: 0,
+        positionalArgs: positionalArgs,
+        source: source,
+        locationOf: locationOf,
+      );
+      target.dispose();
+      return null;
+  }
+
+  throw ResolveException(
+    source,
+    'No built-in method "$methodName" on PageController',
+    location: locationOf(),
+  );
+}
+
+/// Dispatch arm for [TabController]. [TabController] is not currently
+/// constructable from source (it requires a `TickerProvider`), but an
+/// instance passed through `RuneView.data` can still receive method
+/// calls. Ships for parity with the shipped getter whitelist entry
+/// (`.index`) and in anticipation of v1.9.0's vsync story.
+Object? _invokeTabControllerMethod({
+  required TabController target,
+  required String methodName,
+  required List<Object?> positionalArgs,
+  required String source,
+  required SourceSpan Function() locationOf,
+}) {
+  switch (methodName) {
+    case 'animateTo':
+      _requireControllerArity(
+        typeName: 'TabController',
+        methodName: 'animateTo',
+        expected: 1,
+        positionalArgs: positionalArgs,
+        source: source,
+        locationOf: locationOf,
+      );
+      final page = _requireControllerArg<int>(
+        typeName: 'TabController',
+        methodName: 'animateTo',
+        index: 0,
+        positionalArgs: positionalArgs,
+        source: source,
+        locationOf: locationOf,
+      );
+      target.animateTo(page);
+      return null;
+  }
+
+  throw ResolveException(
+    source,
+    'No built-in method "$methodName" on TabController',
     location: locationOf(),
   );
 }

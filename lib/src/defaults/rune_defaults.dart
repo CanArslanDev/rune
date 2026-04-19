@@ -8,14 +8,18 @@ import 'package:rune/src/builders/values/edge_insets_all_builder.dart';
 import 'package:rune/src/builders/values/edge_insets_ltrb_builder.dart';
 import 'package:rune/src/builders/values/edge_insets_only_builder.dart';
 import 'package:rune/src/builders/values/edge_insets_symmetric_builder.dart';
+import 'package:rune/src/builders/values/focus_node_builder.dart';
 import 'package:rune/src/builders/values/grid_view_count_builder.dart';
 import 'package:rune/src/builders/values/grid_view_extent_builder.dart';
 import 'package:rune/src/builders/values/navigation_destination_builder.dart';
 import 'package:rune/src/builders/values/navigation_rail_destination_builder.dart';
 import 'package:rune/src/builders/values/offset_builder.dart';
+import 'package:rune/src/builders/values/page_controller_builder.dart';
 import 'package:rune/src/builders/values/rune_component_builder.dart';
+import 'package:rune/src/builders/values/scroll_controller_builder.dart';
 import 'package:rune/src/builders/values/sliver_grid_count_builder.dart';
 import 'package:rune/src/builders/values/sliver_grid_extent_builder.dart';
+import 'package:rune/src/builders/values/text_editing_controller_builder.dart';
 import 'package:rune/src/builders/values/text_style_builder.dart';
 import 'package:rune/src/builders/values/transform_flip_builder.dart';
 import 'package:rune/src/builders/values/transform_rotate_builder.dart';
@@ -274,7 +278,12 @@ abstract final class RuneDefaults {
       ..registerBuilder(const TransformTranslateBuilder())
       ..registerBuilder(const TransformFlipBuilder())
       // Components (Phase F).
-      ..registerBuilder(const RuneComponentBuilder());
+      ..registerBuilder(const RuneComponentBuilder())
+      // Controllers (v1.1.0).
+      ..registerBuilder(const TextEditingControllerBuilder())
+      ..registerBuilder(const ScrollControllerBuilder())
+      ..registerBuilder(const FocusNodeBuilder())
+      ..registerBuilder(const PageControllerBuilder());
   }
 
   /// Seeds [registry] with Phase 2a constants (Colors, enums,

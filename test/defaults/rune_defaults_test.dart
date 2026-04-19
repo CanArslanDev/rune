@@ -124,6 +124,10 @@ void main() {
         'Transform.flip',
         'BoxConstraints',
         'RuneComponent',
+        'TextEditingController',
+        'ScrollController',
+        'FocusNode',
+        'PageController',
       ]) {
         expect(r.contains(key), isTrue, reason: 'missing value $key');
       }
@@ -147,7 +151,7 @@ void main() {
       RuneDefaults.registerValues(v);
       RuneDefaults.registerConstants(c);
       expect(w.size, greaterThanOrEqualTo(80));
-      expect(v.size, greaterThanOrEqualTo(25));
+      expect(v.size, greaterThanOrEqualTo(28));
       expect(c.size, greaterThanOrEqualTo(50));
     });
   });

@@ -28,6 +28,19 @@ import 'package:rune/src/core/rune_state.dart';
 /// Mutations made mid-build (e.g. inside the builder body) are
 /// deferred to a post-frame callback so the hosting widget never
 /// re-enters `setState` synchronously.
+///
+/// Optional lifecycle closures (all `(state) => ...`):
+/// - `initState`: fires once after the state is seeded, before the
+///   first build. Use to kick off controllers, start animations, etc.
+/// - `dispose`: fires once on unmount, before auto-disposal runs.
+/// - `didUpdateWidget`: fires when the enclosing `RuneView` rebuilds
+///   this `_StatefulHost` in-place with new arguments.
+///
+/// Auto-disposal:
+/// - `autoDisposeListenables: true` (default `false`) walks every
+///   value in the initial state after the user `dispose` closure runs
+///   and calls `.dispose()` on every entry that is a
+///   [ChangeNotifier]. Non-Listenable entries are skipped.
 final class StatefulBuilderBuilder implements RuneWidgetBuilder {
   /// Const constructor. The builder is stateless; the mutable
   /// [RuneState] lives inside the private [State] object.
@@ -48,17 +61,51 @@ final class StatefulBuilderBuilder implements RuneWidgetBuilder {
     final invokeBuilder = validateStatefulBuilderClosure(
       args.named['builder'],
     );
-    return _StatefulHost(initial: initial, invokeBuilder: invokeBuilder);
+    final invokeInitState = validateStatefulBuilderLifecycleClosure(
+      args.named['initState'],
+      paramName: 'initState',
+    );
+    final invokeDispose = validateStatefulBuilderLifecycleClosure(
+      args.named['dispose'],
+      paramName: 'dispose',
+    );
+    final invokeDidUpdateWidget = validateStatefulBuilderLifecycleClosure(
+      args.named['didUpdateWidget'],
+      paramName: 'didUpdateWidget',
+    );
+    final autoDisposeListenables = args.getOr<bool>(
+      'autoDisposeListenables',
+      false,
+    );
+    return _StatefulHost(
+      initial: initial,
+      invokeBuilder: invokeBuilder,
+      invokeInitState: invokeInitState,
+      invokeDispose: invokeDispose,
+      invokeDidUpdateWidget: invokeDidUpdateWidget,
+      autoDisposeListenables: autoDisposeListenables,
+    );
   }
 }
 
 /// Private [StatefulWidget] that owns the [RuneState] and re-invokes
 /// [invokeBuilder] on every frame.
 class _StatefulHost extends StatefulWidget {
-  const _StatefulHost({required this.initial, required this.invokeBuilder});
+  const _StatefulHost({
+    required this.initial,
+    required this.invokeBuilder,
+    required this.invokeInitState,
+    required this.invokeDispose,
+    required this.invokeDidUpdateWidget,
+    required this.autoDisposeListenables,
+  });
 
   final Map<String, Object?> initial;
   final Object? Function(RuneState state) invokeBuilder;
+  final Object? Function(RuneState state)? invokeInitState;
+  final Object? Function(RuneState state)? invokeDispose;
+  final Object? Function(RuneState state)? invokeDidUpdateWidget;
+  final bool autoDisposeListenables;
 
   @override
   State<_StatefulHost> createState() => _StatefulHostState();
@@ -74,6 +121,13 @@ class _StatefulHostState extends State<_StatefulHost> {
       entries: widget.initial,
       onMutation: _scheduleRebuild,
     );
+    widget.invokeInitState?.call(_state);
+  }
+
+  @override
+  void didUpdateWidget(_StatefulHost oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    widget.invokeDidUpdateWidget?.call(_state);
   }
 
   void _scheduleRebuild() {
@@ -89,6 +143,21 @@ class _StatefulHostState extends State<_StatefulHost> {
       return;
     }
     if (mounted) setState(() {});
+  }
+
+  @override
+  void dispose() {
+    // Run user dispose first so source-level cleanup sees the state
+    // before any auto-disposed Listenables are torn down.
+    widget.invokeDispose?.call(_state);
+    if (widget.autoDisposeListenables) {
+      for (final entry in _state.entries.values) {
+        if (entry is ChangeNotifier) {
+          entry.dispose();
+        }
+      }
+    }
+    super.dispose();
   }
 
   @override

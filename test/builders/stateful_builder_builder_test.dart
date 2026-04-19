@@ -198,6 +198,273 @@ void main() {
     );
 
     testWidgets(
+      'initState closure fires once on mount with the state',
+      (tester) async {
+        // initState writes a sentinel into state; builder reads it to
+        // assert execution ordering (initState must fire BEFORE first
+        // build).
+        final initClosure =
+            _closureOf("(state) => state.set('init_called', true)");
+        final buildClosure = _closureOf(
+          r"(state) => Text('init=${state.init_called}')",
+        );
+        await tester.pumpWidget(
+          _wrap(
+            b.build(
+              ResolvedArguments(
+                named: {
+                  'initial': const <Object?, Object?>{'init_called': false},
+                  'builder': buildClosure,
+                  'initState': initClosure,
+                },
+              ),
+              testContext(),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        expect(find.text('init=true'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'dispose closure fires once on unmount with the state',
+      (tester) async {
+        // Pass a TextEditingController as an initial entry. The dispose
+        // closure calls state.ctrl.dispose(); observable post-unmount
+        // because invoking a disposed controller asserts in debug. So
+        // if the controller is disposed, the closure ran.
+        final ctrl = TextEditingController(text: 'alive');
+        final buildClosure = _closureOf('(state) => Text(state.ctrl.text)');
+        final disposeClosure =
+            _closureOf('(state) => state.ctrl.dispose()');
+        await tester.pumpWidget(
+          _wrap(
+            b.build(
+              ResolvedArguments(
+                named: {
+                  'initial': <Object?, Object?>{'ctrl': ctrl},
+                  'builder': buildClosure,
+                  'dispose': disposeClosure,
+                },
+              ),
+              testContext(),
+            ),
+          ),
+        );
+        expect(find.text('alive'), findsOneWidget);
+        await tester.pumpWidget(_wrap(const SizedBox.shrink()));
+        await tester.pumpAndSettle();
+        // dispose closure called ctrl.dispose() so re-invoking the
+        // controller throws.
+        expect(
+          () => ctrl.addListener(() {}),
+          throwsA(isA<FlutterError>()),
+        );
+      },
+    );
+
+    testWidgets(
+      'autoDisposeListenables: true disposes ChangeNotifier entries',
+      (tester) async {
+        final ctrl = TextEditingController(text: 'hi');
+        expect(ctrl.text, 'hi');
+        final closure = _closureOf('(state) => Text(state.ctrl.text)');
+        await tester.pumpWidget(
+          _wrap(
+            b.build(
+              ResolvedArguments(
+                named: {
+                  'initial': <Object?, Object?>{'ctrl': ctrl},
+                  'builder': closure,
+                  'autoDisposeListenables': true,
+                },
+              ),
+              testContext(),
+            ),
+          ),
+        );
+        expect(find.text('hi'), findsOneWidget);
+        // Unmount the host.
+        await tester.pumpWidget(_wrap(const SizedBox.shrink()));
+        await tester.pumpAndSettle();
+        // Post-dispose, invoking a ChangeNotifier API asserts in debug.
+        expect(
+          () => ctrl.addListener(() {}),
+          throwsA(isA<FlutterError>()),
+        );
+      },
+    );
+
+    testWidgets(
+      'autoDisposeListenables: false (default) leaves ChangeNotifiers live',
+      (tester) async {
+        final ctrl = TextEditingController(text: 'ok');
+        final closure = _closureOf('(state) => Text(state.ctrl.text)');
+        await tester.pumpWidget(
+          _wrap(
+            b.build(
+              ResolvedArguments(
+                named: {
+                  'initial': <Object?, Object?>{'ctrl': ctrl},
+                  'builder': closure,
+                },
+              ),
+              testContext(),
+            ),
+          ),
+        );
+        expect(find.text('ok'), findsOneWidget);
+        await tester.pumpWidget(_wrap(const SizedBox.shrink()));
+        await tester.pumpAndSettle();
+        // Still alive post-unmount.
+        expect(() => ctrl.addListener(() {}), returnsNormally);
+        ctrl.dispose();
+      },
+    );
+
+    testWidgets(
+      'autoDisposeListenables ignores non-Listenable entries',
+      (tester) async {
+        // Non-ChangeNotifier entries (ints, strings, plain objects) are
+        // skipped by auto-disposal; no throw on unmount.
+        final closure = _closureOf(r"(state) => Text('${state.x}')");
+        await tester.pumpWidget(
+          _wrap(
+            b.build(
+              ResolvedArguments(
+                named: {
+                  'initial': const <Object?, Object?>{'x': 5, 'name': 'a'},
+                  'builder': closure,
+                  'autoDisposeListenables': true,
+                },
+              ),
+              testContext(),
+            ),
+          ),
+        );
+        await tester.pumpWidget(_wrap(const SizedBox.shrink()));
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+      },
+    );
+
+    testWidgets(
+      'dispose closure runs before auto-disposal',
+      (tester) async {
+        // User dispose closure calls state.ctrl.text access which would
+        // throw if auto-disposal had already run. So this test proves
+        // user dispose sees the live controller, confirming order.
+        final ctrl = TextEditingController(text: 'v1.1');
+        final closure = _closureOf('(state) => Text(state.ctrl.text)');
+        final disposeClosure = _closureOf(
+          "(state) => state.set('seen', state.ctrl.text)",
+        );
+        await tester.pumpWidget(
+          _wrap(
+            b.build(
+              ResolvedArguments(
+                named: {
+                  'initial': <Object?, Object?>{'ctrl': ctrl},
+                  'builder': closure,
+                  'dispose': disposeClosure,
+                  'autoDisposeListenables': true,
+                },
+              ),
+              testContext(),
+            ),
+          ),
+        );
+        expect(find.text('v1.1'), findsOneWidget);
+        await tester.pumpWidget(_wrap(const SizedBox.shrink()));
+        await tester.pumpAndSettle();
+        // No throw means user dispose ran on a live controller, then
+        // auto-disposal finished it off.
+        expect(tester.takeException(), isNull);
+      },
+    );
+
+    testWidgets(
+      'initState with wrong arity throws ArgumentException',
+      (tester) async {
+        final initClosure = _closureOf('() => 1');
+        final buildClosure = _closureOf("(state) => Text('x')");
+        expect(
+          () => b.build(
+            ResolvedArguments(
+              named: {
+                'initial': const <Object?, Object?>{'x': 1},
+                'builder': buildClosure,
+                'initState': initClosure,
+              },
+            ),
+            testContext(),
+          ),
+          throwsA(isA<ArgumentException>()),
+        );
+      },
+    );
+
+    testWidgets(
+      'dispose with non-closure throws ArgumentException',
+      (tester) async {
+        final buildClosure = _closureOf("(state) => Text('x')");
+        expect(
+          () => b.build(
+            ResolvedArguments(
+              named: {
+                'initial': const <Object?, Object?>{'x': 1},
+                'builder': buildClosure,
+                'dispose': 'not-a-closure',
+              },
+            ),
+            testContext(),
+          ),
+          throwsA(isA<ArgumentException>()),
+        );
+      },
+    );
+
+    testWidgets(
+      'didUpdateWidget fires when host rebuilds with new widget identity',
+      (tester) async {
+        // Rebuild the RuneView-equivalent host tree. `didUpdateWidget`
+        // records a mutation into state which is observable in the
+        // rendered Text.
+        final buildClosure = _closureOf(
+          r"(state) => Text('u=${state.updates}')",
+        );
+        final updateClosure = _closureOf(
+          "(state) => state.set('updates', state.updates + 1)",
+        );
+
+        Widget host(String dummyKey) {
+          return _wrap(
+            b.build(
+              ResolvedArguments(
+                named: {
+                  'initial': const <Object?, Object?>{'updates': 0},
+                  'builder': buildClosure,
+                  'didUpdateWidget': updateClosure,
+                },
+              ),
+              testContext(),
+            ),
+          );
+        }
+
+        await tester.pumpWidget(host('a'));
+        expect(find.text('u=0'), findsOneWidget);
+        // Force a rebuild of the parent. The underlying _StatefulHost
+        // gets recreated in the element tree at the same position, so
+        // didUpdateWidget fires.
+        await tester.pumpWidget(host('b'));
+        await tester.pumpAndSettle();
+        expect(find.text('u=1'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
       'mutation mid-build is deferred via post-frame scheduling',
       (tester) async {
         // The closure body calls state.set on first render when
