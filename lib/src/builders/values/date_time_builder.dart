@@ -2,7 +2,7 @@ import 'package:rune/src/builders/builder.dart';
 import 'package:rune/src/builders/resolved_arguments.dart';
 import 'package:rune/src/core/rune_context.dart';
 
-/// Builds a [DateTime] from Dart's positional
+/// Builds a `DateTime` from Dart's positional
 /// `DateTime(year, [month, day, hour, minute, second, millisecond,
 /// microsecond])` constructor.
 ///
