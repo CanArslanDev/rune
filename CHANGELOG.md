@@ -7,6 +7,14 @@ All notable changes to this project are documented here. Format follows
 ## [Unreleased]
 
 ### Added
+- **Grid views** — `GridView.count` (fixed column count) and
+  `GridView.extent` (max cell extent) join the default value-builder
+  registry. Both require their primary sizing arg
+  (`crossAxisCount: int` / `maxCrossAxisExtent: num`); optional
+  `children`, `mainAxisSpacing`, `crossAxisSpacing`,
+  `childAspectRatio`, `scrollDirection` (Axis), `padding`,
+  `shrinkWrap`, `reverse`. `GridView.builder` is deferred pending
+  function-literal support in source.
 - **Material widget breadth** — five more everyday builders.
   `FloatingActionButton` (onPressed event, optional child/tooltip/
   colors/mini), `Chip` (required label, optional avatar, onDeleted

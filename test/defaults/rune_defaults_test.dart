@@ -80,6 +80,8 @@ void main() {
         'Image.asset',
         'Duration',
         'BottomNavigationBarItem',
+        'GridView.count',
+        'GridView.extent',
       ]) {
         expect(r.contains(key), isTrue, reason: 'missing value $key');
       }
@@ -103,7 +105,7 @@ void main() {
       RuneDefaults.registerValues(v);
       RuneDefaults.registerConstants(c);
       expect(w.size, greaterThanOrEqualTo(49));
-      expect(v.size, greaterThanOrEqualTo(12));
+      expect(v.size, greaterThanOrEqualTo(14));
       expect(c.size, greaterThanOrEqualTo(50));
     });
   });

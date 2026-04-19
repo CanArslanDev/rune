@@ -7,6 +7,8 @@ import 'package:rune/src/builders/values/edge_insets_all_builder.dart';
 import 'package:rune/src/builders/values/edge_insets_ltrb_builder.dart';
 import 'package:rune/src/builders/values/edge_insets_only_builder.dart';
 import 'package:rune/src/builders/values/edge_insets_symmetric_builder.dart';
+import 'package:rune/src/builders/values/grid_view_count_builder.dart';
+import 'package:rune/src/builders/values/grid_view_extent_builder.dart';
 import 'package:rune/src/builders/values/text_style_builder.dart';
 import 'package:rune/src/builders/widgets/animated_container_builder.dart';
 import 'package:rune/src/builders/widgets/animated_cross_fade_builder.dart';
@@ -172,7 +174,10 @@ abstract final class RuneDefaults {
       ..registerBuilder(const ImageNetworkBuilder())
       ..registerBuilder(const ImageAssetBuilder())
       ..registerBuilder(const DurationBuilder())
-      ..registerBuilder(const BottomNavigationBarItemBuilder());
+      ..registerBuilder(const BottomNavigationBarItemBuilder())
+      // Grid views (GridView.builder needs closure syntax — deferred).
+      ..registerBuilder(const GridViewCountBuilder())
+      ..registerBuilder(const GridViewExtentBuilder());
   }
 
   /// Seeds [registry] with Phase 2a constants (Colors, enums,
