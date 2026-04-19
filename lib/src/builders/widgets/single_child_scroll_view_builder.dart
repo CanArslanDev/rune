@@ -8,11 +8,15 @@ import 'package:rune/src/core/rune_context.dart';
 ///
 /// Supported arguments: `scrollDirection` ([Axis], default
 /// [Axis.vertical]), `reverse` (bool, default false), `padding`
-/// ([EdgeInsetsGeometry]), `child` ([Widget]). `primary` and `physics`
-/// are out of scope — they require types not currently reachable from
-/// Rune source syntax.
+/// ([EdgeInsetsGeometry]), `controller` ([ScrollController], optional),
+/// `child` ([Widget]). `primary` and `physics` are out of scope; they
+/// require types not currently reachable from Rune source syntax.
+///
+/// When the optional `controller` is supplied (typically constructed via
+/// a `StatefulBuilder`'s `initial` map), disposal stays with the
+/// source-level owner.
 final class SingleChildScrollViewBuilder implements RuneWidgetBuilder {
-  /// Const constructor — the builder is stateless.
+  /// Const constructor. The builder is stateless.
   const SingleChildScrollViewBuilder();
 
   @override
@@ -24,6 +28,7 @@ final class SingleChildScrollViewBuilder implements RuneWidgetBuilder {
       scrollDirection: args.getOr<Axis>('scrollDirection', Axis.vertical),
       reverse: args.getOr<bool>('reverse', false),
       padding: args.get<EdgeInsetsGeometry>('padding'),
+      controller: args.get<ScrollController>('controller'),
       child: args.get<Widget>('child'),
     );
   }

@@ -67,5 +67,20 @@ void main() {
       ) as CustomScrollView;
       expect(w.slivers, isEmpty);
     });
+
+    test('controller plumbs through to CustomScrollView.controller', () {
+      final ctrl = ScrollController();
+      addTearDown(ctrl.dispose);
+      final w = b.build(
+        ResolvedArguments(
+          named: {
+            'slivers': const <Object?>[],
+            'controller': ctrl,
+          },
+        ),
+        testContext(),
+      ) as CustomScrollView;
+      expect(identical(w.controller, ctrl), isTrue);
+    });
   });
 }

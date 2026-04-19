@@ -8,11 +8,19 @@ import 'package:rune/src/core/rune_context.dart';
 /// Builds Material [TextField] with two-way value binding.
 ///
 /// Source arguments (all optional):
-/// - `value` (`String`) — initial/current text. Updates from the host's
-///   `RuneView.data` re-sync the controller without moving the cursor
-///   when the new text matches what the field already shows; a genuine
-///   external change (e.g. the host cleared the field) resets the
-///   selection to the end.
+/// - `controller` ([TextEditingController]): an externally-owned
+///   controller constructed at source level (typically inside a
+///   `StatefulBuilder(initial: {...})`). When supplied, the internal
+///   controller is bypassed entirely: the external one drives text,
+///   selection, and disposal stays with the source-level owner. The
+///   `value` arg is ignored in this mode (external wins). When absent,
+///   the builder creates and disposes its own controller.
+/// - `value` (`String`): initial/current text for the internal-
+///   controller mode. Updates from the host's `RuneView.data` re-sync
+///   the internal controller without moving the cursor when the new
+///   text matches what the field already shows; a genuine external
+///   change (e.g. the host cleared the field) resets the selection to
+///   the end. Ignored when `controller` is supplied.
 /// - `onChanged` (`String` or closure): either a named-event String to
 ///   dispatch on each keystroke with the new text as the sole argument,
 ///   or a closure `(text) => ...` invoked with the new text on each
@@ -43,6 +51,7 @@ final class TextFieldBuilder implements RuneWidgetBuilder {
   Widget build(ResolvedArguments args, RuneContext ctx) {
     return _RuneTextField(
       value: args.get<String>('value'),
+      externalController: args.get<TextEditingController>('controller'),
       onChangedSource: args.named['onChanged'],
       hintText: args.get<String>('hintText'),
       labelText: args.get<String>('labelText'),
@@ -59,6 +68,7 @@ final class TextFieldBuilder implements RuneWidgetBuilder {
 class _RuneTextField extends StatefulWidget {
   const _RuneTextField({
     required this.value,
+    required this.externalController,
     required this.onChangedSource,
     required this.hintText,
     required this.labelText,
@@ -69,6 +79,7 @@ class _RuneTextField extends StatefulWidget {
   });
 
   final String? value;
+  final TextEditingController? externalController;
   final Object? onChangedSource;
   final String? hintText;
   final String? labelText;
@@ -82,33 +93,67 @@ class _RuneTextField extends StatefulWidget {
 }
 
 class _RuneTextFieldState extends State<_RuneTextField> {
-  late TextEditingController _controller;
+  // Internal controller is created only when no external one is supplied.
+  // When the source supplies a controller, disposal is the source-level
+  // owner's responsibility (typically StatefulBuilder dispose closure or
+  // autoDisposeListenables).
+  TextEditingController? _internal;
+
+  TextEditingController get _controller =>
+      widget.externalController ?? _internal!;
 
   @override
   void initState() {
     super.initState();
-    _controller = TextEditingController(text: widget.value ?? '');
+    if (widget.externalController == null) {
+      _internal = TextEditingController(text: widget.value ?? '');
+    }
   }
 
   @override
   void didUpdateWidget(_RuneTextField old) {
     super.didUpdateWidget(old);
-    // External update: the host's state changed and a new `value` is
-    // flowing in via data. Only sync if the incoming value actually
-    // differs from what the controller is already holding — otherwise
-    // we would reset the cursor on every keystroke's rebuild.
-    final incoming = widget.value ?? '';
-    if (incoming != _controller.text) {
-      _controller.value = TextEditingValue(
-        text: incoming,
-        selection: TextSelection.collapsed(offset: incoming.length),
-      );
+    final wasExternal = old.externalController != null;
+    final isExternal = widget.externalController != null;
+
+    if (wasExternal && !isExternal) {
+      // External -> internal: spin up a fresh internal controller seeded
+      // from the incoming `value` (or empty).
+      _internal = TextEditingController(text: widget.value ?? '');
+      return;
     }
+
+    if (!wasExternal && isExternal) {
+      // Internal -> external: dispose the internal controller we owned.
+      _internal?.dispose();
+      _internal = null;
+      return;
+    }
+
+    if (!isExternal) {
+      // Both before and after were internal. Mirror the original sync
+      // semantics: only resync when the incoming `value` genuinely
+      // differs from what the controller is already holding, to avoid
+      // resetting the cursor on every keystroke's rebuild.
+      final incoming = widget.value ?? '';
+      if (incoming != _controller.text) {
+        _controller.value = TextEditingValue(
+          text: incoming,
+          selection: TextSelection.collapsed(offset: incoming.length),
+        );
+      }
+      return;
+    }
+
+    // Both before and after were external: the source owns the
+    // controller's text; we do not touch it.
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    // Only dispose the controller we created ourselves. External
+    // controllers are owned by the source-level scope.
+    _internal?.dispose();
     super.dispose();
   }
 

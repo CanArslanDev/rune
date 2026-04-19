@@ -6,25 +6,29 @@ import 'package:rune/src/core/rune_context.dart';
 
 /// Builds Material [TabBar].
 ///
-/// Assumes a host-provided [DefaultTabController] ancestor drives the
-/// selection state — Rune source is not expected to construct the
-/// controller (imperative state handling is out of scope). Same
-/// contract as mounting an `AppBar` under a `Scaffold`: the widget
-/// needs a specific ancestor to be usable.
+/// By default, a host-provided [DefaultTabController] ancestor drives
+/// the selection state. When the optional `controller` arg is supplied,
+/// that [TabController] is used directly (bypassing the default
+/// controller). The controller itself is typically passed in through
+/// `RuneView.data` since Rune does not yet construct [TabController]
+/// at source level (it requires a [TickerProvider]).
 ///
 /// Source arguments:
-/// - `tabs` (`List<Widget>`) — optional but effectively required in
+/// - `tabs` (`List<Widget>`): optional but effectively required in
 ///   practice. Entries that are not widgets are silently filtered.
 ///   Typically populated with [Tab] builders.
-/// - `onTap` (`String?`) — optional event name; dispatches
+/// - `controller` ([TabController]): optional explicit controller.
+///   When absent, the nearest ancestor [DefaultTabController] drives
+///   selection.
+/// - `onTap` (`String?`): optional event name; dispatches
 ///   `(eventName, [newIndex])` when a tab is tapped. Use for side
-///   effects, not for driving selection state — the controller already
+///   effects, not for driving selection state; the controller already
 ///   owns the visible selection.
-/// - `indicatorColor`, `labelColor`, `unselectedLabelColor` (`Color?`)
-///   — theming overrides.
-/// - `isScrollable` (`bool`) — defaults to `false`.
+/// - `indicatorColor`, `labelColor`, `unselectedLabelColor` (`Color?`):
+///   theming overrides.
+/// - `isScrollable` (`bool`): defaults to `false`.
 final class TabBarBuilder implements RuneWidgetBuilder {
-  /// Const constructor — the builder is stateless.
+  /// Const constructor. The builder is stateless.
   const TabBarBuilder();
 
   @override
@@ -38,6 +42,7 @@ final class TabBarBuilder implements RuneWidgetBuilder {
         : rawTabs.whereType<Widget>().toList(growable: false);
     return TabBar(
       tabs: tabs,
+      controller: args.get<TabController>('controller'),
       onTap: valueEventCallback<int>(args.named['onTap'], ctx.events),
       indicatorColor: args.get<Color>('indicatorColor'),
       labelColor: args.get<Color>('labelColor'),

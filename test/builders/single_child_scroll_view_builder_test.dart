@@ -75,5 +75,24 @@ void main() {
       );
       expect(w.padding, const EdgeInsets.all(16));
     });
+
+    testWidgets('controller plumbs through', (tester) async {
+      final ctrl = ScrollController();
+      addTearDown(ctrl.dispose);
+      final built = b.build(
+        ResolvedArguments(
+          named: {
+            'controller': ctrl,
+            'child': const SizedBox(height: 2000, child: Text('tall')),
+          },
+        ),
+        testContext(),
+      );
+      await tester.pumpWidget(_harness(built));
+      final w = tester.widget<SingleChildScrollView>(
+        find.byType(SingleChildScrollView),
+      );
+      expect(identical(w.controller, ctrl), isTrue);
+    });
   });
 }

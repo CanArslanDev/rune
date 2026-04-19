@@ -176,5 +176,100 @@ void main() {
       final tf = tester.widget<TextField>(find.byType(TextField));
       expect(tf.maxLines, 3);
     });
+
+    testWidgets(
+      'external controller: supplied controller is used by the TextField',
+      (tester) async {
+        final external = TextEditingController(text: 'external-seed');
+        addTearDown(external.dispose);
+        final built = b.build(
+          ResolvedArguments(named: {'controller': external}),
+          testContext(),
+        );
+        await tester.pumpWidget(_harness(built));
+        final tf = tester.widget<TextField>(find.byType(TextField));
+        expect(identical(tf.controller, external), isTrue);
+        expect(find.text('external-seed'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'external controller: value arg does not overwrite its text',
+      (tester) async {
+        final external = TextEditingController(text: 'from-controller');
+        addTearDown(external.dispose);
+        final built = b.build(
+          ResolvedArguments(
+            named: {
+              'controller': external,
+              'value': 'from-value',
+            },
+          ),
+          testContext(),
+        );
+        await tester.pumpWidget(_harness(built));
+        // External controller wins: its text is preserved, not clobbered.
+        expect(external.text, 'from-controller');
+        expect(find.text('from-controller'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'external controller: switching from internal to external on rebuild',
+      (tester) async {
+        final ctx = testContext();
+        // First mount with NO external controller: internal wins.
+        final first = b.build(
+          const ResolvedArguments(named: {'value': 'starter'}),
+          ctx,
+        );
+        await tester.pumpWidget(_harness(first));
+        expect(find.text('starter'), findsOneWidget);
+        final tf1 = tester.widget<TextField>(find.byType(TextField));
+        final internal = tf1.controller;
+        expect(internal, isNotNull);
+
+        // Rebuild with an external controller supplied.
+        final external = TextEditingController(text: 'swapped');
+        addTearDown(external.dispose);
+        final second = b.build(
+          ResolvedArguments(named: {'controller': external}),
+          ctx,
+        );
+        await tester.pumpWidget(_harness(second));
+        final tf2 = tester.widget<TextField>(find.byType(TextField));
+        expect(identical(tf2.controller, external), isTrue);
+        expect(find.text('swapped'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'external controller: not disposed when the widget unmounts',
+      (tester) async {
+        final external = TextEditingController(text: 'keepalive');
+        addTearDown(external.dispose);
+        final built = b.build(
+          ResolvedArguments(named: {'controller': external}),
+          testContext(),
+        );
+        await tester.pumpWidget(_harness(built));
+        expect(
+          identical(
+            tester.widget<TextField>(find.byType(TextField)).controller,
+            external,
+          ),
+          isTrue,
+        );
+
+        // Unmount the Rune-built TextField.
+        await tester.pumpWidget(const MaterialApp(home: SizedBox.shrink()));
+        await tester.pumpAndSettle();
+
+        // External controller must still be alive: calling any method that
+        // a disposed controller throws on should succeed.
+        expect(() => external.text = 'still-alive', returnsNormally);
+        expect(external.text, 'still-alive');
+      },
+    );
   });
 }

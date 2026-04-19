@@ -4,11 +4,17 @@ import 'package:rune/src/builders/resolved_arguments.dart';
 import 'package:rune/src/core/rune_context.dart';
 
 /// Builds [ListView] (default-constructor, static children) from
-/// optional `children`, `scrollDirection`, `reverse`, `shrinkWrap`, and
-/// `padding`. `.builder` / `.separated` constructors are out of scope for
-/// Phase 2c.
+/// optional `children`, `scrollDirection`, `reverse`, `shrinkWrap`,
+/// `padding`, and `controller`. `.builder` / `.separated` constructors
+/// are out of scope for Phase 2c.
+///
+/// The optional `controller` ([ScrollController]) accepts an externally-
+/// owned controller, typically constructed inside a `StatefulBuilder`'s
+/// `initial` map so the source can drive scroll position via
+/// `state.ctrl.jumpTo(...)` / `animateTo`. Disposal stays with the
+/// source-level owner.
 final class ListViewBuilder implements RuneWidgetBuilder {
-  /// Const constructor — the builder is stateless.
+  /// Const constructor. The builder is stateless.
   const ListViewBuilder();
 
   @override
@@ -25,6 +31,7 @@ final class ListViewBuilder implements RuneWidgetBuilder {
       reverse: args.getOr<bool>('reverse', false),
       shrinkWrap: args.getOr<bool>('shrinkWrap', false),
       padding: args.get<EdgeInsetsGeometry>('padding'),
+      controller: args.get<ScrollController>('controller'),
       children: children,
     );
   }

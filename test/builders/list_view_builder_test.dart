@@ -53,5 +53,15 @@ void main() {
           (w.childrenDelegate as SliverChildListDelegate).children;
       expect(delegateChildren, [a, b2]);
     });
+
+    test('controller plumbs through to ListView.controller', () {
+      final ctrl = ScrollController();
+      addTearDown(ctrl.dispose);
+      final w = b.build(
+        ResolvedArguments(named: {'controller': ctrl}),
+        testContext(),
+      ) as ListView;
+      expect(identical(w.controller, ctrl), isTrue);
+    });
   });
 }

@@ -94,5 +94,81 @@ void main() {
         [1],
       ]);
     });
+
+    testWidgets('controller plumbs through to TabBar.controller',
+        (tester) async {
+      // Build a supplied TabController via a tiny host that provides
+      // a TickerProvider; then hand the controller to the Rune builder.
+      late TabController supplied;
+      final captured = <TabBar>[];
+      await tester.pumpWidget(
+        MaterialApp(
+          home: _TabControllerHarness(
+            length: 2,
+            onController: (ctrl) => supplied = ctrl,
+            buildTabBar: (ctrl) {
+              final built = b.build(
+                ResolvedArguments(
+                  named: {
+                    'tabs': const <Object?>[
+                      Tab(text: 'A'),
+                      Tab(text: 'B'),
+                    ],
+                    'controller': ctrl,
+                  },
+                ),
+                testContext(),
+              );
+              captured.add(built as TabBar);
+              return built;
+            },
+          ),
+        ),
+      );
+      expect(captured, hasLength(1));
+      expect(identical(captured.single.controller, supplied), isTrue);
+    });
   });
+}
+
+class _TabControllerHarness extends StatefulWidget {
+  const _TabControllerHarness({
+    required this.length,
+    required this.buildTabBar,
+    required this.onController,
+  });
+  final int length;
+  final Widget Function(TabController) buildTabBar;
+  final void Function(TabController) onController;
+  @override
+  State<_TabControllerHarness> createState() => _TabControllerHarnessState();
+}
+
+class _TabControllerHarnessState extends State<_TabControllerHarness>
+    with SingleTickerProviderStateMixin {
+  late final TabController _ctrl;
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = TabController(length: widget.length, vsync: this);
+    widget.onController(_ctrl);
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(48),
+          child: widget.buildTabBar(_ctrl),
+        ),
+      ),
+    );
+  }
 }

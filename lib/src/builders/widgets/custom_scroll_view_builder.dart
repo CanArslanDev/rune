@@ -4,20 +4,24 @@ import 'package:rune/src/builders/resolved_arguments.dart';
 import 'package:rune/src/core/rune_context.dart';
 
 /// Builds [CustomScrollView] from a required `slivers: List<Widget>` plus
-/// optional `scrollDirection`, `reverse`, `shrinkWrap`, and `primary`.
+/// optional `scrollDirection`, `reverse`, `shrinkWrap`, `primary`, and
+/// `controller`.
 ///
 /// `CustomScrollView` is the entry point for composing scroll fragments
-/// (slivers) that plain `ListView` / `GridView` cannot express — sticky
+/// (slivers) that plain `ListView` / `GridView` cannot express: sticky
 /// headers, collapsing app bars, mixed lists and grids. Non-Widget
 /// entries in `slivers` are dropped silently, matching the children
 /// filter convention used by `Column`, `Row`, `ListView`, etc. Each
 /// retained entry must implement the sliver protocol
 /// (`SliverList`, `SliverToBoxAdapter`, `SliverAppBar`, ...).
 ///
-/// `.builder`-style lazy construction is not represented here — Rune's
+/// `.builder`-style lazy construction is not represented here; Rune's
 /// source grammar does not yet support function literals.
+///
+/// The optional `controller` ([ScrollController]) accepts an externally-
+/// owned controller; disposal stays with the source-level owner.
 final class CustomScrollViewBuilder implements RuneWidgetBuilder {
-  /// Const constructor — the builder is stateless.
+  /// Const constructor. The builder is stateless.
   const CustomScrollViewBuilder();
 
   @override
@@ -35,6 +39,7 @@ final class CustomScrollViewBuilder implements RuneWidgetBuilder {
       reverse: args.getOr<bool>('reverse', false),
       shrinkWrap: args.getOr<bool>('shrinkWrap', false),
       primary: args.get<bool>('primary'),
+      controller: args.get<ScrollController>('controller'),
       slivers: slivers,
     );
   }
