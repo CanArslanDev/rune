@@ -123,6 +123,7 @@ class _RuneViewState extends State<RuneView> {
       events: events,
       constants: widget.config.constants,
       extensions: widget.config.extensions,
+      source: widget.source,
       flutterContext: flutterCtx,
     );
   }

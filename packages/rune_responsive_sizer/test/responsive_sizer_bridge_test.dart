@@ -99,6 +99,7 @@ void main() {
         events: RuneEventDispatcher(),
         constants: config.constants,
         extensions: config.extensions,
+        source: '',
       );
       expect(
         () => config.extensions.require(
@@ -121,6 +122,7 @@ void main() {
         events: RuneEventDispatcher(),
         constants: config.constants,
         extensions: config.extensions,
+        source: '',
       );
       expect(
         () => config.extensions.require('w', 42, ctx, source: 'x.w'),

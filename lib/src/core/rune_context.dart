@@ -35,6 +35,7 @@ final class RuneContext {
     required this.events,
     required this.constants,
     required this.extensions,
+    required this.source,
     this.flutterContext,
   });
 
@@ -62,6 +63,13 @@ final class RuneContext {
   /// expressions like `10.w`.
   final ExtensionRegistry extensions;
 
+  /// The original Rune source string. Threaded through so resolvers can
+  /// compute `SourceSpan` pointers from AST node offsets when raising
+  /// exceptions. Empty string is a valid value for contexts constructed
+  /// outside a `RuneView` render (e.g. unit tests that don't care about
+  /// source-location-aware diagnostics).
+  final String source;
+
   /// The enclosing Flutter `BuildContext`, used by builders that need
   /// `MediaQuery`, `Theme`, etc. `null` during non-widget-pumping unit
   /// tests where no real widget tree exists.
@@ -82,6 +90,7 @@ final class RuneContext {
     RuneEventDispatcher? events,
     ConstantRegistry? constants,
     ExtensionRegistry? extensions,
+    String? source,
     BuildContext? flutterContext,
   }) {
     return RuneContext(
@@ -91,6 +100,7 @@ final class RuneContext {
       events: events ?? this.events,
       constants: constants ?? this.constants,
       extensions: extensions ?? this.extensions,
+      source: source ?? this.source,
       flutterContext: flutterContext ?? this.flutterContext,
     );
   }

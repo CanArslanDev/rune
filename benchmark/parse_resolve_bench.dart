@@ -83,6 +83,7 @@ void main() {
     events: RuneEventDispatcher(),
     constants: config.constants,
     extensions: config.extensions,
+    source: _canonicalSource,
   );
 
   // Warmup — populates cache, JITs.

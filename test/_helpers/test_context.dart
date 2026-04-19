@@ -11,7 +11,7 @@ import 'package:rune/src/registry/widget_registry.dart';
 ///
 /// Callers can override any slot. Defaults: empty registries, empty data,
 /// fresh [RuneEventDispatcher], empty [ConstantRegistry], empty
-/// [ExtensionRegistry], `flutterContext` null.
+/// [ExtensionRegistry], empty [source] string, `flutterContext` null.
 RuneContext testContext({
   WidgetRegistry? widgets,
   ValueRegistry? values,
@@ -19,6 +19,7 @@ RuneContext testContext({
   RuneEventDispatcher? events,
   ConstantRegistry? constants,
   ExtensionRegistry? extensions,
+  String source = '',
   BuildContext? flutterContext,
 }) {
   return RuneContext(
@@ -28,6 +29,7 @@ RuneContext testContext({
     events: events ?? RuneEventDispatcher(),
     constants: constants ?? ConstantRegistry(),
     extensions: extensions ?? ExtensionRegistry(),
+    source: source,
     flutterContext: flutterContext,
   );
 }
