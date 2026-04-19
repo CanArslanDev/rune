@@ -19,7 +19,7 @@ import 'package:rune/src/core/rune_context.dart';
 
 /// Builds Material [RadioListTile] — a [Radio] paired with a [ListTile]
 /// layout. Parametric on `Object?` to accept any runtime identity (int,
-/// String, enum-ish keys), matching [RadioBuilder]'s own contract.
+/// String, enum-ish keys), matching `RadioBuilder`'s own contract.
 ///
 /// Source arguments:
 /// - `value` (any type) — required (presence-checked). `null` is a
