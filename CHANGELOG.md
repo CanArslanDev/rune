@@ -6,6 +6,67 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-04-19 - closure-based builder widgets
+
+### Added
+
+- **Lazy list and grid builders.** `ListView.builder(itemCount,
+  itemBuilder)`, `GridView.countBuilder(crossAxisCount,
+  itemBuilder, itemCount?)` plus a matching
+  `GridView.extentBuilder(maxCrossAxisExtent, ...)`. Each takes a
+  `(BuildContext, int) -> Widget` closure. Source can now render
+  thousands of items without eagerly materialising them. Sliver
+  counterparts (`SliverList.builder`, `SliverGrid.countBuilder`,
+  `SliverGrid.extentBuilder`) compose into `CustomScrollView`
+  directly.
+- **Async builders.** `FutureBuilder(future, builder)` and
+  `StreamBuilder(stream, builder, initialData?)`. Host supplies the
+  `Future` / `Stream` through `RuneView.data`; the builder receives
+  `(BuildContext, AsyncSnapshot)` and returns a Widget.
+  `AsyncSnapshot.hasData`, `.data`, `.hasError`, `.error`,
+  `.connectionState` work through the property-access whitelist.
+  `ConnectionState.none` / `.waiting` / `.active` / `.done` join
+  the constants table.
+- **Layout and orientation builders.**
+  `LayoutBuilder(builder)` yields the parent's `BoxConstraints` so
+  source can choose a layout at build time. `BoxConstraints.maxWidth`,
+  `.minWidth`, `.maxHeight`, `.minHeight`, `.biggest`, `.smallest`
+  are whitelisted property accesses.
+  `OrientationBuilder(builder)` yields `Orientation.portrait` or
+  `.landscape` (both registered as constants).
+- **Closure builder helpers.**
+  `lib/src/builders/closure_builder_helpers.dart` holds the shared
+  closure-to-Flutter-callback adapters:
+  `toIndexedBuilder`, `toFutureSnapshotBuilder`,
+  `toStreamSnapshotBuilder`, `toLayoutBuilder`,
+  `toOrientationBuilder`. Arity + type validation lives in one
+  place per the shared-helper-first discipline.
+
+### Fixed
+
+- **Dispatch precedence for named-constructor invocations.**
+  `InvocationResolver` now checks the value registry first when a
+  `MethodInvocation` or `InstanceCreationExpression` carries a
+  `constructorName` (e.g. `ListView.builder(...)`). Previously a
+  bare widget builder registered under the same `typeName`
+  (`ListView`) would shadow any value-builder named-constructor
+  variants (`ListView.builder`). Widget-first precedence remains
+  for bare invocations (`Text('hi')`); only the named-ctor path
+  changed. This fix unblocked the entire v1.2.0 .builder family
+  and is covered by the new builder tests.
+
+### Notes
+
+- Value count 28 to 34; widget count 80 to 84.
+- 82 new tests across the ten new builders, closure helper suite,
+  `AsyncSnapshot` / `BoxConstraints` property access, and five
+  integration smokes (lazy ListView, LayoutBuilder responsive
+  split, FutureBuilder with host-provided future, OrientationBuilder,
+  SliverList.builder inside CustomScrollView).
+- `BuildContext` passed to closures remains opaque in v1.2.0. The
+  `Theme.of(context)` / `MediaQuery.of(context)` accessors arrive
+  in v1.4.0.
+
 ## [1.1.0] - 2026-04-19 - lifecycle and controllers
 
 ### Added
@@ -750,7 +811,8 @@ All notable changes to this project are documented here. Format follows
 - Example app at `example/lib/main.dart` demonstrating the full Phase 1
   feature set.
 
-[Unreleased]: https://github.com/CanArslanDev/rune/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/CanArslanDev/rune/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/CanArslanDev/rune/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/CanArslanDev/rune/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/CanArslanDev/rune/compare/v0.11.0...v1.0.0
 [0.11.0]: https://github.com/CanArslanDev/rune/compare/v0.10.0...v0.11.0
