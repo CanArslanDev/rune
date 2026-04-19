@@ -1,4 +1,5 @@
 import 'package:analyzer/dart/ast/ast.dart';
+import 'package:flutter/material.dart';
 import 'package:rune/src/core/exceptions.dart';
 import 'package:rune/src/core/rune_context.dart';
 import 'package:rune/src/core/source_span.dart';
@@ -285,6 +286,22 @@ final class ExpressionResolver {
     }
 
     if (target is Map<Object?, Object?>) {
+      return target[index];
+    }
+
+    if (target is MaterialColor) {
+      if (index is! int) {
+        throw ResolveException(
+          node.toSource(),
+          'MaterialColor shade index must be an int, got ${index.runtimeType}',
+          location:
+              SourceSpan.fromAstOffset(ctx.source, node.offset, node.length),
+        );
+      }
+      // MaterialColor.operator[] returns Color? — null when the shade
+      // key is not in its internal swatch map. Forward that semantics
+      // verbatim so source-level `Colors.grey[42]` yields null rather
+      // than throwing.
       return target[index];
     }
 

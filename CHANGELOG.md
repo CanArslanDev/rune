@@ -30,6 +30,21 @@ All notable changes to this project are documented here. Format follows
   default false) plus `transformHitTests` and optional `child`;
   alignment is fixed to `Alignment.center` by Flutter's own
   constructor.
+- **Form input tiles**. `CheckboxListTile`, `SwitchListTile`,
+  `RadioListTile` combine the existing Checkbox / Switch / Radio
+  builders with a `ListTile` layout (title, subtitle, secondary,
+  controlAffinity). All follow the two-way binding contract; the
+  tile dispatches `(onChanged, [newValue])` on tap.
+  `CheckboxListTile` and `RadioListTile` discriminate absent value
+  (ArgumentException) from explicit `value: null` (legitimate for
+  tristate / radio-deselect). `ListTileControlAffinity.leading`,
+  `.trailing`, `.platform` join the constants table.
+- **`MaterialColor[shade]` index access**. `Colors.grey[200]` now
+  resolves in Rune source. Integer shade lookups on any registered
+  `MaterialColor` go through `ExpressionResolver._resolveIndex`.
+  Non-int indices raise `ResolveException`; unknown shades return
+  `null`, matching Flutter's own `MaterialColor.operator[]`
+  semantics.
 
 ## [0.7.0] - 2026-04-19 - wrappers, slivers, transforms
 

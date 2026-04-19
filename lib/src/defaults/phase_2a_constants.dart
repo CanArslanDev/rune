@@ -40,6 +40,7 @@ void registerPhase2aConstants(ConstantRegistry registry) {
   _registerCrossFadeState(registry);
   _registerClip(registry);
   _registerDecorationPosition(registry);
+  _registerListTileControlAffinity(registry);
 }
 
 // Registers every Colors member that is a concrete Color value.
@@ -268,5 +269,16 @@ void _registerDecorationPosition(ConstantRegistry r) {
   r.registerAll('DecorationPosition', <String, Object?>{
     'background': DecorationPosition.background,
     'foreground': DecorationPosition.foreground,
+  });
+}
+
+// Registers ListTileControlAffinity enum values (leading, trailing,
+// platform) — used by CheckboxListTile / SwitchListTile / RadioListTile
+// builders' `controlAffinity:` arg.
+void _registerListTileControlAffinity(ConstantRegistry r) {
+  r.registerAll('ListTileControlAffinity', <String, Object?>{
+    'leading': ListTileControlAffinity.leading,
+    'trailing': ListTileControlAffinity.trailing,
+    'platform': ListTileControlAffinity.platform,
   });
 }

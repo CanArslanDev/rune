@@ -33,6 +33,9 @@ void main() {
         'Checkbox',
         'Slider',
         'Radio',
+        'CheckboxListTile',
+        'SwitchListTile',
+        'RadioListTile',
         'ListTile',
         'Divider',
         'Spacer',
@@ -134,7 +137,7 @@ void main() {
       RuneDefaults.registerWidgets(w);
       RuneDefaults.registerValues(v);
       RuneDefaults.registerConstants(c);
-      expect(w.size, greaterThanOrEqualTo(71));
+      expect(w.size, greaterThanOrEqualTo(74));
       expect(v.size, greaterThanOrEqualTo(22));
       expect(c.size, greaterThanOrEqualTo(50));
     });

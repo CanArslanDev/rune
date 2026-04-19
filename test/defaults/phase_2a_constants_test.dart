@@ -187,5 +187,22 @@ void main() {
         DecorationPosition.foreground,
       );
     });
+
+    test('seeds ListTileControlAffinity', () {
+      final r = ConstantRegistry();
+      registerPhase2aConstants(r);
+      expect(
+        r.resolve('ListTileControlAffinity', 'leading'),
+        ListTileControlAffinity.leading,
+      );
+      expect(
+        r.resolve('ListTileControlAffinity', 'trailing'),
+        ListTileControlAffinity.trailing,
+      );
+      expect(
+        r.resolve('ListTileControlAffinity', 'platform'),
+        ListTileControlAffinity.platform,
+      );
+    });
   });
 }

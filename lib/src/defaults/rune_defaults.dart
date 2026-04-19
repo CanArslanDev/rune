@@ -31,6 +31,7 @@ import 'package:rune/src/builders/widgets/bottom_navigation_bar_builder.dart';
 import 'package:rune/src/builders/widgets/card_builder.dart';
 import 'package:rune/src/builders/widgets/center_builder.dart';
 import 'package:rune/src/builders/widgets/checkbox_builder.dart';
+import 'package:rune/src/builders/widgets/checkbox_list_tile_builder.dart';
 import 'package:rune/src/builders/widgets/chip_builder.dart';
 import 'package:rune/src/builders/widgets/circular_progress_indicator_builder.dart';
 import 'package:rune/src/builders/widgets/clip_oval_builder.dart';
@@ -67,6 +68,7 @@ import 'package:rune/src/builders/widgets/opacity_builder.dart';
 import 'package:rune/src/builders/widgets/padding_builder.dart';
 import 'package:rune/src/builders/widgets/positioned_builder.dart';
 import 'package:rune/src/builders/widgets/radio_builder.dart';
+import 'package:rune/src/builders/widgets/radio_list_tile_builder.dart';
 import 'package:rune/src/builders/widgets/row_builder.dart';
 import 'package:rune/src/builders/widgets/safe_area_builder.dart';
 import 'package:rune/src/builders/widgets/scaffold_builder.dart';
@@ -82,6 +84,7 @@ import 'package:rune/src/builders/widgets/sliver_to_box_adapter_builder.dart';
 import 'package:rune/src/builders/widgets/spacer_builder.dart';
 import 'package:rune/src/builders/widgets/stack_builder.dart';
 import 'package:rune/src/builders/widgets/switch_builder.dart';
+import 'package:rune/src/builders/widgets/switch_list_tile_builder.dart';
 import 'package:rune/src/builders/widgets/tab_bar_builder.dart';
 import 'package:rune/src/builders/widgets/tab_builder.dart';
 import 'package:rune/src/builders/widgets/text_builder.dart';
@@ -155,6 +158,10 @@ abstract final class RuneDefaults {
       // Form inputs (extended).
       ..registerBuilder(const SliderBuilder())
       ..registerBuilder(const RadioBuilder())
+      // Form input tiles.
+      ..registerBuilder(const CheckboxListTileBuilder())
+      ..registerBuilder(const SwitchListTileBuilder())
+      ..registerBuilder(const RadioListTileBuilder())
       // Layout helpers + Material tiles.
       ..registerBuilder(const ListTileBuilder())
       ..registerBuilder(const DividerBuilder())

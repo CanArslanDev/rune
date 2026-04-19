@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rune/src/binding/rune_data_context.dart';
 import 'package:rune/src/core/exceptions.dart';
@@ -739,6 +740,44 @@ void main() {
         fail('expected ResolveException');
       } on ResolveException catch (e) {
         expect(e.message, contains('if-case'));
+      }
+    });
+  });
+
+  group('IndexExpression on MaterialColor', () {
+    test('Colors.grey[200] resolves to Colors.grey.shade200', () {
+      final r = makeResolver();
+      final constants = ConstantRegistry()
+        ..register('Colors', 'grey', Colors.grey);
+      final ctx = testContext(constants: constants);
+      final result = r.resolve(parser.parse('Colors.grey[200]'), ctx);
+      expect(result, isA<Color>());
+      expect(result, Colors.grey.shade200);
+    });
+
+    test('Colors.grey[42] returns null for an unknown shade', () {
+      final r = makeResolver();
+      final constants = ConstantRegistry()
+        ..register('Colors', 'grey', Colors.grey);
+      final ctx = testContext(constants: constants);
+      // MaterialColor.operator[] returns null for keys not in its
+      // internal _swatch map; Rune forwards that semantics verbatim.
+      expect(r.resolve(parser.parse('Colors.grey[42]'), ctx), isNull);
+    });
+
+    test('Colors.grey with non-int index throws ResolveException', () {
+      final r = makeResolver();
+      final constants = ConstantRegistry()
+        ..register('Colors', 'grey', Colors.grey);
+      const source = "Colors.grey['x']";
+      final ctx = testContext(constants: constants, source: source);
+      try {
+        r.resolve(parser.parse(source), ctx);
+        fail('expected ResolveException');
+      } on ResolveException catch (e) {
+        expect(e.message, contains('MaterialColor'));
+        expect(e.message, contains('int'));
+        expect(e.location, isNotNull);
       }
     });
   });
