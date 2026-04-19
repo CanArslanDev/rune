@@ -6,6 +6,86 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+### Added
+
+- **Source-level state via StatefulBuilder and RuneState (Phase C
+  of the v1.0.0 roadmap).** New `RuneState` value type (in
+  `lib/src/core/rune_state.dart`) carries a mutable string-keyed
+  bag readable from source through the existing Map-first branch
+  of `PropertyResolver` and `IdentifierResolver`. Writes go
+  through `state.set(key, value)`, `state.setMany({...})`,
+  `state.remove(key)`, and `state.clear()`; each mutating
+  operation fires an `onMutation` callback bound to the hosting
+  widget's `setState`. New `StatefulBuilder` widget builder
+  (registered as a default) takes a required `initial` map to
+  seed the state on first mount plus a required `builder` closure
+  that receives the state and returns a Widget; mutations that
+  fire mid-build schedule a post-frame `setState` instead of
+  re-entering synchronously, so infinite rebuild loops are
+  impossible. `invokeBuiltinMethod` grows a `RuneState` branch so
+  source can call `state.set`, `state.setMany`, `state.remove`,
+  `state.clear`, `state.get`, `state.has`.
+- **`setState` sugar and `RuneState` property-access assignment
+  (Phase D of the v1.0.0 roadmap).** Source can now write
+  `state.counter = state.counter + 1` (PrefixedIdentifier
+  left-hand-side) or `(expression).counter = v` (PropertyAccess
+  LHS); the assignment routes through `RuneState.set(memberName,
+  rhs)` and triggers exactly one rebuild via the Phase C
+  mutation callback. `InvocationResolver` also recognises the
+  bare `setState(() { ... })` identifier with a no-arg closure
+  and runs the closure; because Phase C mutations already
+  trigger rebuilds, the wrapper is a semantic passthrough that
+  exists to match Flutter's conventional pattern. Assignment to
+  a non-`RuneState` prefix / target raises `ResolveException`
+  citing the offending type; compound operators (`+=`, `-=`,
+  etc.) stay rejected; `setState` calls with wrong arity or
+  non-closure args raise clear `ResolveException` messages.
+
+## [0.10.0] - 2026-04-19 - block-body closures and local scope
+
+### Added
+
+- **Block-body closures with local scope and assignment (Phase B
+  of the v1.0.0 roadmap).** `(x) { ... }` closures now parse and
+  execute; the Phase A.1 arrow-only restriction is lifted.
+  `RuneClosure` gains two named constructors (`.expression` for
+  the Phase A.1 arrow-body shape, `.block` for Phase B).
+  Block-body closures create a fresh `RuneScope` on each call
+  and walk the body's statements via the new
+  `StatementResolver`. Early `return` short-circuits the
+  sequence and yields the returned value; block bodies without
+  a return yield `null`, matching Dart.
+- **Local scope via `RuneScope`.** `var` and `final` declarations
+  inside a block body live in a mutable `RuneScope`
+  (`lib/src/core/rune_scope.dart`) with parent-chaining for
+  nested blocks. `declare()` enforces no re-declaration in the
+  same scope; `assign()` walks outward to find the declaring
+  scope and raises `BindingException` when no scope owns the
+  name. Distinct from `RuneDataContext`, which stays immutable
+  and host-owned. `RuneContext` gains an optional nullable
+  `scope` field (plus `copyWith` arg), and
+  `IdentifierResolver.resolveSimple` now checks `ctx.scope`
+  before `ctx.data` so block-body locals shadow host-provided
+  data keys of the same name, matching Dart's lexical scoping.
+- **Statement-level execution.** New
+  `lib/src/resolver/statement_resolver.dart` dispatches
+  `ExpressionStatement`, `ReturnStatement`,
+  `VariableDeclarationStatement`, and `IfStatement`, plus
+  nested `Block` as a child scope. Unsupported statements
+  (loops, `try`/`catch`, `switch`) raise `ResolveException`
+  pointing at the offending node.
+- **Assignment expressions for locals.**
+  `ExpressionResolver` gains an `AssignmentExpression` arm for
+  the `=` operator with `SimpleIdentifier` on the left.
+  Assigning to a host-supplied data name is forbidden with a
+  clear diagnostic (data mutation is Phase C territory).
+  Compound operators (`+=`, `-=`) and assignment to
+  `PropertyAccess` / `IndexExpression` left-hand-sides stay
+  deferred to Phase D. A `bindStatements` hook mirrors the
+  existing `bind` / `bindProperty` pattern; the live pipeline
+  uses a lazy self-bound `StatementResolver` so
+  `dynamic_view.dart` needs no change.
+
 ## [0.9.0] - 2026-04-19 - closures in source
 
 ### Added
@@ -580,7 +660,8 @@ All notable changes to this project are documented here. Format follows
 - Example app at `example/lib/main.dart` demonstrating the full Phase 1
   feature set.
 
-[Unreleased]: https://github.com/CanArslanDev/rune/compare/v0.9.0...HEAD
+[Unreleased]: https://github.com/CanArslanDev/rune/compare/v0.10.0...HEAD
+[0.10.0]: https://github.com/CanArslanDev/rune/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/CanArslanDev/rune/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/CanArslanDev/rune/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/CanArslanDev/rune/compare/v0.6.0...v0.7.0

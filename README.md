@@ -37,7 +37,7 @@ Deliver UI from a server, a CMS, or a designer tool without shipping a new app b
 
 ```yaml
 dependencies:
-  rune: ^0.9.0
+  rune: ^0.10.0
 ```
 
 The package is pre-publication; use a `git:` or `path:` dependency until a tagged `pub.dev` release lands. `dart pub publish --dry-run` currently reports 0 errors / 0 warnings.
@@ -102,7 +102,7 @@ A runnable version lives in [`example/`](example/).
 
 ## Supported source syntax
 
-Current release: **`v0.9.0`**. First release with closures in source: function expressions `(x) => expr` now parse as first-class values, event callbacks accept closures alongside String event names, and collection methods (`.map`, `.where`, `.fold`, `.reduce`, and friends) take closure arguments. Phase A of the v1.0.0 roadmap.
+Current release: **`v0.10.0`**. Block-body closures (`(x) { ... return ...; }`), local variable declarations with `var` / `final`, and simple assignment. The second piece of Phase B on the v1.0.0 roadmap.
 
 | Category              | Elements                                                                                                                                                                                                     |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
