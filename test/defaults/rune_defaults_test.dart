@@ -77,6 +77,10 @@ void main() {
         'DecoratedBox',
         'Offstage',
         'Semantics',
+        'ConstrainedBox',
+        'LimitedBox',
+        'UnconstrainedBox',
+        'FractionallySizedBox',
       ]) {
         expect(r.contains(name), isTrue, reason: 'missing widget $name');
       }
@@ -107,6 +111,7 @@ void main() {
         'Offset',
         'Transform.translate',
         'Transform.flip',
+        'BoxConstraints',
       ]) {
         expect(r.contains(key), isTrue, reason: 'missing value $key');
       }
@@ -129,8 +134,8 @@ void main() {
       RuneDefaults.registerWidgets(w);
       RuneDefaults.registerValues(v);
       RuneDefaults.registerConstants(c);
-      expect(w.size, greaterThanOrEqualTo(67));
-      expect(v.size, greaterThanOrEqualTo(21));
+      expect(w.size, greaterThanOrEqualTo(71));
+      expect(v.size, greaterThanOrEqualTo(22));
       expect(c.size, greaterThanOrEqualTo(50));
     });
   });

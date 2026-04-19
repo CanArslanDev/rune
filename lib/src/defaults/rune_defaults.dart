@@ -1,5 +1,6 @@
 import 'package:rune/src/builders/values/border_radius_circular_builder.dart';
 import 'package:rune/src/builders/values/bottom_navigation_bar_item_builder.dart';
+import 'package:rune/src/builders/values/box_constraints_builder.dart';
 import 'package:rune/src/builders/values/box_decoration_builder.dart';
 import 'package:rune/src/builders/values/color_builder.dart';
 import 'package:rune/src/builders/values/duration_builder.dart';
@@ -36,6 +37,7 @@ import 'package:rune/src/builders/widgets/clip_oval_builder.dart';
 import 'package:rune/src/builders/widgets/clip_rrect_builder.dart';
 import 'package:rune/src/builders/widgets/colored_box_builder.dart';
 import 'package:rune/src/builders/widgets/column_builder.dart';
+import 'package:rune/src/builders/widgets/constrained_box_builder.dart';
 import 'package:rune/src/builders/widgets/container_builder.dart';
 import 'package:rune/src/builders/widgets/custom_scroll_view_builder.dart';
 import 'package:rune/src/builders/widgets/decorated_box_builder.dart';
@@ -48,6 +50,7 @@ import 'package:rune/src/builders/widgets/expanded_builder.dart';
 import 'package:rune/src/builders/widgets/fitted_box_builder.dart';
 import 'package:rune/src/builders/widgets/flexible_builder.dart';
 import 'package:rune/src/builders/widgets/floating_action_button_builder.dart';
+import 'package:rune/src/builders/widgets/fractionally_sized_box_builder.dart';
 import 'package:rune/src/builders/widgets/gesture_detector_builder.dart';
 import 'package:rune/src/builders/widgets/hero_builder.dart';
 import 'package:rune/src/builders/widgets/icon_builder.dart';
@@ -55,6 +58,7 @@ import 'package:rune/src/builders/widgets/icon_button_builder.dart';
 import 'package:rune/src/builders/widgets/image_asset_builder.dart';
 import 'package:rune/src/builders/widgets/image_network_builder.dart';
 import 'package:rune/src/builders/widgets/ink_well_builder.dart';
+import 'package:rune/src/builders/widgets/limited_box_builder.dart';
 import 'package:rune/src/builders/widgets/linear_progress_indicator_builder.dart';
 import 'package:rune/src/builders/widgets/list_tile_builder.dart';
 import 'package:rune/src/builders/widgets/list_view_builder.dart';
@@ -84,6 +88,7 @@ import 'package:rune/src/builders/widgets/text_builder.dart';
 import 'package:rune/src/builders/widgets/text_button_builder.dart';
 import 'package:rune/src/builders/widgets/text_field_builder.dart';
 import 'package:rune/src/builders/widgets/tooltip_builder.dart';
+import 'package:rune/src/builders/widgets/unconstrained_box_builder.dart';
 import 'package:rune/src/builders/widgets/visibility_builder.dart';
 import 'package:rune/src/builders/widgets/wrap_builder.dart';
 import 'package:rune/src/config.dart';
@@ -203,7 +208,12 @@ abstract final class RuneDefaults {
       ..registerBuilder(const ColoredBoxBuilder())
       ..registerBuilder(const DecoratedBoxBuilder())
       ..registerBuilder(const OffstageBuilder())
-      ..registerBuilder(const SemanticsBuilder());
+      ..registerBuilder(const SemanticsBuilder())
+      // Sizing primitives.
+      ..registerBuilder(const ConstrainedBoxBuilder())
+      ..registerBuilder(const LimitedBoxBuilder())
+      ..registerBuilder(const UnconstrainedBoxBuilder())
+      ..registerBuilder(const FractionallySizedBoxBuilder());
   }
 
   /// Registers every Phase 1–2c value builder into [registry].
@@ -213,6 +223,8 @@ abstract final class RuneDefaults {
       ..registerBuilder(const EdgeInsetsSymmetricBuilder())
       ..registerBuilder(const EdgeInsetsOnlyBuilder())
       ..registerBuilder(const EdgeInsetsFromLTRBBuilder())
+      // Layout constraints.
+      ..registerBuilder(const BoxConstraintsBuilder())
       ..registerBuilder(const ColorBuilder())
       ..registerBuilder(const TextStyleBuilder())
       ..registerBuilder(const BorderRadiusCircularBuilder())

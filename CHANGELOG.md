@@ -7,6 +7,19 @@ All notable changes to this project are documented here. Format follows
 ## [Unreleased]
 
 ### Added
+- **Sizing primitives**. Four constraint-manipulation widgets plus
+  one value builder for the constraints themselves.
+  `ConstrainedBox` applies arbitrary `BoxConstraints` to its child
+  (required `constraints`). `LimitedBox` caps the child only when
+  the parent offers unbounded constraints along that axis; optional
+  `maxWidth` / `maxHeight` default to `double.infinity`.
+  `UnconstrainedBox` discards parent constraints along one axis or
+  both; optional `constrainedAxis`, `alignment`, `clipBehavior`.
+  `FractionallySizedBox` sizes its child to a fraction of the
+  parent; optional nullable `widthFactor` / `heightFactor` plus
+  `alignment`. `BoxConstraints(minWidth, maxWidth, minHeight,
+  maxHeight)` joins the value-builder set; all four edges default
+  to Flutter's own (0 for mins, infinity for maxes).
 - **Transform.translate, Transform.flip, and Offset**. Closes the
   Transform value-builder family started in v0.7.0 (which shipped
   `Transform.scale` and `Transform.rotate` but deferred translate
