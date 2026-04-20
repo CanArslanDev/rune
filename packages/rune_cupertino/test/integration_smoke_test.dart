@@ -94,6 +94,64 @@ void main() {
       ]);
     });
 
+    testWidgets('CupertinoPicker selection fires onSelectedItemChanged',
+        (tester) async {
+      final events = <List<Object?>>[];
+      await tester.pumpWidget(
+        CupertinoApp(
+          home: SizedBox(
+            height: 300,
+            child: RuneView(
+              config: buildConfig(),
+              source: '''
+                CupertinoPicker(
+                  itemExtent: 32,
+                  onSelectedItemChanged: 'picked',
+                  children: [Text('A'), Text('B'), Text('C')],
+                )
+              ''',
+              onEvent: (name, [args]) {
+                if (name == 'picked') events.add(args ?? const <Object?>[]);
+              },
+            ),
+          ),
+        ),
+      );
+      // Drag the wheel upward enough to advance past the current item.
+      await tester.drag(find.byType(CupertinoPicker), const Offset(0, -200));
+      await tester.pumpAndSettle();
+      expect(events, isNotEmpty);
+      expect(events.first.first, isA<int>());
+    });
+
+    testWidgets('CupertinoActionSheet cancel button dispatches an event',
+        (tester) async {
+      final events = <String>[];
+      await tester.pumpWidget(
+        CupertinoApp(
+          home: RuneView(
+            config: buildConfig(),
+            source: '''
+              CupertinoActionSheet(
+                title: Text('Pick one'),
+                cancelButton: CupertinoActionSheetAction(
+                  onPressed: 'cancelled',
+                  child: Text('Cancel'),
+                ),
+              )
+            ''',
+            onEvent: (name, [args]) {
+              events.add(name);
+            },
+          ),
+        ),
+      );
+      expect(find.byType(CupertinoActionSheet), findsOneWidget);
+      await tester.tap(find.text('Cancel'));
+      await tester.pumpAndSettle();
+      expect(events, contains('cancelled'));
+    });
+
     testWidgets('CupertinoThemeData value is applied to CupertinoApp',
         (tester) async {
       await tester.pumpWidget(

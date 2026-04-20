@@ -4,7 +4,7 @@ import 'package:rune_cupertino/rune_cupertino.dart';
 
 void main() {
   group('CupertinoBridge', () {
-    test('registerInto registers all ten widget builders', () {
+    test('registerInto registers all fifteen widget builders', () {
       final config = RuneConfig()..withBridges(const [CupertinoBridge()]);
       const expectedWidgets = <String>{
         'CupertinoApp',
@@ -17,6 +17,11 @@ void main() {
         'CupertinoActivityIndicator',
         'CupertinoAlertDialog',
         'CupertinoDialogAction',
+        'CupertinoPicker',
+        'CupertinoActionSheet',
+        'CupertinoSegmentedControl',
+        'CupertinoTabBar',
+        'CupertinoTabScaffold',
       };
       for (final name in expectedWidgets) {
         expect(
@@ -27,9 +32,17 @@ void main() {
       }
     });
 
-    test('registerInto registers the CupertinoThemeData value builder', () {
+    test('registerInto registers the three value builders', () {
       final config = RuneConfig()..withBridges(const [CupertinoBridge()]);
       expect(config.values.findValue('CupertinoThemeData'), isNotNull);
+      expect(
+        config.values.findValue('CupertinoActionSheetAction'),
+        isNotNull,
+      );
+      expect(
+        config.values.findValue('FixedExtentScrollController'),
+        isNotNull,
+      );
     });
 
     test('registerInto seeds CupertinoIcons constants', () {
