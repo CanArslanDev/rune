@@ -5,6 +5,7 @@
 [![Flutter](https://img.shields.io/badge/flutter-%E2%89%A5%203.22-blue)](https://flutter.dev)
 [![Dart](https://img.shields.io/badge/dart-%E2%89%A5%203.4-blue)](https://dart.dev)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![API docs](https://img.shields.io/badge/api-docs-blue)](https://canarslandev.github.io/rune/)
 
 
 
@@ -41,6 +42,8 @@ dependencies:
 ```
 
 The package is pre-publication; use a `git:` or `path:` dependency until a tagged `pub.dev` release lands. `dart pub publish --dry-run` currently reports 0 errors / 0 warnings.
+
+Upgrading from an earlier release? See [`MIGRATION.md`](MIGRATION.md) for version-to-version notes. API reference documentation is generated on every tag push and hosted at [canarslandev.github.io/rune/](https://canarslandev.github.io/rune/).
 
 ## Quickstart
 
