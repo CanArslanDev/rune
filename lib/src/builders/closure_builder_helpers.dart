@@ -419,6 +419,78 @@ ValueChanged<DraggableDetails>? toDragEndCallback(
   };
 }
 
+/// Validates a resolved `(int, bool) -> void` argument used by
+/// [DataColumn].onSort and [ExpansionPanelList].expansionCallback, and
+/// returns a Dart `void Function(int, bool)` that feeds the two
+/// arguments into the underlying [RuneClosure].
+///
+/// Returns `null` when [source] is `null`, matching Flutter's "no
+/// handler attached" semantics. Failure modes:
+///
+/// 1. [source] is not a [RuneClosure]: [ArgumentException].
+/// 2. Closure declares an arity other than 2: [ArgumentException].
+///
+/// [paramName] customizes the diagnostic text so `onSort` and
+/// `expansionCallback` produce distinct error messages when arity or
+/// runtime type is wrong.
+// ignore: avoid_positional_boolean_parameters
+void Function(int, bool)? toIntBoolCallback(
+  Object? source,
+  String widgetName, {
+  required String paramName,
+}) {
+  if (source == null) return null;
+  final closure = _requireClosure(source, widgetName, paramName, 2);
+  return (i, b) {
+    closure.call(<Object?>[i, b]);
+  };
+}
+
+/// Validates a resolved `(int) -> void` argument used by
+/// [Stepper].onStepTapped and returns a `ValueChanged<int>` that feeds
+/// the tapped step index into the underlying [RuneClosure].
+///
+/// Returns `null` when [source] is `null`. Failure modes:
+///
+/// 1. [source] is not a [RuneClosure]: [ArgumentException].
+/// 2. Closure declares an arity other than 1: [ArgumentException].
+ValueChanged<int>? toIntValueChanged(
+  Object? source,
+  String widgetName, {
+  required String paramName,
+}) {
+  if (source == null) return null;
+  final closure = _requireClosure(source, widgetName, paramName, 1);
+  return (i) {
+    closure.call(<Object?>[i]);
+  };
+}
+
+/// Validates a resolved `headerBuilder` argument for [ExpansionPanel]
+/// and returns an [ExpansionPanelHeaderBuilder] that feeds
+/// `(BuildContext, bool isExpanded)` into the underlying [RuneClosure].
+///
+/// Failure modes mirror [toIndexedBuilder]: null / wrong runtime type /
+/// wrong arity (expected 2). The returned builder raises
+/// [ResolveException] if the closure body yields a non-[Widget].
+ExpansionPanelHeaderBuilder toExpansionPanelHeaderBuilder(
+  Object? source,
+  String widgetName,
+) {
+  final closure = _requireClosure(source, widgetName, 'headerBuilder', 2);
+  return (ctx, isExpanded) {
+    final result = closure.call(<Object?>[ctx, isExpanded]);
+    if (result is! Widget) {
+      throw ResolveException(
+        widgetName,
+        '$widgetName.headerBuilder closure must return a Widget; '
+        'got ${result.runtimeType}',
+      );
+    }
+    return result;
+  };
+}
+
 /// Shared guard: extracts a [RuneClosure] of arity [expectedArity] from
 /// [source], raising [ArgumentException] citing [widgetName] and
 /// [paramName] on any failure (null, wrong runtime type, wrong arity).

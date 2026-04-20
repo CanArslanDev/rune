@@ -51,6 +51,8 @@ void registerPhase2aConstants(ConstantRegistry registry) {
   _registerMaterialTapTargetSize(registry);
   _registerAutovalidateMode(registry);
   _registerDismissDirection(registry);
+  _registerStepperType(registry);
+  _registerStepState(registry);
 }
 
 // Registers every Colors member that is a concrete Color value.
@@ -368,5 +370,21 @@ void _registerAutovalidateMode(ConstantRegistry r) {
 void _registerDismissDirection(ConstantRegistry r) {
   r.registerAll('DismissDirection', <String, Object?>{
     for (final v in DismissDirection.values) v.name: v,
+  });
+}
+
+// Registers StepperType enum values (vertical, horizontal); consumed
+// by Stepper's `type:` argument.
+void _registerStepperType(ConstantRegistry r) {
+  r.registerAll('StepperType', <String, Object?>{
+    for (final v in StepperType.values) v.name: v,
+  });
+}
+
+// Registers StepState enum values (indexed, editing, complete,
+// disabled, error); consumed by Step's `state:` argument.
+void _registerStepState(ConstantRegistry r) {
+  r.registerAll('StepState', <String, Object?>{
+    for (final v in StepState.values) v.name: v,
   });
 }

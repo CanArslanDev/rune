@@ -115,6 +115,10 @@ void main() {
         'Dismissible',
         'InteractiveViewer',
         'ReorderableListView',
+        'DataTable',
+        'ExpansionTile',
+        'ExpansionPanelList',
+        'Stepper',
       ]) {
         expect(r.contains(name), isTrue, reason: 'missing widget $name');
       }
@@ -170,6 +174,11 @@ void main() {
         'CupertinoPageRoute',
         'RouteSettings',
         'ValueKey',
+        'DataColumn',
+        'DataRow',
+        'DataCell',
+        'ExpansionPanel',
+        'Step',
       ]) {
         expect(r.contains(key), isTrue, reason: 'missing value $key');
       }
@@ -192,6 +201,11 @@ void main() {
       expect(r.contains('AutovalidateMode', 'onUserInteraction'), isTrue);
       expect(r.contains('DismissDirection', 'horizontal'), isTrue);
       expect(r.contains('DismissDirection', 'endToStart'), isTrue);
+      expect(r.contains('StepperType', 'vertical'), isTrue);
+      expect(r.contains('StepperType', 'horizontal'), isTrue);
+      expect(r.contains('StepState', 'indexed'), isTrue);
+      expect(r.contains('StepState', 'complete'), isTrue);
+      expect(r.contains('StepState', 'error'), isTrue);
     });
 
     test('individual register* calls combined produce the full set', () {
@@ -201,9 +215,9 @@ void main() {
       RuneDefaults.registerWidgets(w);
       RuneDefaults.registerValues(v);
       RuneDefaults.registerConstants(c);
-      expect(w.size, greaterThanOrEqualTo(105));
-      expect(v.size, greaterThanOrEqualTo(45));
-      expect(c.size, greaterThanOrEqualTo(55));
+      expect(w.size, greaterThanOrEqualTo(109));
+      expect(v.size, greaterThanOrEqualTo(50));
+      expect(c.size, greaterThanOrEqualTo(57));
     });
   });
 }
