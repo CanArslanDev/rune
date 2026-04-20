@@ -58,6 +58,56 @@ const String _canonicalSource = """
   )
 """;
 
+/// Richer source exercising v1.x features: string interpolation,
+/// deep dot-paths, `for`-elements, `if`-elements, operators, and
+/// runtime member access. Represents a realistic "shopping cart"
+/// screen closer to what a real Rune consumer might author post
+/// v1.15+.
+const String _richSource = r'''
+  Padding(
+    padding: EdgeInsets.all(16),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          'Cart (${cart.items.length} items)',
+          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+        ),
+        SizedBox(height: 12),
+        if (cart.items.isEmpty)
+          Center(child: Text('Your cart is empty.')),
+        for (final item in cart.items)
+          ListTile(
+            leading: Icon(Icons.shopping_cart),
+            title: Text(item.name.toUpperCase()),
+            subtitle: Text('\$${item.price}'),
+            trailing: TextButton(
+              onPressed: 'remove',
+              child: Text('Remove'),
+            ),
+          ),
+        Divider(),
+        if (cart.items.isNotEmpty)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Subtotal: \$${cart.subtotal}'),
+              ElevatedButton(
+                onPressed: cart.items.length > 0 ? 'checkout' : 'noop',
+                child: Text('Checkout'),
+              ),
+            ],
+          ),
+        if (cart.items.length >= 3)
+          Padding(
+            padding: EdgeInsets.only(top: 12),
+            child: Text('Free shipping unlocked!'),
+          ),
+      ],
+    ),
+  )
+''';
+
 const int _warmupIterations = 50;
 const int _measuredIterations = 500;
 const int _budgetMicros = 16000; // 16ms at 60fps
@@ -76,63 +126,108 @@ void main() {
     ..bindProperty(propertyResolver);
 
   final config = RuneConfig.defaults();
-  final ctx = RuneContext(
-    widgets: config.widgets,
-    values: config.values,
-    data: RuneDataContext.empty,
-    events: RuneEventDispatcher(),
-    constants: config.constants,
-    extensions: config.extensions,
-    components: ComponentRegistry(),
-    source: _canonicalSource,
-  );
+  final richData = <String, Object?>{
+    'cart': <String, Object?>{
+      'items': <Map<String, Object?>>[
+        <String, Object?>{'id': 1, 'name': 'wireless mouse', 'price': 19},
+        <String, Object?>{'id': 2, 'name': 'mechanical keyboard', 'price': 129},
+        <String, Object?>{'id': 3, 'name': '27" monitor', 'price': 349},
+        <String, Object?>{'id': 4, 'name': 'usb-c hub', 'price': 45},
+      ],
+      'subtotal': 542,
+    },
+  };
 
-  // Warmup — populates cache, JITs.
-  for (var i = 0; i < _warmupIterations; i++) {
-    cache.clear();
-    final ast = parser.parse(_canonicalSource);
-    cache.put(_canonicalSource, ast);
-    expressionResolver.resolve(ast, ctx);
+  RuneContext contextFor(String source, {Map<String, Object?>? data}) {
+    return RuneContext(
+      widgets: config.widgets,
+      values: config.values,
+      data: RuneDataContext(data ?? const <String, Object?>{}),
+      events: RuneEventDispatcher(),
+      constants: config.constants,
+      extensions: config.extensions,
+      components: ComponentRegistry(),
+      source: source,
+    );
   }
 
-  // Measured runs with fresh cache each iteration (cold path).
+  _runCase(
+    label: 'Canonical 30-node tree',
+    source: _canonicalSource,
+    parser: parser,
+    cache: cache,
+    resolver: expressionResolver,
+    context: contextFor(_canonicalSource),
+  );
+
+  print('');
+
+  _runCase(
+    label: 'Rich source (interpolation, for/if elements, dot-paths)',
+    source: _richSource,
+    parser: parser,
+    cache: AstCache(),
+    resolver: expressionResolver,
+    context: contextFor(_richSource, data: richData),
+  );
+}
+
+void _runCase({
+  required String label,
+  required String source,
+  required DartParser parser,
+  required AstCache cache,
+  required ExpressionResolver resolver,
+  required RuneContext context,
+}) {
+  print('=== $label ===');
+
+  for (var i = 0; i < _warmupIterations; i++) {
+    cache.clear();
+    final ast = parser.parse(source);
+    cache.put(source, ast);
+    resolver.resolve(ast, context);
+  }
+
   final coldTimings = <int>[];
   for (var i = 0; i < _measuredIterations; i++) {
     cache.clear();
     final sw = Stopwatch()..start();
-    final ast = parser.parse(_canonicalSource);
-    cache.put(_canonicalSource, ast);
-    expressionResolver.resolve(ast, ctx);
+    final ast = parser.parse(source);
+    cache.put(source, ast);
+    resolver.resolve(ast, context);
     sw.stop();
     coldTimings.add(sw.elapsedMicroseconds);
   }
 
-  // Measured runs with warm cache (hot path).
   cache.clear();
-  final initialAst = parser.parse(_canonicalSource);
-  cache.put(_canonicalSource, initialAst);
+  final initialAst = parser.parse(source);
+  cache.put(source, initialAst);
   final warmTimings = <int>[];
   for (var i = 0; i < _measuredIterations; i++) {
     final sw = Stopwatch()..start();
-    final ast = cache.get(_canonicalSource)!;
-    expressionResolver.resolve(ast, ctx);
+    final ast = cache.get(source)!;
+    resolver.resolve(ast, context);
     sw.stop();
     warmTimings.add(sw.elapsedMicroseconds);
   }
 
-  _reportStats('COLD (cache miss — parse + resolve)', coldTimings);
-  _reportStats('WARM (cache hit — resolve only)', warmTimings);
+  _reportStats('COLD (cache miss, parse + resolve)', coldTimings);
+  _reportStats('WARM (cache hit, resolve only)', warmTimings);
 
-  // Soft budget check against cold p95.
   coldTimings.sort();
   final p95Cold = coldTimings[(coldTimings.length * 95) ~/ 100];
+  final headroom = (_budgetMicros / (p95Cold == 0 ? 1 : p95Cold)).round();
   if (p95Cold > _budgetMicros) {
     print(
-      '\n⚠  COLD p95 ($p95Cold\u00b5s) exceeds 16ms budget '
+      '\u26a0  COLD p95 ($p95Cold\u00b5s) exceeds 16ms budget '
       '($_budgetMicros\u00b5s). Investigate parser/resolver hotspots.',
     );
   } else {
-    print('\n\u2713  COLD p95 ($p95Cold\u00b5s) within 16ms budget.');
+    print(
+      '\u2713  COLD p95 ($p95Cold\u00b5s) within 16ms budget '
+      '(${headroom}x headroom).',
+    );
   }
 }
 

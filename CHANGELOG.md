@@ -6,6 +6,19 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+### Changed
+
+- Benchmark harness (`benchmark/parse_resolve_bench.dart`) gains a
+  second workload. Alongside the historical 30-node canonical tree,
+  a "rich" source now exercises v1.x features (`for` / `if`
+  elements, string interpolation, deep dot-paths, runtime
+  properties and methods, ternary expressions). Both workloads
+  print COLD (cache-miss) and WARM (cache-hit) stats plus the
+  multiplier of headroom against the 16ms 60fps budget.
+- README gains a **Performance** section with the v1.17.1 numbers
+  captured on an Apple-Silicon dev machine (COLD p95 around
+  410us-450us; WARM p95 around 50us-121us; ~36x-39x headroom).
+
 ## [1.17.1] - 2026-04-20 - source formatter polish
 
 ### Changed

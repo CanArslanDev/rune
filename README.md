@@ -291,7 +291,24 @@ flutter test
 flutter analyze
 ```
 
-1701 root tests plus 146 sibling-package tests (7 in `rune_responsive_sizer`, 117 in `rune_cupertino`, 19 in `rune_provider`, 20 in `rune_router`) cover every resolver, every builder, every registry, the architecture invariants, and end-to-end `RuneView` renders. Main is kept green at all times; every commit passes both gates under `very_good_analysis ^5.1.0`, and CI runs the full matrix on every push.
+1738 root tests plus 163 sibling-package tests (7 in `rune_responsive_sizer`, 117 in `rune_cupertino`, 19 in `rune_provider`, 20 in `rune_router`) cover every resolver, every builder, every registry, the architecture invariants, and end-to-end `RuneView` renders. Main is kept green at all times; every commit passes both gates under `very_good_analysis ^5.1.0`, and CI runs the full matrix on every push across Flutter 3.24.0 (pinned floor) and the latest stable channel.
+
+## Performance
+
+Run the bundled microbenchmark to measure parse-plus-resolve latency on your machine:
+
+```bash
+flutter test benchmark/parse_resolve_bench.dart
+```
+
+Numbers captured on an Apple-Silicon development machine, v1.17.1:
+
+| Source                                                                   | COLD p95 (parse + resolve) | WARM p95 (resolve only) | Headroom vs. 16ms 60fps budget |
+| ------------------------------------------------------------------------ | -------------------------- | ----------------------- | ------------------------------ |
+| Canonical 30-node tree                                                   | 450us                      | 50us                    | ~36x                           |
+| Rich source (interpolation, `for` / `if` elements, deep dot-paths)       | 410us                      | 121us                   | ~39x                           |
+
+COLD is a cache-miss: fresh parse plus full resolver walk every iteration. WARM is a cache-hit: `AstCache` returns the pre-parsed tree so only the resolver runs. Both paths comfortably clear a 60fps budget at realistic source sizes. Your numbers will differ by device class; rerun locally if you need representative figures for a target hardware tier.
 
 ## Example
 
