@@ -113,5 +113,21 @@ void main() {
       expect(tile.enabled, isTrue);
       expect(tile.selected, isFalse);
     });
+
+    testWidgets('key argument threads a ValueKey through to the tile',
+        (tester) async {
+      final built = b.build(
+        const ResolvedArguments(
+          named: {
+            'key': ValueKey<Object>('row-7'),
+            'title': Text('Keyed'),
+          },
+        ),
+        testContext(),
+      );
+      await tester.pumpWidget(_harness(built));
+      final tile = tester.widget<ListTile>(find.byType(ListTile));
+      expect(tile.key, const ValueKey<Object>('row-7'));
+    });
   });
 }

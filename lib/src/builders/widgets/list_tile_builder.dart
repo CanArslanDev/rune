@@ -10,6 +10,11 @@ import 'package:rune/src/core/rune_context.dart';
 /// [RuneContext.events] with empty args. Boolean flags (`dense`,
 /// `enabled`, `selected`) plumb through directly; leaving them out
 /// gives Flutter's own defaults.
+///
+/// An optional `key:` argument threads a [Key] (typically a
+/// `ValueKey`) through to the rendered tile so it can serve as a child
+/// of `ReorderableListView`, whose Flutter contract requires every
+/// child to carry a non-null key.
 final class ListTileBuilder implements RuneWidgetBuilder {
   /// Const constructor — the builder is stateless.
   const ListTileBuilder();
@@ -20,6 +25,7 @@ final class ListTileBuilder implements RuneWidgetBuilder {
   @override
   Widget build(ResolvedArguments args, RuneContext ctx) {
     return ListTile(
+      key: args.get<Key>('key'),
       title: args.get<Widget>('title'),
       subtitle: args.get<Widget>('subtitle'),
       leading: args.get<Widget>('leading'),

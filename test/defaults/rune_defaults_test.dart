@@ -109,6 +109,12 @@ void main() {
         'PopupMenuItem',
         'PopupMenuDivider',
         'RuneCompose',
+        'Draggable',
+        'LongPressDraggable',
+        'DragTarget',
+        'Dismissible',
+        'InteractiveViewer',
+        'ReorderableListView',
       ]) {
         expect(r.contains(name), isTrue, reason: 'missing widget $name');
       }
@@ -163,6 +169,7 @@ void main() {
         'MaterialPageRoute',
         'CupertinoPageRoute',
         'RouteSettings',
+        'ValueKey',
       ]) {
         expect(r.contains(key), isTrue, reason: 'missing value $key');
       }
@@ -183,6 +190,8 @@ void main() {
       expect(r.contains('MaterialTapTargetSize', 'padded'), isTrue);
       expect(r.contains('AutovalidateMode', 'always'), isTrue);
       expect(r.contains('AutovalidateMode', 'onUserInteraction'), isTrue);
+      expect(r.contains('DismissDirection', 'horizontal'), isTrue);
+      expect(r.contains('DismissDirection', 'endToStart'), isTrue);
     });
 
     test('individual register* calls combined produce the full set', () {
@@ -192,9 +201,9 @@ void main() {
       RuneDefaults.registerWidgets(w);
       RuneDefaults.registerValues(v);
       RuneDefaults.registerConstants(c);
-      expect(w.size, greaterThanOrEqualTo(99));
-      expect(v.size, greaterThanOrEqualTo(44));
-      expect(c.size, greaterThanOrEqualTo(54));
+      expect(w.size, greaterThanOrEqualTo(105));
+      expect(v.size, greaterThanOrEqualTo(45));
+      expect(c.size, greaterThanOrEqualTo(55));
     });
   });
 }

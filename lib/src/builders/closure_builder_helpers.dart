@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:rune/src/binding/rune_event_dispatcher.dart';
 import 'package:rune/src/core/exceptions.dart';
 import 'package:rune/src/resolver/rune_closure.dart';
 
@@ -264,6 +265,157 @@ ValueChanged<String?>? toStringValueChanged(
   final closure = _requireClosure(source, widgetName, paramName, 1);
   return (value) {
     closure.call(<Object?>[value]);
+  };
+}
+
+/// Validates a resolved `builder` argument for [DragTarget] and returns
+/// a [DragTargetBuilder] of `Object?` that feeds
+/// `(BuildContext, List<Object?> candidateData, List<dynamic> rejectedData)`
+/// into the underlying [RuneClosure].
+///
+/// Failure modes mirror [toIndexedBuilder]: null / wrong runtime type /
+/// wrong arity (expected 3). The returned builder raises
+/// [ResolveException] if the closure body yields a non-[Widget].
+DragTargetBuilder<Object?> toDragTargetBuilder(
+  Object? source,
+  String widgetName,
+) {
+  final closure = _requireClosure(source, widgetName, 'builder', 3);
+  return (ctx, candidateData, rejectedData) {
+    final result = closure.call(<Object?>[ctx, candidateData, rejectedData]);
+    if (result is! Widget) {
+      throw ResolveException(
+        widgetName,
+        '$widgetName.builder closure must return a Widget; '
+        'got ${result.runtimeType}',
+      );
+    }
+    return result;
+  };
+}
+
+/// Validates a resolved `onDismissed` argument for [Dismissible] and
+/// returns a `ValueChanged<DismissDirection>` that feeds the direction
+/// into the underlying [RuneClosure].
+///
+/// Returns `null` when [source] is `null`, matching Flutter's "no
+/// handler attached" semantics. Failure modes:
+///
+/// 1. [source] is not a [RuneClosure]: [ArgumentException].
+/// 2. Closure declares an arity other than 1: [ArgumentException].
+ValueChanged<DismissDirection>? toDismissibleCallback(
+  Object? source,
+  String widgetName,
+) {
+  if (source == null) return null;
+  final closure = _requireClosure(source, widgetName, 'onDismissed', 1);
+  return (direction) {
+    closure.call(<Object?>[direction]);
+  };
+}
+
+/// Validates a resolved `onReorder` argument for [ReorderableListView]
+/// and returns a [ReorderCallback] `(int oldIndex, int newIndex) -> void`
+/// that feeds the two indices into the underlying [RuneClosure].
+///
+/// Failure modes mirror [toIndexedBuilder]: null / wrong runtime type /
+/// wrong arity (expected 2).
+ReorderCallback toReorderCallback(Object? source, String widgetName) {
+  final closure = _requireClosure(source, widgetName, 'onReorder', 2);
+  return (oldIndex, newIndex) {
+    closure.call(<Object?>[oldIndex, newIndex]);
+  };
+}
+
+/// Validates a resolved `onAcceptWithDetails` argument for [DragTarget]
+/// and returns a [DragTargetAcceptWithDetails] of `Object` that feeds
+/// the single [DragTargetDetails] argument into the underlying
+/// [RuneClosure], or dispatches a named event through [events] when
+/// [source] is a `String`.
+///
+/// Returns `null` when [source] is `null`. Failure modes:
+///
+/// 1. [source] is neither a [String] nor a [RuneClosure]:
+///    [ArgumentException].
+/// 2. Closure declares an arity other than 1: [ArgumentException].
+DragTargetAcceptWithDetails<Object>? toDragAcceptCallback(
+  Object? source,
+  String widgetName,
+  RuneEventDispatcher events,
+) {
+  if (source == null) return null;
+  if (source is String) {
+    final eventName = source;
+    return (details) => events.dispatch(eventName, <Object?>[details]);
+  }
+  final closure = _requireClosure(
+    source,
+    widgetName,
+    'onAcceptWithDetails',
+    1,
+  );
+  return (details) {
+    closure.call(<Object?>[details]);
+  };
+}
+
+/// Validates a resolved `onWillAcceptWithDetails` argument for
+/// [DragTarget] and returns a [DragTargetWillAcceptWithDetails] of
+/// `Object` that feeds the single [DragTargetDetails] argument into the
+/// underlying [RuneClosure], or dispatches a named event and returns
+/// `true` when [source] is a `String`.
+///
+/// Returns `null` when [source] is `null`. Failure modes mirror
+/// [toDragAcceptCallback]; in addition, the closure body must evaluate
+/// to `bool` at invocation time or a [ResolveException] is raised.
+DragTargetWillAcceptWithDetails<Object>? toDragWillAcceptCallback(
+  Object? source,
+  String widgetName,
+  RuneEventDispatcher events,
+) {
+  if (source == null) return null;
+  if (source is String) {
+    final eventName = source;
+    return (details) {
+      events.dispatch(eventName, <Object?>[details]);
+      return true;
+    };
+  }
+  final closure = _requireClosure(
+    source,
+    widgetName,
+    'onWillAcceptWithDetails',
+    1,
+  );
+  return (details) {
+    final result = closure.call(<Object?>[details]);
+    if (result is! bool) {
+      throw ResolveException(
+        widgetName,
+        '$widgetName.onWillAcceptWithDetails closure must return bool; '
+        'got ${result.runtimeType}',
+      );
+    }
+    return result;
+  };
+}
+
+/// Validates a resolved `onDragEnd` argument for [Draggable] and
+/// [LongPressDraggable] and returns a `ValueChanged<DraggableDetails>`
+/// that feeds the completion details into the underlying [RuneClosure].
+///
+/// Returns `null` when [source] is `null`. Failure modes:
+///
+/// 1. [source] is not a [RuneClosure]: [ArgumentException].
+/// 2. Closure declares an arity other than 1: [ArgumentException].
+ValueChanged<DraggableDetails>? toDragEndCallback(
+  Object? source,
+  String widgetName,
+) {
+  if (source == null) return null;
+  final closure = _requireClosure(source, widgetName, 'onDragEnd', 1);
+  return (details) {
+    closure.call(<Object?>[details]);
   };
 }
 

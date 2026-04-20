@@ -50,6 +50,7 @@ void registerPhase2aConstants(ConstantRegistry registry) {
   _registerBrightness(registry);
   _registerMaterialTapTargetSize(registry);
   _registerAutovalidateMode(registry);
+  _registerDismissDirection(registry);
 }
 
 // Registers every Colors member that is a concrete Color value.
@@ -358,5 +359,14 @@ void _registerMaterialTapTargetSize(ConstantRegistry r) {
 void _registerAutovalidateMode(ConstantRegistry r) {
   r.registerAll('AutovalidateMode', <String, Object?>{
     for (final v in AutovalidateMode.values) v.name: v,
+  });
+}
+
+// Registers DismissDirection enum values (horizontal, vertical,
+// endToStart, startToEnd, up, down, none); consumed by Dismissible's
+// `direction:` argument.
+void _registerDismissDirection(ConstantRegistry r) {
+  r.registerAll('DismissDirection', <String, Object?>{
+    for (final v in DismissDirection.values) v.name: v,
   });
 }

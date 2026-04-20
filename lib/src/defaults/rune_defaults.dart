@@ -41,6 +41,7 @@ import 'package:rune/src/builders/values/transform_flip_builder.dart';
 import 'package:rune/src/builders/values/transform_rotate_builder.dart';
 import 'package:rune/src/builders/values/transform_scale_builder.dart';
 import 'package:rune/src/builders/values/transform_translate_builder.dart';
+import 'package:rune/src/builders/values/value_key_builder.dart';
 import 'package:rune/src/builders/widgets/alert_dialog_builder.dart';
 import 'package:rune/src/builders/widgets/animated_container_builder.dart';
 import 'package:rune/src/builders/widgets/animated_cross_fade_builder.dart';
@@ -68,7 +69,10 @@ import 'package:rune/src/builders/widgets/container_builder.dart';
 import 'package:rune/src/builders/widgets/custom_scroll_view_builder.dart';
 import 'package:rune/src/builders/widgets/decorated_box_builder.dart';
 import 'package:rune/src/builders/widgets/dialog_builder.dart';
+import 'package:rune/src/builders/widgets/dismissible_builder.dart';
 import 'package:rune/src/builders/widgets/divider_builder.dart';
+import 'package:rune/src/builders/widgets/drag_target_builder.dart';
+import 'package:rune/src/builders/widgets/draggable_builder.dart';
 import 'package:rune/src/builders/widgets/drawer_builder.dart';
 import 'package:rune/src/builders/widgets/dropdown_button_builder.dart';
 import 'package:rune/src/builders/widgets/dropdown_menu_item_builder.dart';
@@ -91,11 +95,13 @@ import 'package:rune/src/builders/widgets/icon_button_builder.dart';
 import 'package:rune/src/builders/widgets/image_asset_builder.dart';
 import 'package:rune/src/builders/widgets/image_network_builder.dart';
 import 'package:rune/src/builders/widgets/ink_well_builder.dart';
+import 'package:rune/src/builders/widgets/interactive_viewer_builder.dart';
 import 'package:rune/src/builders/widgets/layout_builder_builder.dart';
 import 'package:rune/src/builders/widgets/limited_box_builder.dart';
 import 'package:rune/src/builders/widgets/linear_progress_indicator_builder.dart';
 import 'package:rune/src/builders/widgets/list_tile_builder.dart';
 import 'package:rune/src/builders/widgets/list_view_builder.dart';
+import 'package:rune/src/builders/widgets/long_press_draggable_builder.dart';
 import 'package:rune/src/builders/widgets/navigation_bar_builder.dart';
 import 'package:rune/src/builders/widgets/navigation_rail_builder.dart';
 import 'package:rune/src/builders/widgets/offstage_builder.dart';
@@ -109,6 +115,7 @@ import 'package:rune/src/builders/widgets/popup_menu_item_builder.dart';
 import 'package:rune/src/builders/widgets/positioned_builder.dart';
 import 'package:rune/src/builders/widgets/radio_builder.dart';
 import 'package:rune/src/builders/widgets/radio_list_tile_builder.dart';
+import 'package:rune/src/builders/widgets/reorderable_list_view_builder.dart';
 import 'package:rune/src/builders/widgets/row_builder.dart';
 import 'package:rune/src/builders/widgets/rune_compose_builder.dart';
 import 'package:rune/src/builders/widgets/safe_area_builder.dart';
@@ -227,6 +234,13 @@ abstract final class RuneDefaults {
       // Gesture handlers.
       ..registerBuilder(const GestureDetectorBuilder())
       ..registerBuilder(const InkWellBuilder())
+      // Gesture primitives (v1.7.0).
+      ..registerBuilder(const DraggableBuilder())
+      ..registerBuilder(const LongPressDraggableBuilder())
+      ..registerBuilder(const DragTargetBuilder())
+      ..registerBuilder(const DismissibleBuilder())
+      ..registerBuilder(const InteractiveViewerBuilder())
+      ..registerBuilder(const ReorderableListViewBuilder())
       // Layout + scroll helpers.
       ..registerBuilder(const SingleChildScrollViewBuilder())
       ..registerBuilder(const WrapBuilder())
@@ -362,7 +376,9 @@ abstract final class RuneDefaults {
       ..registerBuilder(const ButtonSegmentBuilder())
       ..registerBuilder(const DateTimeBuilder())
       ..registerBuilder(const TimeOfDayBuilder())
-      ..registerBuilder(const SearchAnchorBarBuilder());
+      ..registerBuilder(const SearchAnchorBarBuilder())
+      // Gesture primitives (v1.7.0).
+      ..registerBuilder(const ValueKeyBuilder());
   }
 
   /// Seeds [registry] with Phase 2a constants (Colors, enums,
