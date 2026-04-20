@@ -45,13 +45,29 @@ app.*.symbols
 app.*.map.json
 
 # Flutter platform directories (sibling packages generate these
-# from `flutter create --platforms=...`; this package only needs
-# web/, which we DO publish).
+# from `flutter create --platforms=...`; this package only uses
+# web/ internally to build the DevTools UI).
 /macos/
 /windows/
 /linux/
 /android/
 /ios/
+
+# Maintainer-only files: consumers never run these, and they add
+# bytes to every download. Dropping them from the pub.dev archive.
+#
+# - test/ is the wire-format parser unit test; CI runs it on the
+#   main branch, consumers do not.
+# - tool/build_bundle.sh is for rebuilding the compiled bundle;
+#   consumers use the already-compiled extension/devtools/build/
+#   output directly, so they never call this script.
+# - web/ is the source scaffold (index.html, manifest, icons)
+#   that `flutter build web` turns INTO extension/devtools/build/.
+#   Consumers get the compiled bundle; the scaffold is useless to
+#   them unless they fork the extension.
+/test/
+/tool/
+/web/
 
 # Notably absent: /extension/devtools/build/
 # The compiled Flutter web bundle lives there. pub.dev needs it;

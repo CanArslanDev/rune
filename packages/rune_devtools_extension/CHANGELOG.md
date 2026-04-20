@@ -22,7 +22,12 @@ All notable changes to this package are documented here. Format follows
   `extension/devtools/build/`. The compiled bundle stays out of
   git (it is ~30 MB of derived artefacts) but lands inside the
   pub.dev archive on each release so Flutter DevTools can render
-  the tab without any consumer-side build step.
+  the tab without any consumer-side build step. The same file
+  also excludes `test/`, `tool/`, and `web/` from the published
+  archive: unit tests, the bundle-rebuild script, and the
+  Flutter-web source scaffold are maintainer-only artefacts that
+  add no value to consumers and would just inflate every
+  download.
 
 ## [0.1.0-scaffold] - 2026-04-20
 
