@@ -6,6 +6,34 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [1.13.0] - 2026-04-20 - reactive state bridge (rune_provider)
+
+### Added
+
+- **rune_provider sibling bridge package (v0.1.0).** Second
+  third-party-style bridge; registers a curated trio of `package:provider`
+  widgets on a `RuneConfig` through `ProviderBridge`:
+  `ChangeNotifierProvider`, `Consumer`, and `Selector`. Each widget
+  works with a `ChangeNotifier` scoped to a single provider; source
+  interacts with the notifier's state through a `Map`-shaped
+  `RuneReactiveNotifier.state` getter so dot-access (`state.count`)
+  resolves correctly through Rune's existing property resolver.
+- **`RuneReactiveNotifier` interface** in the new package. Implement
+  alongside `ChangeNotifier` and override `Map<String, Object?> get
+  state` to expose typed fields to Rune source without touching
+  Rune's built-in member whitelist.
+
+### Notes
+
+- Main `rune` package (1.12.0 to 1.13.0) is a pure ecosystem bump
+  to match the release cadence. No widget / value / constant /
+  resolver additions on the main package in this release. Feature
+  substance lives entirely in `packages/rune_provider/`.
+- rune_provider ships at its own version track (`0.1.0`), mirroring
+  `rune_cupertino`. `rune_provider` tests: 19 passing. Package
+  analyzes clean under `very_good_analysis ^5.1.0`.
+- `rune_router` stays deferred; the next bridge to ship.
+
 ## [1.12.0] - 2026-04-20 - v1.x deferred cleanups
 
 ### Added

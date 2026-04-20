@@ -1,24 +1,26 @@
-name: rune
-description: Converts Dart widget code strings into real Flutter widgets at runtime via AST interpretation.
-version: 1.13.0
+name: rune_provider
+description: Provider (provider package) bridge for the rune package; registers ChangeNotifierProvider, Consumer, and Selector widgets on a RuneConfig for reactive state in source strings.
+version: 0.1.0
 repository: https://github.com/CanArslanDev/rune
 homepage: https://github.com/CanArslanDev/rune
 issue_tracker: https://github.com/CanArslanDev/rune/issues
 topics:
-  - ui
-  - runtime
-  - server-driven-ui
-  - dynamic
-  - analyzer
+  - rune
+  - bridge
+  - provider
+  - state-management
+  - reactive
 
 environment:
   sdk: ^3.4.0
   flutter: ">=3.22.0"
 
 dependencies:
-  analyzer: ^6.4.1
   flutter:
     sdk: flutter
+  provider: ^6.1.2
+  rune:
+    path: ../..
 
 dev_dependencies:
   flutter_test:

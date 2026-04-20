@@ -37,7 +37,7 @@ Deliver UI from a server, a CMS, or a designer tool without shipping a new app b
 
 ```yaml
 dependencies:
-  rune: ^1.12.0
+  rune: ^1.13.0
 ```
 
 The package is pre-publication; use a `git:` or `path:` dependency until a tagged `pub.dev` release lands. `dart pub publish --dry-run` currently reports 0 errors / 0 warnings.
@@ -102,7 +102,7 @@ A runnable version lives in [`example/`](example/).
 
 ## Supported source syntax
 
-Current release: **v1.12.0**. Cleanup batch covering deferred items from the v1.x series: `ListenableBuilder`, `CheckedPopupMenuItem`, `BottomSheet`, `PaginatedDataTable` + `RuneDataTableSource`; `PageRouteBuilder`, `SnackBarAction` (with a new `SnackBar.action:` slot), `RelativeRect.fromLTRB`, and `FilledButton.tonal` value builders; `Navigator.popUntil` and `showMenu` imperative bridges; `AnimationController.drive` / `Tween.animate` / `Tween.chain` runtime method arms; and a `Route` / `RouteSettings` property whitelist so `popUntil` predicates can read `route.settings.name`. Main-package tests: 1701 (+82).
+Current release: **v1.13.0**. Second sibling bridge: `rune_provider` brings `ChangeNotifierProvider`, `Consumer`, and `Selector` from [`package:provider`](https://pub.dev/packages/provider) into Rune source. Notifiers expose per-rebuild state through a `RuneReactiveNotifier.state` `Map<String, Object?>` getter so dot-access inside closures resolves cleanly through Rune's property resolver. Apply with `RuneConfig.defaults().withBridges([const ProviderBridge()])`. Main-package surface unchanged; feature substance lives in `packages/rune_provider/`.
 
 | Category              | Elements                                                                                                                                                                                                     |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -125,7 +125,7 @@ Current release: **v1.12.0**. Cleanup batch covering deferred items from the v1.
 | Imperative bridges    | `showDialog(builder: ...)`, `showModalBottomSheet(builder: ...)`, `showSnackBar(snackBar)`, `Navigator.pop(result?)`, `showDatePicker(initialDate, firstDate, lastDate)`, `showTimePicker(initialTime)`, `Navigator.push(route)`, `Navigator.pushReplacement(route)`, `Navigator.pushNamed(name, arguments?)`, `Navigator.canPop()`, `Navigator.popUntil(predicate)`, `showMenu(position, items, ...)`. All route through `RuneContext.flutterContext`. |
 | Context accessors     | `Theme.of(context)`, `MediaQuery.of(context)`. Return raw Flutter values with whitelisted property access. |
 | Developer utilities | `formatRuneSource(source)` canonical formatter; `SourceSpan.toContextualPointer(source, contextLines)` widened error pointer; "did you mean X?" suggestions on missing builder / method / identifier diagnostics. |
-| Sibling bridges | Cupertino widgets via `rune_cupertino` (see Bridge packages section below); `.w` / `.h` / `.sp` / `.dm` responsive extensions via `rune_responsive_sizer`. |
+| Sibling bridges | Cupertino widgets via `rune_cupertino`; `ChangeNotifierProvider` / `Consumer` / `Selector` via `rune_provider`; `.w` / `.h` / `.sp` / `.dm` responsive extensions via `rune_responsive_sizer` (see Bridge packages section below). |
 
 Anything outside this surface raises a `RuneException` (parse, resolve, or unregistered-builder variant). The plans in `docs/superpowers/plans/` enumerate the phases that built this set.
 
@@ -305,6 +305,7 @@ and README.
 |---------|-------------|
 | [`rune_responsive_sizer`](packages/rune_responsive_sizer) | Percent-of-screen extensions: `.w`, `.h`, `.sp`, `.dm`. |
 | [`rune_cupertino`](packages/rune_cupertino) | Cupertino widget family (CupertinoApp through CupertinoAlertDialog), CupertinoThemeData, CupertinoIcons constants. |
+| [`rune_provider`](packages/rune_provider) | Reactive state from [`package:provider`](https://pub.dev/packages/provider): `ChangeNotifierProvider`, `Consumer`, `Selector`. Notifiers expose `Map`-shaped state via a `RuneReactiveNotifier.state` getter. |
 
 Apply any bridge with `RuneConfig.defaults().withBridges([...])`.
 The RuneBridge contract is one method: `void registerInto(RuneConfig config)`.
