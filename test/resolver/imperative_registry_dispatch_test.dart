@@ -18,7 +18,7 @@ void main() {
       await tester.pumpWidget(
         _wrap(
           RuneView(
-            source: r'''
+            source: '''
               ElevatedButton(
                 onPressed: () => logSomething(message: 'hello'),
                 child: Text('go'),
@@ -48,7 +48,7 @@ void main() {
       await tester.pumpWidget(
         _wrap(
           RuneView(
-            source: r'''
+            source: '''
               ElevatedButton(
                 onPressed: () => Router.go('/settings'),
                 child: Text('go'),
@@ -78,7 +78,7 @@ void main() {
       await tester.pumpWidget(
         _wrap(
           RuneView(
-            source: r'''
+            source: '''
               ElevatedButton(
                 onPressed: () => showSnackBar(SnackBar(content: Text('ignored'))),
                 child: Text('go'),
@@ -107,7 +107,7 @@ void main() {
             '/': (_) => Scaffold(
                   body: RuneView(
                     config: config,
-                    source: r'''
+                    source: '''
                       ElevatedButton(
                         onPressed: () => Navigator.pushNamed('/b'),
                         child: Text('go'),
