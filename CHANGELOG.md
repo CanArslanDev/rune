@@ -19,6 +19,21 @@ All notable changes to this project are documented here. Format follows
   `analyze + test` block covering the new package.
 - Root README gains a row for `rune_devtools_extension` in the
   Bridge-packages table.
+- **Monorepo publish pipeline.** `tool/publish_all.sh` now encodes
+  the release order across the six packages. The script builds
+  the DevTools extension bundle, publishes
+  `rune_devtools_extension` while the bundle is on disk, then
+  removes the bundle before publishing the other siblings and
+  finally the main `rune` package. Working around a
+  `dart pub publish` quirk: the tool walks the full subtree of
+  the invoked directory and does not understand nested packages;
+  a leftover 30 MB compiled bundle in
+  `packages/rune_devtools_extension/extension/devtools/build/`
+  would otherwise sweep into the main `rune` archive. With the
+  script the main archive is ~374 KB compressed, the sibling
+  archives range from 4-20 KB each, and `rune_devtools_extension`
+  (which MUST ship the bundle for DevTools to render the tab)
+  stays at 11 MB.
 - **Flutter-web scaffold + build pipeline for
   `rune_devtools_extension`.** The package gains a `web/` source
   folder (tracked in git), a `tool/build_bundle.sh` convenience
