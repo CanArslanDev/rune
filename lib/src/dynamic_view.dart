@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:rune/src/binding/rune_data_context.dart';
 import 'package:rune/src/binding/rune_event_dispatcher.dart';
+import 'package:rune/src/binding/rune_inspector.dart';
 import 'package:rune/src/config.dart';
 import 'package:rune/src/core/exceptions.dart';
 import 'package:rune/src/core/rune_context.dart';
@@ -61,6 +62,8 @@ class _RuneViewState extends State<RuneView> {
   late final AstCache _cache;
   late final ExpressionResolver _expr;
   late final InvocationResolver _invocation;
+  RuneInspectorHandle? _inspectorHandle;
+  Object? _lastError;
 
   @override
   void initState() {
@@ -72,6 +75,31 @@ class _RuneViewState extends State<RuneView> {
     _expr.bind(_invocation);
     final property = PropertyResolver(_expr);
     _expr.bindProperty(property);
+    // Register for DevTools introspection. The inspector lazily wires
+    // the `ext.rune.inspect` VM service extension on the first view;
+    // release builds short-circuit to a no-op inside the inspector.
+    _inspectorHandle = RuneInspector.instance.registerView(_inspectorSnapshot);
+  }
+
+  @override
+  void dispose() {
+    final handle = _inspectorHandle;
+    if (handle != null) {
+      RuneInspector.instance.unregisterView(handle);
+    }
+    super.dispose();
+  }
+
+  /// Builds a JSON-friendly snapshot of this view for the DevTools
+  /// extension. Called on demand by the `ext.rune.inspect` VM service
+  /// handler; never on the render path.
+  Map<String, Object?> _inspectorSnapshot() {
+    return <String, Object?>{
+      'source': widget.source,
+      'data': widget.data ?? const <String, Object?>{},
+      'cacheSize': _cache.size,
+      'lastError': _lastError?.toString(),
+    };
   }
 
   @override
@@ -88,6 +116,7 @@ class _RuneViewState extends State<RuneView> {
       }
       return result;
     } catch (error, stack) {
+      _lastError = error;
       widget.onError?.call(error, stack);
       return widget.fallback ?? _DefaultErrorView(error: error);
     }

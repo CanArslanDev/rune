@@ -38,7 +38,7 @@ Deliver UI from a server, a CMS, or a designer tool without shipping a new app b
 
 ```yaml
 dependencies:
-  rune: ^1.17.1
+  rune: ^1.18.0
 ```
 
 The package is pre-publication; use a `git:` or `path:` dependency until a tagged `pub.dev` release lands. `dart pub publish --dry-run` currently reports 0 errors / 0 warnings.
@@ -105,7 +105,7 @@ A runnable version lives in [`example/`](example/).
 
 ## Supported source syntax
 
-Current release: **v1.17.0**. User-registered runtime members. `RuneConfig.members` lets hosts and sibling bridges register property accessors and method invokers for arbitrary Dart types without reflection. Rune source can now write `counter.count` and `counter.increment()` directly against a live `CounterNotifier` in the data context, as long as the host registered those members with `config.members.registerProperty<CounterNotifier>(...)` / `.registerMethod<CounterNotifier>(...)`. Built-in stock-type members (`String.length`, `List.contains`, etc.) stay authoritative; custom classes unlock cleanly. Paired with v1.16.0's `ImperativeRegistry`, the main package now exposes every extension point a sibling bridge needs.
+Current release: **v1.18.0**. DevTools inspection (Phase 1). `RuneInspector` tracks every live `RuneView` and registers the `ext.rune.inspect` VM service extension the first time a view mounts. DevTools or any VM-service client can call the extension and receive a JSON payload with every view's source string, data context, parse-cache size, and last error (if the view is in a fallback state). Ships the host-side half; the companion `rune_devtools_extension` package and Flutter-web UI land in Phase 2-3. Release builds pay zero cost because `dart:developer.registerExtension` compiles out. Previous: **v1.17.0** user-registered runtime members. `RuneConfig.members` lets hosts and sibling bridges register property accessors and method invokers for arbitrary Dart types without reflection. Rune source can now write `counter.count` and `counter.increment()` directly against a live `CounterNotifier` in the data context, as long as the host registered those members with `config.members.registerProperty<CounterNotifier>(...)` / `.registerMethod<CounterNotifier>(...)`. Built-in stock-type members (`String.length`, `List.contains`, etc.) stay authoritative; custom classes unlock cleanly. Paired with v1.16.0's `ImperativeRegistry`, the main package now exposes every extension point a sibling bridge needs.
 
 | Category              | Elements                                                                                                                                                                                                     |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |

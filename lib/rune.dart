@@ -6,6 +6,8 @@ library rune;
 
 export 'src/binding/rune_data_context.dart' show RuneDataContext;
 export 'src/binding/rune_event_dispatcher.dart' show RuneEventDispatcher;
+export 'src/binding/rune_inspector.dart'
+    show RuneInspectionSnapshotBuilder, RuneInspector, RuneInspectorHandle;
 export 'src/bridges/rune_bridge.dart' show RuneBridge;
 export 'src/builders/builder.dart'
     show RuneBuilder, RuneValueBuilder, RuneWidgetBuilder;

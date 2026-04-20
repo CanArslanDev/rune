@@ -6,6 +6,76 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [1.18.0] - 2026-04-20 - DevTools inspection (Phase 1)
+
+### Added
+
+- **`RuneInspector` singleton** in `lib/src/binding/rune_inspector.dart`
+  that tracks live `RuneView` instances for DevTools introspection.
+  Every `_RuneViewState.initState` calls
+  `RuneInspector.instance.registerView(snapshotBuilder)` and stores
+  the returned handle; `dispose` unregisters. Snapshot builders are
+  invoked on demand so DevTools always sees the freshest state.
+- **`ext.rune.inspect` VM service extension.** The inspector lazily
+  registers this endpoint via `dart:developer.registerExtension` on
+  the first view mount. DevTools (or any VM-service client) calls
+  it and receives:
+
+  ```json
+  {
+    "views": [
+      {
+        "id": 0,
+        "source": "Text('hi')",
+        "data": {"count": 7},
+        "cacheSize": 1,
+        "lastError": null
+      }
+    ]
+  }
+  ```
+
+  One entry per live view; numeric `id`s match the
+  `RuneInspectorHandle.id` the host received. Release builds
+  short-circuit to a no-op because `dart:developer.registerExtension`
+  is compiled out.
+
+- **Robust JSON coercion.** Snapshot values pass through
+  `_serialiseForWire` which recursively maps `Map` / `Iterable`
+  branches and coerces non-JSON-native leaves (`RegExp`,
+  `DateTime`, arbitrary objects) to their `toString()` form so the
+  wire payload always round-trips through `jsonEncode`.
+
+- **Error isolation.** A misbehaving snapshot builder that throws
+  is caught and its error is surfaced on the affected view's entry
+  as `snapshotError: "<exception>.toString()"`; other views in the
+  same payload stay intact.
+
+- **Barrel exports** `RuneInspector`, `RuneInspectorHandle`, and
+  `RuneInspectionSnapshotBuilder` from
+  `package:rune/rune.dart` so a companion DevTools extension
+  package can drive the registry without reaching into `src/`.
+
+### Notes
+
+- Phase 1 of the `rune_devtools_extension` work per
+  `docs/superpowers/plans/2026-04-20-rune-v1.16-devtools-extension-plan.md`.
+  Phase 2 ships the sibling package scaffold; Phase 3 ships the
+  Flutter web UI that consumes this payload.
+- `_RuneViewState` gained two fields (`_inspectorHandle`,
+  `_lastError`) and two lifecycle hooks (inspector registration in
+  `initState`, deregistration in `dispose`; `lastError` captured
+  in the render `catch` block). The runtime render path pays a
+  single Map allocation per inspection call; zero cost per render.
+- 13 new tests: 8 unit tests on `RuneInspector` covering
+  register/unregister, duplicate-unregister tolerance, snapshot
+  freshness, error isolation, JSON round-tripping, non-native-leaf
+  coercion; plus 5 integration smokes wiring through a real
+  `RuneView` (mount registers, unmount deregisters, two mounted
+  views produce two distinct entries, `lastError` surfaces after
+  a render throws, payload JSON-encodes end-to-end). Total
+  main-package tests: 1751 (up from 1738).
+
 ### Changed
 
 - Benchmark harness (`benchmark/parse_resolve_bench.dart`) gains a
