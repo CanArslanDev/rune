@@ -75,6 +75,16 @@ final class InvocationResolver implements InvocationResolverContract {
       if (node.methodName.name == 'setState') {
         return _resolveSetState(node, ctx);
       }
+      // v1.16.0 pluggable imperative registry: host + sibling bridges
+      // can register custom imperatives under bare names (e.g.
+      // `showToast(message: 'hi')`). Consulted FIRST so hosts can
+      // shadow a built-in bridge when they need to swap Flutter's
+      // imperative for a custom one.
+      final registeredBare =
+          ctx.imperatives?.findBare(node.methodName.name);
+      if (registeredBare != null) {
+        return _resolveImperativeBridge(node, ctx, registeredBare);
+      }
       // v1.3.0 imperative bridges: bare-identifier calls that route to
       // Flutter's imperative modal/overlay APIs rather than a builder.
       // Checked before the registry lookup so a host-registered widget
@@ -96,6 +106,18 @@ final class InvocationResolver implements InvocationResolverContract {
     }
 
     if (target is SimpleIdentifier) {
+      // v1.16.0 pluggable imperative registry (prefixed shape): host +
+      // sibling bridges can register `Prefix.method(...)` imperatives
+      // (e.g. `Router.go('/path')` from rune_router). Consulted FIRST
+      // so hosts can shadow a built-in `Navigator.*` bridge by
+      // registering a same-named handler.
+      final registeredPrefixed = ctx.imperatives?.findPrefixed(
+        target.name,
+        node.methodName.name,
+      );
+      if (registeredPrefixed != null) {
+        return _resolveImperativeBridge(node, ctx, registeredPrefixed);
+      }
       // v1.3.0 + v1.6.0 `Navigator.*(...)` bridges: a `Navigator`-prefixed
       // call with a whitelisted method name dispatches to the matching
       // imperative Navigator bridge rather than the runtime-method path.

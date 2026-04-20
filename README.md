@@ -38,7 +38,7 @@ Deliver UI from a server, a CMS, or a designer tool without shipping a new app b
 
 ```yaml
 dependencies:
-  rune: ^1.15.0
+  rune: ^1.16.0
 ```
 
 The package is pre-publication; use a `git:` or `path:` dependency until a tagged `pub.dev` release lands. `dart pub publish --dry-run` currently reports 0 errors / 0 warnings.
@@ -105,7 +105,7 @@ A runnable version lives in [`example/`](example/).
 
 ## Supported source syntax
 
-Current release: **v1.15.0**. Docs + example polish. Example app rewritten as a 4-tab showcase that exercises `rune_provider` (reactive counter) and `rune_responsive_sizer` (percent-of-screen sizing) alongside the shopping cart and profile form. Root README grows a Cookbook section with copyable recipes and a Writing-a-bridge guide that walks through scaffolding a new `RuneBridge` package from scratch. Main-package feature surface unchanged.
+Current release: **v1.16.0**. Pluggable imperative registry. `RuneConfig.imperatives` lets hosts and sibling bridges register source-level imperatives (`Router.go('/path')`, `showToast('hi')`, `Analytics.track(...)`) without needing a main-package update. The resolver consults the registry before the hardcoded v1.3+ built-ins, so registered handlers can also shadow defaults. Unblocks `rune_router` v0.2.0's source-level navigation.
 
 | Category              | Elements                                                                                                                                                                                                     |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |

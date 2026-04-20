@@ -5,6 +5,7 @@ import 'package:rune/src/core/rune_scope.dart';
 import 'package:rune/src/registry/component_registry.dart';
 import 'package:rune/src/registry/constant_registry.dart';
 import 'package:rune/src/registry/extension_registry.dart';
+import 'package:rune/src/registry/imperative_registry.dart';
 import 'package:rune/src/registry/value_registry.dart';
 import 'package:rune/src/registry/widget_registry.dart';
 
@@ -39,6 +40,7 @@ final class RuneContext {
     required this.extensions,
     required this.components,
     required this.source,
+    this.imperatives,
     this.flutterContext,
     this.scope,
   });
@@ -66,6 +68,14 @@ final class RuneContext {
   /// consulted by `PropertyResolver` when evaluating `PropertyAccess`
   /// expressions like `10.w`.
   final ExtensionRegistry extensions;
+
+  /// Registry of source-level imperative bridges consulted by
+  /// `InvocationResolver` before the hardcoded built-in bridges (e.g.
+  /// `showDialog`, `Navigator.pop`). Nullable so legacy callers that
+  /// construct a [RuneContext] directly (pure unit tests, older
+  /// bridges) continue to work without code changes; when null the
+  /// resolver falls back to the built-in set exclusively.
+  final ImperativeRegistry? imperatives;
 
   /// Registry of named Rune components declared in the current source.
   ///
@@ -114,6 +124,7 @@ final class RuneContext {
     ExtensionRegistry? extensions,
     ComponentRegistry? components,
     String? source,
+    ImperativeRegistry? imperatives,
     BuildContext? flutterContext,
     RuneScope? scope,
   }) {
@@ -126,6 +137,7 @@ final class RuneContext {
       extensions: extensions ?? this.extensions,
       components: components ?? this.components,
       source: source ?? this.source,
+      imperatives: imperatives ?? this.imperatives,
       flutterContext: flutterContext ?? this.flutterContext,
       scope: scope ?? this.scope,
     );

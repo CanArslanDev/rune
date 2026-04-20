@@ -2,6 +2,7 @@ import 'package:rune/src/bridges/rune_bridge.dart';
 import 'package:rune/src/defaults/rune_defaults.dart';
 import 'package:rune/src/registry/constant_registry.dart';
 import 'package:rune/src/registry/extension_registry.dart';
+import 'package:rune/src/registry/imperative_registry.dart';
 import 'package:rune/src/registry/value_registry.dart';
 import 'package:rune/src/registry/widget_registry.dart';
 
@@ -20,10 +21,12 @@ final class RuneConfig {
     ValueRegistry? values,
     ConstantRegistry? constants,
     ExtensionRegistry? extensions,
+    ImperativeRegistry? imperatives,
   })  : widgets = widgets ?? WidgetRegistry(),
         values = values ?? ValueRegistry(),
         constants = constants ?? ConstantRegistry(),
-        extensions = extensions ?? ExtensionRegistry();
+        extensions = extensions ?? ExtensionRegistry(),
+        imperatives = imperatives ?? ImperativeRegistry();
 
   /// Creates a configuration with the full Phase 1-2d default builder
   /// set pre-registered via [RuneDefaults.registerAll]: Phase 1 MVP
@@ -50,6 +53,17 @@ final class RuneConfig {
   /// consulted by `PropertyResolver` when evaluating `PropertyAccess`
   /// expressions.
   final ExtensionRegistry extensions;
+
+  /// Registry of source-level imperative bridges (`showToast(...)`,
+  /// `Router.go('/path')`, etc.) consulted by `InvocationResolver`
+  /// before the hardcoded v1.3+ built-in bridges.
+  ///
+  /// Sibling bridge packages register their own imperatives here so
+  /// Rune source can invoke them without a main-package update; a host
+  /// that wants to shadow a built-in (e.g. swap `showDialog` for a
+  /// custom implementation) can register a handler under the same name
+  /// and the registry lookup wins.
+  final ImperativeRegistry imperatives;
 
   /// Applies each bridge in [bridges] to this config in order,
   /// registering their contributions. Returns `this` so the call can

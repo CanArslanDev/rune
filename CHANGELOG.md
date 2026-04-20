@@ -6,6 +6,47 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [1.16.0] - 2026-04-20 - pluggable imperative registry
+
+### Added
+
+- **`ImperativeRegistry` on `RuneConfig`.** Hosts and sibling bridges
+  can now register source-level imperatives without a main-package
+  update:
+  - `config.imperatives.registerBare(name, handler)` wires up
+    bare-shape calls (`showToast('hi')`, `logEvent(name: 'tap')`).
+  - `config.imperatives.registerPrefixed(target, method, handler)`
+    wires up prefixed-shape calls (`Router.go('/path')`,
+    `Analytics.track('sign-up')`). Target + method pair is the key.
+  - Handler signature is `Object? Function(ResolvedArguments,
+    RuneContext)`, mirroring widget/value builders so existing
+    helpers (`voidEventCallback`, closure adapters) compose
+    naturally.
+- **Registry-first dispatch in `InvocationResolver`.** The resolver
+  consults the registry before falling back to the hardcoded v1.3+
+  built-ins (`showDialog`, `showModalBottomSheet`, `Navigator.*`,
+  etc.). Hosts that want to shadow a built-in can do so by
+  registering a same-named handler. Built-ins stay active for any
+  name not registered on the instance.
+- **Barrel exports** `ImperativeRegistry` and `ImperativeHandler`
+  from `package:rune/rune.dart`.
+
+### Notes
+
+- Unblocks `rune_router` v0.2.0 (planned): `Router.go('/path')` and
+  friends can finally live in source. The v1.14.0 deferred-scope
+  note pointing at "pluggable imperative registry in the main
+  `rune` package" is now addressed.
+- `RuneContext.imperatives` is nullable so pre-v1.16 callers that
+  construct a `RuneContext` directly (pure unit tests, older
+  bridges) continue to work unchanged; when null the resolver
+  falls back to the built-in bridges exclusively.
+- 12 new tests: 8 unit tests on `ImperativeRegistry` (round-trip,
+  duplicate detection, collisions) plus 4 `RuneView` integration
+  smokes (bare call, prefixed call, registered-shadows-built-in,
+  `Navigator.*` still-wins-when-no-override). Total main-package
+  tests: 1713 (up from 1701).
+
 ## [1.15.0] - 2026-04-20 - docs + example polish
 
 ### Added

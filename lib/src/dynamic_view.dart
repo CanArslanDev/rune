@@ -125,6 +125,7 @@ class _RuneViewState extends State<RuneView> {
       constants: widget.config.constants,
       extensions: widget.config.extensions,
       components: ComponentRegistry(),
+      imperatives: widget.config.imperatives,
       source: widget.source,
       flutterContext: flutterCtx,
     );
