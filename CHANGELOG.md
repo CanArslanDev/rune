@@ -6,6 +6,55 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [1.7.0] - 2026-04-19 - gestures and advanced interaction
+
+### Added
+
+- **Drag-and-drop.** `Draggable<Object>` and
+  `LongPressDraggable<Object>` widget builders take `data`,
+  `feedback`, `child`, optional `childWhenDragging`, and closure
+  callbacks for `onDragStarted` / `onDragEnd`. `DragTarget<Object>`
+  renders its builder with `(BuildContext, List<Object?>,
+  List<Object?>)` and accepts `onAcceptWithDetails` /
+  `onWillAcceptWithDetails` as String event names or closures.
+- **Dismissible.** `Dismissible(key, child, onDismissed, direction?,
+  background?)`. `onDismissed` closure receives `DismissDirection`.
+  Requires a `ValueKey` (see below).
+- **InteractiveViewer.** `InteractiveViewer(child, minScale?,
+  maxScale?, panEnabled?, scaleEnabled?, boundaryMargin?)` for
+  pan-and-zoom content.
+- **ReorderableListView.** `ReorderableListView(children, onReorder:
+  (oldIndex, newIndex) -> void, padding?, scrollDirection?)`.
+  Children must carry stable keys; the new `ValueKey` value builder
+  (and a new `key:` slot on `ListTile`) cover the common case.
+- **ValueKey value builder.** `ValueKey(value)` wraps any runtime
+  value into a stable widget key. The `ListTile` builder now
+  accepts an optional `key` so it can serve as a keyed child of
+  ReorderableListView.
+- **Closure helpers.** `toDragTargetBuilder` (3-arg),
+  `toDismissibleCallback`, `toReorderCallback`,
+  `toDragEndCallback`, `toDragAcceptCallback`,
+  `toDragWillAcceptCallback` join
+  `lib/src/builders/closure_builder_helpers.dart`. Every
+  closure-wrapping contract for gesture widgets lives in the same
+  place per the shared-helper-first discipline.
+- **DismissDirection constants.** `endToStart`, `startToEnd`, `up`,
+  `down`, `horizontal`, `vertical`, `none` join the constants
+  table.
+
+### Notes
+
+- Widget count 100 to 105 (ListTile keeps its typeName; the six
+  new gesture widgets bring the total up 5). Value builder count
+  44 to 45 (ValueKey). Constants gain DismissDirection.
+- About 45 new tests across the six gesture widgets, the ValueKey
+  value builder, the closure helper extensions, and four
+  integration smokes (Draggable + DragTarget drop, Dismissible
+  swipe, ReorderableListView reorder, InteractiveViewer pan).
+- The v1.0.0 stability commitment holds. Zero breaking changes.
+  `ListTile.key` is purely additive; existing ListTile source that
+  did not supply a key continues to render identically.
+
 ## [1.6.0] - 2026-04-19 - navigation and routing
 
 ### Added
@@ -1032,7 +1081,8 @@ All notable changes to this project are documented here. Format follows
 - Example app at `example/lib/main.dart` demonstrating the full Phase 1
   feature set.
 
-[Unreleased]: https://github.com/CanArslanDev/rune/compare/v1.6.0...HEAD
+[Unreleased]: https://github.com/CanArslanDev/rune/compare/v1.7.0...HEAD
+[1.7.0]: https://github.com/CanArslanDev/rune/compare/v1.6.0...v1.7.0
 [1.6.0]: https://github.com/CanArslanDev/rune/compare/v1.5.0...v1.6.0
 [1.5.0]: https://github.com/CanArslanDev/rune/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/CanArslanDev/rune/compare/v1.3.0...v1.4.0
