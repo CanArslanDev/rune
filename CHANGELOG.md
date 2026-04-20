@@ -6,6 +6,45 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [1.6.0] - 2026-04-19 - navigation and routing
+
+### Added
+
+- **Navigator imperative bridges.** `Navigator.push(route)`,
+  `Navigator.pushReplacement(route)`,
+  `Navigator.pushNamed(name, arguments?)`, and `Navigator.canPop()`
+  join the v1.3.0 `Navigator.pop` bridge. All route through
+  `RuneContext.flutterContext`; `canPop` returns a bool, the push
+  variants discard their `Future<T?>` return. Dispatched through a
+  new `_navigatorBridges` whitelist map in `InvocationResolver`
+  that replaces the previous hard-coded `pop`-only special case.
+- **Route value builders.**
+  `MaterialPageRoute(builder, settings?, fullscreenDialog?,
+  maintainState?)`, `CupertinoPageRoute(builder, title?, settings?,
+  fullscreenDialog?, maintainState?)`, and
+  `RouteSettings(name?, arguments?)`. Builder closures follow the
+  v1.3.0 `toContextWidgetBuilder` contract.
+
+### Notes
+
+- Value builder count 41 to 44. Widget count unchanged. Constants
+  unchanged.
+- About 30 new tests across the three route value builders, the
+  four Navigator bridges, and two integration smokes: push + pop
+  round-trip through MaterialPageRoute, pushNamed flow via
+  MaterialApp.routes.
+- `PageRouteBuilder` stays deferred. Its closure-based
+  `pageBuilder` / `transitionsBuilder` args take
+  `Animation<double>` parameters; property access on
+  `Animation<double>` (`.value`, `.status`) lands in v1.9.0's
+  explicit-animation release together with the
+  `AnimationController` story.
+- `Navigator.popUntil(predicate)` deferred for the same reason.
+  Predicate closures take a `Route` argument; extending the
+  closure-helper surface for non-BuildContext arguments fits
+  naturally alongside the v1.9.0 animation closures.
+- The v1.0.0 stability commitment holds. Zero breaking changes.
+
 ## [1.5.0] - 2026-04-19 - forms, validation, focus
 
 ### Added
@@ -993,7 +1032,8 @@ All notable changes to this project are documented here. Format follows
 - Example app at `example/lib/main.dart` demonstrating the full Phase 1
   feature set.
 
-[Unreleased]: https://github.com/CanArslanDev/rune/compare/v1.5.0...HEAD
+[Unreleased]: https://github.com/CanArslanDev/rune/compare/v1.6.0...HEAD
+[1.6.0]: https://github.com/CanArslanDev/rune/compare/v1.5.0...v1.6.0
 [1.5.0]: https://github.com/CanArslanDev/rune/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/CanArslanDev/rune/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/CanArslanDev/rune/compare/v1.2.0...v1.3.0
