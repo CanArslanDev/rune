@@ -60,6 +60,18 @@ final class PropertyResolver {
     final (hit, value) = resolveBuiltinProperty(target, propName);
     if (hit) return value;
 
+    // 2b. User-registered MemberRegistry entry on an arbitrary type
+    // (v1.17.0). Built-ins take priority so hosts cannot shadow
+    // `String.length` or the like; the registry fills the gap for
+    // custom classes the main package has no knowledge of (e.g.
+    // host-owned `ChangeNotifier` subclasses).
+    final members = ctx.members;
+    if (members != null) {
+      final (memberHit, memberValue) =
+          members.resolveProperty(target, propName, ctx);
+      if (memberHit) return memberValue;
+    }
+
     // 3. Map with absent key and no built-in match — preserve the legacy
     // map-absent-key → null semantics rather than escalating to an
     // extension miss. A Map's shape says "arbitrary key space", so an

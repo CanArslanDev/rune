@@ -114,6 +114,18 @@ final class IdentifierResolver {
       final (hit, value) = resolveBuiltinProperty(holder, memberName);
       if (hit) return value;
 
+      // v1.17.0 MemberRegistry: user-registered property on a custom
+      // type reached via `data.prefix.member`. Fires only when the
+      // holder is not a built-in target AND the member is registered;
+      // a miss falls through to the diagnostic below so the existing
+      // "expected data value to be a Map" error remains the default.
+      final members = ctx.members;
+      if (members != null) {
+        final (memberHit, memberValue) =
+            members.resolveProperty(holder, memberName, ctx);
+        if (memberHit) return memberValue;
+      }
+
       final location =
           SourceSpan.fromAstOffset(ctx.source, node.offset, node.length);
       final typeLabel = builtinTargetTypeLabel(holder);

@@ -27,6 +27,8 @@ export 'src/registry/extension_registry.dart'
     show ExtensionRegistry, RuneExtensionHandler;
 export 'src/registry/imperative_registry.dart'
     show ImperativeHandler, ImperativeRegistry;
+export 'src/registry/member_registry.dart'
+    show MemberMethodInvoker, MemberPropertyAccessor, MemberRegistry;
 export 'src/registry/registry.dart' show Registry;
 export 'src/registry/value_registry.dart' show ValueRegistry;
 export 'src/registry/widget_registry.dart' show WidgetRegistry;

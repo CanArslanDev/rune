@@ -280,6 +280,29 @@ final class InvocationResolver implements InvocationResolverContract {
         positional.add(_expr.resolve(arg, ctx));
       }
     }
+    // v1.17.0 MemberRegistry: host + sibling bridges can register
+    // method invokers on custom types. Consulted BEFORE the built-in
+    // whitelist, BUT ONLY when [receiver] is not a recognized
+    // built-in target type. This preserves the built-in-first
+    // invariant for stock types (String, List, Map, ThemeData, etc.)
+    // so a host cannot accidentally shadow `.toUpperCase()` or
+    // similar with a custom registration; custom classes on the
+    // other hand never collide with the built-in table, so the
+    // registry-first semantics apply cleanly. Named arguments fall
+    // through to the built-in boundary, which rejects them
+    // uniformly.
+    final members = ctx.members;
+    if (members != null &&
+        named.isEmpty &&
+        builtinTargetTypeLabel(receiver) == null) {
+      final (hit, value) = members.invokeMethod(
+        receiver,
+        node.methodName.name,
+        positional,
+        ctx,
+      );
+      if (hit) return value;
+    }
     return invokeBuiltinMethod(
       target: receiver,
       methodName: node.methodName.name,

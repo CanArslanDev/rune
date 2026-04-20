@@ -3,6 +3,7 @@ import 'package:rune/src/defaults/rune_defaults.dart';
 import 'package:rune/src/registry/constant_registry.dart';
 import 'package:rune/src/registry/extension_registry.dart';
 import 'package:rune/src/registry/imperative_registry.dart';
+import 'package:rune/src/registry/member_registry.dart';
 import 'package:rune/src/registry/value_registry.dart';
 import 'package:rune/src/registry/widget_registry.dart';
 
@@ -22,11 +23,13 @@ final class RuneConfig {
     ConstantRegistry? constants,
     ExtensionRegistry? extensions,
     ImperativeRegistry? imperatives,
+    MemberRegistry? members,
   })  : widgets = widgets ?? WidgetRegistry(),
         values = values ?? ValueRegistry(),
         constants = constants ?? ConstantRegistry(),
         extensions = extensions ?? ExtensionRegistry(),
-        imperatives = imperatives ?? ImperativeRegistry();
+        imperatives = imperatives ?? ImperativeRegistry(),
+        members = members ?? MemberRegistry();
 
   /// Creates a configuration with the full Phase 1-2d default builder
   /// set pre-registered via [RuneDefaults.registerAll]: Phase 1 MVP
@@ -64,6 +67,19 @@ final class RuneConfig {
   /// custom implementation) can register a handler under the same name
   /// and the registry lookup wins.
   final ImperativeRegistry imperatives;
+
+  /// Registry of user-declared properties and methods on arbitrary
+  /// runtime types. Consulted by `PropertyResolver` and
+  /// `InvocationResolver` AFTER the closed built-in whitelist in
+  /// `builtin_members.dart` so stock types (`String`, `List`, `Map`,
+  /// `ThemeData`, etc.) cannot be overridden.
+  ///
+  /// Use cases: exposing fields of a host-owned `ChangeNotifier`
+  /// directly to source (instead of routing through a
+  /// `Map`-projected `state` getter) or letting a bridge package
+  /// register accessors on a third-party type without forking the
+  /// main `rune` package.
+  final MemberRegistry members;
 
   /// Applies each bridge in [bridges] to this config in order,
   /// registering their contributions. Returns `this` so the call can

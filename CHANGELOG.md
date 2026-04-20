@@ -6,6 +6,72 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [1.17.0] - 2026-04-20 - user-registered runtime members
+
+### Added
+
+- **`MemberRegistry` on `RuneConfig`.** Hosts and sibling bridges
+  can now register property accessors and method invokers for
+  arbitrary Dart types without taking a `dart:mirrors` dependency
+  or forking the main package. Typical shape:
+
+  ```dart
+  final config = RuneConfig.defaults();
+  config.members
+    ..registerProperty<CounterNotifier>('count', (t, _) => t.count)
+    ..registerMethod<CounterNotifier>('increment', (t, args, _) {
+      t.increment();
+      return null;
+    });
+  ```
+
+  After this, Rune source can write `counter.count` and
+  `counter.increment()` directly against a live
+  `CounterNotifier` in the data context.
+
+- **Registry integration across three resolver arms.**
+  - `PropertyResolver` consults the registry after the built-in
+    property whitelist misses, before the Map-absent-key fallback.
+  - `IdentifierResolver.resolvePrefixed` consults the registry for
+    `data.member` shapes where the data value is a non-Map holder
+    (e.g. a bare `CounterNotifier` in data).
+  - `InvocationResolver._dispatchRuntimeMethod` consults the
+    registry for `receiver.method(...)` calls when the receiver is
+    NOT a recognized built-in target type, falling back to the
+    built-in method whitelist otherwise.
+
+- **Type-matching semantics.** `registerProperty<T>(...)` and
+  `registerMethod<T>(...)` use `is T` at resolve time, so a
+  subtype of `T` also matches. Registration order is the tiebreaker
+  when multiple entries could fire: first-match-wins.
+
+- **Built-in safety.** For stock Dart types (String, List, Map,
+  num, ThemeData, ColorScheme, TextTheme, MediaQueryData, controller
+  types, Animation, Animatable, AsyncSnapshot, BoxConstraints,
+  Size, EdgeInsets, Route, RouteSettings) the built-in whitelist
+  always wins. A host cannot accidentally shadow
+  `String.toUpperCase` or `List.contains`. Custom classes never
+  collide because they fall outside the built-in guard.
+
+- **Barrel exports** `MemberRegistry`, `MemberPropertyAccessor`,
+  and `MemberMethodInvoker` from `package:rune/rune.dart`.
+
+### Notes
+
+- Unblocks cleaner bridge patterns: `rune_provider` v0.2.0
+  (planned) drops the `RuneReactiveNotifier.state` `Map`-projection
+  indirection once it migrates to registering direct property
+  accessors.
+- `RuneContext.members` is nullable so pre-v1.17 callers that
+  construct a `RuneContext` directly keep working; when null the
+  three resolver arms skip the custom-member lookup entirely.
+- 15 new tests: 11 unit tests on `MemberRegistry` (round-trip,
+  subtype matching, first-match-wins, no-match fallback, method
+  invocation, ChangeNotifier end-to-end) plus 4 `RuneView`
+  integration smokes (property on custom ChangeNotifier, method
+  call with / without args, built-in-wins-on-stock-types).
+  Total main-package tests: 1728 (up from 1713).
+
 ## [1.16.0] - 2026-04-20 - pluggable imperative registry
 
 ### Added

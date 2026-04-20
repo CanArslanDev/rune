@@ -6,6 +6,7 @@ import 'package:rune/src/registry/component_registry.dart';
 import 'package:rune/src/registry/constant_registry.dart';
 import 'package:rune/src/registry/extension_registry.dart';
 import 'package:rune/src/registry/imperative_registry.dart';
+import 'package:rune/src/registry/member_registry.dart';
 import 'package:rune/src/registry/value_registry.dart';
 import 'package:rune/src/registry/widget_registry.dart';
 
@@ -41,6 +42,7 @@ final class RuneContext {
     required this.components,
     required this.source,
     this.imperatives,
+    this.members,
     this.flutterContext,
     this.scope,
   });
@@ -76,6 +78,15 @@ final class RuneContext {
   /// bridges) continue to work without code changes; when null the
   /// resolver falls back to the built-in set exclusively.
   final ImperativeRegistry? imperatives;
+
+  /// Registry of user-declared properties and methods on arbitrary
+  /// runtime types. Consulted by `PropertyResolver` and
+  /// `InvocationResolver` AFTER the closed built-in whitelist so
+  /// stock-type members (`String.length`, `List.contains`, etc.)
+  /// cannot be shadowed. Nullable so legacy callers that construct a
+  /// [RuneContext] directly keep working; when null the resolver
+  /// skips the custom-member lookup entirely.
+  final MemberRegistry? members;
 
   /// Registry of named Rune components declared in the current source.
   ///
@@ -125,6 +136,7 @@ final class RuneContext {
     ComponentRegistry? components,
     String? source,
     ImperativeRegistry? imperatives,
+    MemberRegistry? members,
     BuildContext? flutterContext,
     RuneScope? scope,
   }) {
@@ -138,6 +150,7 @@ final class RuneContext {
       components: components ?? this.components,
       source: source ?? this.source,
       imperatives: imperatives ?? this.imperatives,
+      members: members ?? this.members,
       flutterContext: flutterContext ?? this.flutterContext,
       scope: scope ?? this.scope,
     );
