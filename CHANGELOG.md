@@ -6,6 +6,69 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [1.10.0] - 2026-04-19 - developer experience
+
+### Added
+
+- **"Did you mean" diagnostic suggestions.** All three main
+  exception types gained factory constructors that compute a
+  Levenshtein-distance suggestion from a candidate pool.
+  `UnregisteredBuilderException.withSuggestion` reads widget,
+  value, and component registry names; `ResolveException.withSuggestion`
+  receives the current target type's methods / properties;
+  `BindingException.withSuggestion` reads data keys plus scope
+  names. When a close enough match exists (Levenshtein distance
+  within a reasonable bound) the exception message appends
+  `(did you mean "X"?)`. Source-level typos like `Colums(...)` or
+  `.toUppercase()` now get clear diagnostics.
+- **Widened source pointer.** `SourceSpan.toContextualPointer(
+  fullSource, contextLines: N)` renders the carat-pointer with N
+  lines of context above and below the offending line. The
+  default `toPointerString` stays unchanged (single-line excerpt
+  for backwards compatibility); consumers who want more context
+  call the new method in their `onError` handler with
+  `ctx.source` (or `RuneView.source`) as the full-source argument.
+- **Source formatter.** `formatRuneSource(String source,
+  {int maxLineLength = 80})` returns a canonically-formatted
+  version of the input: 2-space indent per level, per-argument
+  breaks inside multi-line calls, trailing commas on multi-line
+  lists / arg lists, single-line collapse when the whole
+  expression fits. Unparseable input returns unchanged with a
+  diagnostic comment header. Useful as a programmable formatter
+  for Rune sources in tooling pipelines.
+- **Registry introspection.** `Registry<T>.names`,
+  `ValueRegistry.typeNames`, `ComponentRegistry.typeNames`,
+  `ConstantRegistry.memberNamesOf(typeName)`,
+  `ExtensionRegistry.names`, `RuneDataContext.keys`, and
+  `RuneScope.names` expose the registered / bound names so
+  consumers (and the suggestion factories above) can enumerate
+  candidates without leaking the backing maps.
+
+### Notes
+
+- `formatRuneSource` is exported from the public barrel
+  `lib/rune.dart`.
+- Levenshtein helper lives in `lib/src/core/levenshtein.dart` as
+  a pure core utility (no Flutter or analyzer deps). Threshold
+  tuning (max distance, minimum candidate length) is internal;
+  future releases can expose the knobs if needed.
+- About 46 new tests: 13 Levenshtein unit tests, 6
+  `toContextualPointer` tests, 4 exception-factory tests, 13
+  formatter tests, 10 resolver diagnostic-suggestion integration
+  tests.
+- The v1.0.0 stability commitment holds. Zero breaking changes;
+  existing diagnostic messages keep their exact prefix and gain
+  the suggestion suffix only when a close match exists.
+
+### Deferred
+
+- DevTools extension ships as a separate package
+  (`packages/rune_devtools_extension/`) in a future release. Hot
+  source reload, AST inspector, and state bag inspector belong
+  there rather than in the main package.
+- VSCode syntax highlighting extension ships as a separate repo.
+- LSP autocomplete remains out of scope.
+
 ## [1.9.0] - 2026-04-19 - explicit animations
 
 ### Added
@@ -1204,7 +1267,8 @@ All notable changes to this project are documented here. Format follows
 - Example app at `example/lib/main.dart` demonstrating the full Phase 1
   feature set.
 
-[Unreleased]: https://github.com/CanArslanDev/rune/compare/v1.9.0...HEAD
+[Unreleased]: https://github.com/CanArslanDev/rune/compare/v1.10.0...HEAD
+[1.10.0]: https://github.com/CanArslanDev/rune/compare/v1.9.0...v1.10.0
 [1.9.0]: https://github.com/CanArslanDev/rune/compare/v1.8.0...v1.9.0
 [1.8.0]: https://github.com/CanArslanDev/rune/compare/v1.7.0...v1.8.0
 [1.7.0]: https://github.com/CanArslanDev/rune/compare/v1.6.0...v1.7.0

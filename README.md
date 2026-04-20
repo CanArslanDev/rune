@@ -37,7 +37,7 @@ Deliver UI from a server, a CMS, or a designer tool without shipping a new app b
 
 ```yaml
 dependencies:
-  rune: ^1.9.0
+  rune: ^1.10.0
 ```
 
 The package is pre-publication; use a `git:` or `path:` dependency until a tagged `pub.dev` release lands. `dart pub publish --dry-run` currently reports 0 errors / 0 warnings.
@@ -102,7 +102,7 @@ A runnable version lives in [`example/`](example/).
 
 ## Supported source syntax
 
-Current release: **v1.9.0**. Explicit animations: AnimationController with auto-vsync inside StatefulBuilder, Tween / ColorTween / CurvedAnimation value builders, and the full transition widget family (FadeTransition, SlideTransition, ScaleTransition, RotationTransition, SizeTransition, AnimatedBuilder).
+Current release: **v1.10.0**. Developer experience polish: "did you mean X?" suggestions on ResolveException / UnregisteredBuilderException / BindingException, a widened source-pointer API for multi-line error context, and a public `formatRuneSource` utility for canonical Rune source formatting. Registry introspection (names, keys) supports these and future tooling.
 
 | Category              | Elements                                                                                                                                                                                                     |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -124,6 +124,7 @@ Current release: **v1.9.0**. Explicit animations: AnimationController with auto-
 | Components            | `RuneComponent(name: 'X', params: [...], body: (...) => ...)` declares a reusable component; `RuneCompose(components: [...], root: ...)` groups declarations and the widget tree; components dispatch before widget/value registries. |
 | Imperative bridges    | `showDialog(builder: ...)`, `showModalBottomSheet(builder: ...)`, `showSnackBar(snackBar)`, `Navigator.pop(result?)`, `showDatePicker(initialDate, firstDate, lastDate)`, `showTimePicker(initialTime)`, `Navigator.push(route)`, `Navigator.pushReplacement(route)`, `Navigator.pushNamed(name, arguments?)`, `Navigator.canPop()`. All route through `RuneContext.flutterContext`. |
 | Context accessors     | `Theme.of(context)`, `MediaQuery.of(context)`. Return raw Flutter values with whitelisted property access. |
+| Developer utilities | `formatRuneSource(source)` canonical formatter; `SourceSpan.toContextualPointer(source, contextLines)` widened error pointer; "did you mean X?" suggestions on missing builder / method / identifier diagnostics. |
 
 Anything outside this surface raises a `RuneException` (parse, resolve, or unregistered-builder variant). The plans in `docs/superpowers/plans/` enumerate the phases that built this set.
 
