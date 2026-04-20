@@ -43,3 +43,27 @@ jobs:
       - name: Test rune_responsive_sizer
         working-directory: packages/rune_responsive_sizer
         run: flutter test
+
+      - name: Install rune_cupertino dependencies
+        working-directory: packages/rune_cupertino
+        run: flutter pub get
+
+      - name: Analyze rune_cupertino
+        working-directory: packages/rune_cupertino
+        run: flutter analyze
+
+      - name: Test rune_cupertino
+        working-directory: packages/rune_cupertino
+        run: flutter test
+
+      - name: Install rune_provider dependencies
+        working-directory: packages/rune_provider
+        run: flutter pub get
+
+      - name: Analyze rune_provider
+        working-directory: packages/rune_provider
+        run: flutter analyze
+
+      - name: Test rune_provider
+        working-directory: packages/rune_provider
+        run: flutter test
