@@ -1,9 +1,10 @@
 name: rune_router
 description: go_router bridge for the rune package; registers GoRoute and GoRouter value builders plus a GoRouterApp widget wrapper on a RuneConfig so Rune source can declare routed navigation structure.
 version: 0.1.0
-repository: https://github.com/CanArslanDev/rune
+repository: https://github.com/CanArslanDev/rune/tree/main/packages/rune_router
 homepage: https://github.com/CanArslanDev/rune
 issue_tracker: https://github.com/CanArslanDev/rune/issues
+documentation: https://canarslandev.github.io/rune/
 topics:
   - rune
   - bridge

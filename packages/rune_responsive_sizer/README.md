@@ -13,9 +13,9 @@ No new widget builders. No new value builders. No new constants. Just four entri
 
 ## Requirements
 
-- Flutter ≥ 3.22
-- Dart ≥ 3.4
-- `rune` (sibling package in the same monorepo — current dep: `path: ../..`)
+- Flutter >= 3.22
+- Dart >= 3.4
+- `rune` (sibling package in the same monorepo; current dep: `path: ../..`)
 
 ## Install
 
@@ -64,12 +64,12 @@ RuneView(
 
 - **`ctx.flutterContext` must be non-null.** All four handlers call `MediaQuery.sizeOf(ctx.flutterContext!)` / `textScalerOf`. `RuneView` provides a live `BuildContext`; unit-testing a handler in isolation requires a widget pump or the handler will throw `StateError`.
 - **Target must be `num`.** `'hi'.w` throws `ArgumentError`. Handlers don't coerce strings to numbers.
-- **Percentage semantics.** `100.w` = full width; `50.w` = half; values outside 0–100 are allowed and may produce overflow widgets (intentional — the bridge doesn't clamp).
+- **Percentage semantics.** `100.w` = full width; `50.w` = half; values outside 0 to 100 are allowed and may produce overflow widgets (intentional: the bridge does not clamp).
 - **Handlers return `double`.** Flutter's sizing APIs accept `double`; the returned value is always `double` even when the target is an `int`.
 
 ## Extending
 
-Want more properties (`.vw`, `.vh`, `.em`, `.rem`, `.dp`)? Either fork this bridge into your app or contribute upstream via PR. The bridge itself is 70 lines of Dart — easy to copy and extend.
+Want more properties (`.vw`, `.vh`, `.em`, `.rem`, `.dp`)? Either fork this bridge into your app or contribute upstream via PR. The bridge itself is 70 lines of Dart; easy to copy and extend.
 
 ## Tests
 
@@ -81,4 +81,4 @@ Seven tests cover registration, each of the four properties under fixed `MediaQu
 
 ## License
 
-MIT — see [`LICENSE`](LICENSE).
+MIT. See [`LICENSE`](LICENSE).

@@ -1,9 +1,10 @@
 name: rune_cupertino
 description: Cupertino (iOS-style) bridge for the rune package; registers CupertinoButton, CupertinoPageScaffold, and other Cupertino widgets plus CupertinoThemeData and CupertinoIcons on a RuneConfig.
 version: 0.1.1
-repository: https://github.com/CanArslanDev/rune
+repository: https://github.com/CanArslanDev/rune/tree/main/packages/rune_cupertino
 homepage: https://github.com/CanArslanDev/rune
 issue_tracker: https://github.com/CanArslanDev/rune/issues
+documentation: https://canarslandev.github.io/rune/
 topics:
   - rune
   - bridge

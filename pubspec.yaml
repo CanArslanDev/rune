@@ -4,6 +4,7 @@ version: 1.15.0
 repository: https://github.com/CanArslanDev/rune
 homepage: https://github.com/CanArslanDev/rune
 issue_tracker: https://github.com/CanArslanDev/rune/issues
+documentation: https://canarslandev.github.io/rune/
 topics:
   - ui
   - runtime
