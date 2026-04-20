@@ -34,14 +34,31 @@ final class IdentifierResolver {
       return scope.lookup(key);
     }
     if (!ctx.data.has(key)) {
-      throw BindingException(
-        node.toSource(),
-        'Unknown identifier "$key" (not present in RuneDataContext)',
+      throw BindingException.withSuggestion(
+        source: node.toSource(),
+        baseMessage:
+            'Unknown identifier "$key" (not present in RuneDataContext)',
+        candidate: key,
+        candidates: _simpleIdentifierCandidates(ctx),
         location:
             SourceSpan.fromAstOffset(ctx.source, node.offset, node.length),
       );
     }
     return ctx.data.get(key);
+  }
+
+  /// Names visible to a bare `SimpleIdentifier` lookup: the current
+  /// scope's declarations (if any) followed by the host-supplied data
+  /// keys. Constants are NOT folded in here — constants always live
+  /// under a `Type.member` prefix in source, so suggesting one would
+  /// misfire (the user wrote `foo`, the fix is a data key or a scope
+  /// variable, not `Colors.red`).
+  Iterable<String> _simpleIdentifierCandidates(RuneContext ctx) sync* {
+    final scope = ctx.scope;
+    if (scope != null) {
+      yield* scope.names;
+    }
+    yield* ctx.data.keys;
   }
 
   /// Resolves [node] by checking [RuneContext.data] first, then
@@ -97,21 +114,58 @@ final class IdentifierResolver {
       final (hit, value) = resolveBuiltinProperty(holder, memberName);
       if (hit) return value;
 
+      final location =
+          SourceSpan.fromAstOffset(ctx.source, node.offset, node.length);
+      final typeLabel = builtinTargetTypeLabel(holder);
+      final baseMessage =
+          'Expected data value "$typeName" to be a Map for dot-access, '
+          'got ${holder.runtimeType}';
+      if (typeLabel != null) {
+        final builtin = builtinPropertiesFor(typeLabel);
+        if (builtin.isNotEmpty) {
+          throw ResolveException.withSuggestion(
+            source: node.toSource(),
+            baseMessage: baseMessage,
+            candidate: memberName,
+            candidates: builtin,
+            location: location,
+          );
+        }
+      }
       throw ResolveException(
         node.toSource(),
-        'Expected data value "$typeName" to be a Map for dot-access, '
-        'got ${holder.runtimeType}',
-        location:
-            SourceSpan.fromAstOffset(ctx.source, node.offset, node.length),
+        baseMessage,
+        location: location,
       );
     }
 
-    // Fall through to constants.
-    return ctx.constants.require(
-      typeName,
-      memberName,
+    // Fall through to constants. If the constant pair is unknown, we
+    // take over the exception construction so the "did you mean ...?"
+    // trailer reflects whichever half of `typeName.memberName` is more
+    // likely the misspelling: if the type exists but the member
+    // doesn't, suggest a sibling member; otherwise suggest a type.
+    if (ctx.constants.contains(typeName, memberName)) {
+      return ctx.constants.resolve(typeName, memberName);
+    }
+    final location =
+        SourceSpan.fromAstOffset(ctx.source, node.offset, node.length);
+    final memberNames = ctx.constants.memberNamesOf(typeName);
+    if (memberNames.isNotEmpty) {
+      // The type is registered — the user got the member wrong.
+      throw ResolveException.withSuggestion(
+        source: node.toSource(),
+        baseMessage: 'Unknown constant "$typeName.$memberName"',
+        candidate: memberName,
+        candidates: memberNames,
+        location: location,
+      );
+    }
+    throw ResolveException.withSuggestion(
       source: node.toSource(),
-      location: SourceSpan.fromAstOffset(ctx.source, node.offset, node.length),
+      baseMessage: 'Unknown constant "$typeName.$memberName"',
+      candidate: typeName,
+      candidates: ctx.constants.typeNames,
+      location: location,
     );
   }
 }

@@ -30,6 +30,232 @@ import 'package:rune/src/core/rune_state.dart';
 import 'package:rune/src/core/source_span.dart';
 import 'package:rune/src/resolver/rune_closure.dart';
 
+/// Mapping from runtime-target type label to the whitelisted method
+/// names dispatched on it. Used by the `_throwUnknownMethod` helper to
+/// feed "did you mean ...?" suggestions into [ResolveException].
+const Map<String, List<String>> _builtinMethodsByType = <String, List<String>>{
+  'String': <String>[
+    'toUpperCase',
+    'toLowerCase',
+    'trim',
+    'contains',
+    'startsWith',
+    'endsWith',
+    'split',
+    'substring',
+    'replaceAll',
+    'toString',
+  ],
+  'List': <String>[
+    'contains',
+    'indexOf',
+    'join',
+    'map',
+    'where',
+    'any',
+    'every',
+    'firstWhere',
+    'forEach',
+    'fold',
+    'reduce',
+    'toString',
+  ],
+  'Map': <String>['containsKey', 'containsValue', 'toString'],
+  'num': <String>[
+    'abs',
+    'round',
+    'floor',
+    'ceil',
+    'toInt',
+    'toDouble',
+    'toString',
+  ],
+  'RuneState': <String>['get', 'has', 'set', 'setMany', 'remove', 'clear'],
+  'TextEditingController': <String>['clear', 'dispose'],
+  'ScrollController': <String>['jumpTo', 'animateTo', 'dispose'],
+  'FocusNode': <String>['requestFocus', 'unfocus', 'dispose'],
+  'PageController': <String>['jumpToPage', 'animateToPage', 'dispose'],
+  'TabController': <String>['animateTo'],
+  'AnimationController': <String>[
+    'forward',
+    'reverse',
+    'stop',
+    'reset',
+    'repeat',
+    'dispose',
+  ],
+};
+
+/// Mapping from runtime-target type label to the whitelisted property
+/// names the built-in resolver exposes. Used by property-access throw
+/// sites to surface suggestions on near-miss typos like `.lenght` →
+/// `.length`.
+const Map<String, List<String>> _builtinPropertiesByType =
+    <String, List<String>>{
+  'String': <String>['length', 'isEmpty', 'isNotEmpty'],
+  'List': <String>['length', 'isEmpty', 'isNotEmpty', 'first', 'last'],
+  'Map': <String>['length', 'isEmpty', 'isNotEmpty', 'keys', 'values'],
+  'TextEditingController': <String>['text', 'value'],
+  'FocusNode': <String>['hasFocus'],
+  'TabController': <String>['index'],
+  'Animation': <String>[
+    'value',
+    'status',
+    'isAnimating',
+    'isCompleted',
+    'isDismissed',
+  ],
+  'AsyncSnapshot': <String>[
+    'hasData',
+    'data',
+    'hasError',
+    'error',
+    'connectionState',
+  ],
+  'BoxConstraints': <String>[
+    'maxWidth',
+    'minWidth',
+    'maxHeight',
+    'minHeight',
+    'biggest',
+    'smallest',
+  ],
+  'ThemeData': <String>[
+    'colorScheme',
+    'textTheme',
+    'brightness',
+    'primaryColor',
+    'useMaterial3',
+    'scaffoldBackgroundColor',
+    'cardColor',
+    'dividerColor',
+  ],
+  'ColorScheme': <String>[
+    'primary',
+    'onPrimary',
+    'primaryContainer',
+    'onPrimaryContainer',
+    'secondary',
+    'onSecondary',
+    'secondaryContainer',
+    'onSecondaryContainer',
+    'tertiary',
+    'onTertiary',
+    'error',
+    'onError',
+    'surface',
+    'onSurface',
+    'surfaceContainerHighest',
+    'outline',
+    'shadow',
+    'inverseSurface',
+    'brightness',
+  ],
+  'TextTheme': <String>[
+    'displayLarge',
+    'displayMedium',
+    'displaySmall',
+    'headlineLarge',
+    'headlineMedium',
+    'headlineSmall',
+    'titleLarge',
+    'titleMedium',
+    'titleSmall',
+    'bodyLarge',
+    'bodyMedium',
+    'bodySmall',
+    'labelLarge',
+    'labelMedium',
+    'labelSmall',
+  ],
+  'MediaQueryData': <String>[
+    'size',
+    'orientation',
+    'padding',
+    'viewInsets',
+    'viewPadding',
+    'devicePixelRatio',
+    'textScaler',
+    'platformBrightness',
+  ],
+  'Size': <String>[
+    'width',
+    'height',
+    'shortestSide',
+    'longestSide',
+    'aspectRatio',
+    'isEmpty',
+  ],
+  'EdgeInsets': <String>[
+    'left',
+    'top',
+    'right',
+    'bottom',
+    'horizontal',
+    'vertical',
+  ],
+};
+
+/// Returns the whitelisted property names on [typeLabel], or an empty
+/// iterable when [typeLabel] is not a built-in target type. Consumed by
+/// `PropertyResolver` when composing "did you mean ...?" suggestions.
+Iterable<String> builtinPropertiesFor(String typeLabel) {
+  return _builtinPropertiesByType[typeLabel] ?? const <String>[];
+}
+
+/// Chooses a short, human-readable type label for a built-in target
+/// value. Follows the runtime-type check order used by
+/// [resolveBuiltinProperty] so the label aligns with how dispatch
+/// actually proceeds.
+///
+/// Returns `null` when [target] is not a recognized built-in target
+/// type. Callers fall back to `target.runtimeType.toString()` for
+/// diagnostics.
+String? builtinTargetTypeLabel(Object? target) {
+  if (target is String) return 'String';
+  if (target is List<Object?>) return 'List';
+  if (target is Map<Object?, Object?>) return 'Map';
+  if (target is num) return 'num';
+  if (target is RuneState) return 'RuneState';
+  if (target is TextEditingController) return 'TextEditingController';
+  if (target is ScrollController) return 'ScrollController';
+  if (target is FocusNode) return 'FocusNode';
+  if (target is PageController) return 'PageController';
+  if (target is TabController) return 'TabController';
+  if (target is AnimationController) return 'AnimationController';
+  if (target is Animation<double>) return 'Animation';
+  if (target is AsyncSnapshot<Object?>) return 'AsyncSnapshot';
+  if (target is BoxConstraints) return 'BoxConstraints';
+  if (target is ThemeData) return 'ThemeData';
+  if (target is ColorScheme) return 'ColorScheme';
+  if (target is TextTheme) return 'TextTheme';
+  if (target is MediaQueryData) return 'MediaQueryData';
+  if (target is Size) return 'Size';
+  if (target is EdgeInsets) return 'EdgeInsets';
+  return null;
+}
+
+/// Raises a [ResolveException] reporting that [methodName] is not
+/// whitelisted on [typeLabel], with a Levenshtein-based suggestion
+/// drawn from the built-in method table for [typeLabel] when one is
+/// available. Shared by every `_invokeXxxMethod` helper so the
+/// diagnostic format stays uniform.
+Never _throwUnknownMethod({
+  required String typeLabel,
+  required String methodName,
+  required String source,
+  required SourceSpan Function() locationOf,
+}) {
+  final candidates = _builtinMethodsByType[typeLabel] ?? const <String>[];
+  throw ResolveException.withSuggestion(
+    source: source,
+    baseMessage: 'No built-in method "$methodName" on $typeLabel',
+    candidate: methodName,
+    candidates: candidates,
+    location: locationOf(),
+  );
+}
+
 /// Looks up [propertyName] on [target] in the built-in property whitelist.
 ///
 /// Returns `(true, value)` when the pair matches — the caller should
@@ -516,10 +742,11 @@ Object? _invokeRuneStateMethod({
       return null;
   }
 
-  throw ResolveException(
-    source,
-    'No built-in method "$methodName" on RuneState',
-    location: locationOf(),
+  _throwUnknownMethod(
+    typeLabel: 'RuneState',
+    methodName: methodName,
+    source: source,
+    locationOf: locationOf,
   );
 }
 
@@ -595,10 +822,11 @@ Object? _invokeStringMethod({
       return target.replaceAll(requireArg<String>(0), requireArg<String>(1));
   }
 
-  throw ResolveException(
-    source,
-    'No built-in method "$methodName" on String',
-    location: locationOf(),
+  _throwUnknownMethod(
+    typeLabel: 'String',
+    methodName: methodName,
+    source: source,
+    locationOf: locationOf,
   );
 }
 
@@ -852,10 +1080,11 @@ Object? _invokeListMethod({
       return acc;
   }
 
-  throw ResolveException(
-    source,
-    'No built-in method "$methodName" on List',
-    location: locationOf(),
+  _throwUnknownMethod(
+    typeLabel: 'List',
+    methodName: methodName,
+    source: source,
+    locationOf: locationOf,
   );
 }
 
@@ -978,10 +1207,11 @@ Object? _invokeMapMethod({
       return target.containsValue(positionalArgs[0]);
   }
 
-  throw ResolveException(
-    source,
-    'No built-in method "$methodName" on Map',
-    location: locationOf(),
+  _throwUnknownMethod(
+    typeLabel: 'Map',
+    methodName: methodName,
+    source: source,
+    locationOf: locationOf,
   );
 }
 
@@ -1014,10 +1244,11 @@ Object? _invokeNumMethod({
       return target.toDouble();
   }
 
-  throw ResolveException(
-    source,
-    'No built-in method "$methodName" on num',
-    location: locationOf(),
+  _throwUnknownMethod(
+    typeLabel: 'num',
+    methodName: methodName,
+    source: source,
+    locationOf: locationOf,
   );
 }
 
@@ -1095,10 +1326,11 @@ Object? _invokeTextEditingControllerMethod({
       return null;
   }
 
-  throw ResolveException(
-    source,
-    'No built-in method "$methodName" on TextEditingController',
-    location: locationOf(),
+  _throwUnknownMethod(
+    typeLabel: 'TextEditingController',
+    methodName: methodName,
+    source: source,
+    locationOf: locationOf,
   );
 }
 
@@ -1180,10 +1412,11 @@ Object? _invokeScrollControllerMethod({
       return null;
   }
 
-  throw ResolveException(
-    source,
-    'No built-in method "$methodName" on ScrollController',
-    location: locationOf(),
+  _throwUnknownMethod(
+    typeLabel: 'ScrollController',
+    methodName: methodName,
+    source: source,
+    locationOf: locationOf,
   );
 }
 
@@ -1230,10 +1463,11 @@ Object? _invokeFocusNodeMethod({
       return null;
   }
 
-  throw ResolveException(
-    source,
-    'No built-in method "$methodName" on FocusNode',
-    location: locationOf(),
+  _throwUnknownMethod(
+    typeLabel: 'FocusNode',
+    methodName: methodName,
+    source: source,
+    locationOf: locationOf,
   );
 }
 
@@ -1315,10 +1549,11 @@ Object? _invokePageControllerMethod({
       return null;
   }
 
-  throw ResolveException(
-    source,
-    'No built-in method "$methodName" on PageController',
-    location: locationOf(),
+  _throwUnknownMethod(
+    typeLabel: 'PageController',
+    methodName: methodName,
+    source: source,
+    locationOf: locationOf,
   );
 }
 
@@ -1420,10 +1655,11 @@ Object? _invokeAnimationControllerMethod({
       return null;
   }
 
-  throw ResolveException(
-    source,
-    'No built-in method "$methodName" on AnimationController',
-    location: locationOf(),
+  _throwUnknownMethod(
+    typeLabel: 'AnimationController',
+    methodName: methodName,
+    source: source,
+    locationOf: locationOf,
   );
 }
 
@@ -1461,9 +1697,10 @@ Object? _invokeTabControllerMethod({
       return null;
   }
 
-  throw ResolveException(
-    source,
-    'No built-in method "$methodName" on TabController',
-    location: locationOf(),
+  _throwUnknownMethod(
+    typeLabel: 'TabController',
+    methodName: methodName,
+    source: source,
+    locationOf: locationOf,
   );
 }

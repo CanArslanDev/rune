@@ -73,4 +73,9 @@ final class ExtensionRegistry {
 
   /// Number of registered handlers.
   int get size => _handlers.length;
+
+  /// Iterable view of every registered extension property name. Used
+  /// by `PropertyResolver` throw sites for "did you mean ...?"
+  /// suggestions.
+  Iterable<String> get names => _handlers.keys;
 }

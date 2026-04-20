@@ -85,4 +85,22 @@ final class RuneScope {
     if (_entries.containsKey(name)) return true;
     return _parent?.has(name) ?? false;
   }
+
+  /// Iterable view of every name declared in this scope and any
+  /// ancestor. Used by resolver throw sites to compute
+  /// Levenshtein-based suggestions on unknown identifiers. Inner
+  /// declarations come first; duplicates from parent scopes that have
+  /// already been surfaced by a nearer declaration are suppressed.
+  Iterable<String> get names sync* {
+    final seen = <String>{};
+    for (final key in _entries.keys) {
+      if (seen.add(key)) yield key;
+    }
+    final parent = _parent;
+    if (parent != null) {
+      for (final key in parent.names) {
+        if (seen.add(key)) yield key;
+      }
+    }
+  }
 }

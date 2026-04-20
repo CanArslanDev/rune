@@ -1,3 +1,4 @@
+import 'package:rune/src/core/levenshtein.dart';
 import 'package:rune/src/core/source_span.dart';
 
 /// The sealed base of all Rune-originated exceptions.
@@ -53,6 +54,16 @@ sealed class RuneException implements Exception {
   }
 }
 
+/// Composes the "(did you mean "X"?)" trailer appended to a failure
+/// message when a near-miss candidate is found.
+///
+/// Returns an empty string when [suggestion] is `null`. Isolated so
+/// every exception factory uses the same wording.
+String _suggestionTrailer(String? suggestion) {
+  if (suggestion == null) return '';
+  return ' (did you mean "$suggestion"?)';
+}
+
 /// Raised when `DartParser` cannot produce an AST from the input.
 final class ParseException extends RuneException {
   /// Creates a [ParseException] with the offending [source] and a [message].
@@ -68,6 +79,34 @@ final class ParseException extends RuneException {
 final class ResolveException extends RuneException {
   /// Creates a [ResolveException] with the offending [source] and a [message].
   const ResolveException(super.source, super.message, {super.location});
+
+  /// Builds a [ResolveException] whose [message] includes a
+  /// Levenshtein-based "did you mean ...?" suggestion drawn from
+  /// [candidates], when a near-miss exists.
+  ///
+  /// [baseMessage] is the canonical message the resolver already
+  /// produces (e.g. `'Unknown constant "Colros.red"'`). [candidate] is
+  /// the misspelled token ([baseMessage] is not parsed — callers pass
+  /// the token they compared against the [candidates] iterable). When
+  /// no candidate falls within the Levenshtein threshold, the message
+  /// is returned unchanged. [maxDistance] forwards to
+  /// [findNearestName].
+  factory ResolveException.withSuggestion({
+    required String source,
+    required String baseMessage,
+    required String candidate,
+    required Iterable<String> candidates,
+    SourceSpan? location,
+    int maxDistance = 3,
+  }) {
+    final hit =
+        findNearestName(candidate, candidates, maxDistance: maxDistance);
+    return ResolveException(
+      source,
+      '$baseMessage${_suggestionTrailer(hit)}',
+      location: location,
+    );
+  }
 
   @override
   String toString() =>
@@ -87,6 +126,44 @@ final class UnregisteredBuilderException extends RuneException {
           'No builder registered for type "$typeName"',
           location: location,
         );
+
+  /// Internal constructor used by `withSuggestion` so the
+  /// auto-generated message can be replaced with one that carries the
+  /// suggestion trailer. Not exposed publicly — callers go through
+  /// either the default const constructor (no trailer) or the factory.
+  const UnregisteredBuilderException._(
+    String source,
+    this.typeName,
+    String message, {
+    SourceSpan? location,
+  }) : super(source, message, location: location);
+
+  /// Builds an [UnregisteredBuilderException] for [typeName] with a
+  /// Levenshtein-based "did you mean ...?" trailer when a near-miss
+  /// exists in [candidates].
+  ///
+  /// [candidates] typically concatenates the widget registry keys, the
+  /// value registry keys, and any in-scope component names. When no
+  /// candidate falls within the Levenshtein threshold, the message is
+  /// unchanged from the default-construction form.
+  factory UnregisteredBuilderException.withSuggestion(
+    String source,
+    String typeName,
+    Iterable<String> candidates, {
+    SourceSpan? location,
+    int maxDistance = 3,
+  }) {
+    final hit =
+        findNearestName(typeName, candidates, maxDistance: maxDistance);
+    final message = 'No builder registered for type "$typeName"'
+        '${_suggestionTrailer(hit)}';
+    return UnregisteredBuilderException._(
+      source,
+      typeName,
+      message,
+      location: location,
+    );
+  }
 
   /// The missing type's name (e.g. `"FooWidget"`).
   final String typeName;
@@ -114,6 +191,30 @@ final class ArgumentException extends RuneException {
 final class BindingException extends RuneException {
   /// Creates a [BindingException] with the offending [source] and a [message].
   const BindingException(super.source, super.message, {super.location});
+
+  /// Builds a [BindingException] whose [message] carries a
+  /// Levenshtein-based "did you mean ...?" suggestion when
+  /// [candidates] contains a near-miss of [candidate].
+  ///
+  /// [candidates] is typically the union of the live data keys and any
+  /// enclosing scope variable names. Suggestion wording matches the
+  /// other resolver-raised exceptions for uniformity.
+  factory BindingException.withSuggestion({
+    required String source,
+    required String baseMessage,
+    required String candidate,
+    required Iterable<String> candidates,
+    SourceSpan? location,
+    int maxDistance = 3,
+  }) {
+    final hit =
+        findNearestName(candidate, candidates, maxDistance: maxDistance);
+    return BindingException(
+      source,
+      '$baseMessage${_suggestionTrailer(hit)}',
+      location: location,
+    );
+  }
 
   @override
   String toString() =>

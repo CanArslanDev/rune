@@ -252,4 +252,57 @@ void main() {
       },
     );
   });
+
+  group('withSuggestion factories', () {
+    test('UnregisteredBuilderException.withSuggestion adds trailer on match',
+        () {
+      final exc = UnregisteredBuilderException.withSuggestion(
+        'Colums()',
+        'Colums',
+        const ['Column', 'Row'],
+      );
+      expect(exc.typeName, 'Colums');
+      expect(exc.message, contains('did you mean "Column"?'));
+    });
+
+    test('UnregisteredBuilderException.withSuggestion omits trailer on miss',
+        () {
+      final exc = UnregisteredBuilderException.withSuggestion(
+        'Zzzzzz()',
+        'Zzzzzz',
+        const ['Column', 'Row'],
+      );
+      expect(exc.message, isNot(contains('did you mean')));
+    });
+
+    test('ResolveException.withSuggestion composes baseMessage + trailer', () {
+      final exc = ResolveException.withSuggestion(
+        source: 'Colors.redd',
+        baseMessage: 'Unknown constant "Colors.redd"',
+        candidate: 'redd',
+        candidates: const ['red', 'blue'],
+      );
+      expect(exc.message, startsWith('Unknown constant "Colors.redd"'));
+      expect(exc.message, endsWith('(did you mean "red"?)'));
+    });
+
+    test('BindingException.withSuggestion carries location through', () {
+      const span = SourceSpan(
+        offset: 0,
+        length: 5,
+        line: 1,
+        column: 1,
+        excerpt: 'userNam',
+      );
+      final exc = BindingException.withSuggestion(
+        source: 'userNam',
+        baseMessage: 'Unknown identifier "userNam"',
+        candidate: 'userNam',
+        candidates: const ['userName'],
+        location: span,
+      );
+      expect(exc.location, same(span));
+      expect(exc.message, contains('did you mean "userName"?'));
+    });
+  });
 }

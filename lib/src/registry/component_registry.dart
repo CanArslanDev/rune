@@ -42,4 +42,8 @@ final class ComponentRegistry {
 
   /// Number of registered components.
   int get size => _components.length;
+
+  /// Iterable view of every registered component's name. Used by
+  /// resolver throw sites to compute Levenshtein-based suggestions.
+  Iterable<String> get names => _components.keys;
 }

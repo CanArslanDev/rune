@@ -280,4 +280,98 @@ void main() {
       );
     });
   });
+
+  group('SourceSpan.toContextualPointer', () {
+    const multiLineSource = 'Column(\n'
+        '  children: [\n'
+        '    Text("hi"),\n'
+        '    Colums(),\n'
+        '    Text("bye"),\n'
+        '  ],\n'
+        ')';
+
+    test('contextLines: 0 reproduces toPointerString exactly', () {
+      final span = SourceSpan.fromOffset(
+        multiLineSource,
+        multiLineSource.indexOf('Colums'),
+        6,
+      );
+      expect(
+        span.toContextualPointer(multiLineSource, contextLines: 0),
+        span.toPointerString(),
+      );
+    });
+
+    test('contextLines: 1 adds one line above and one line below', () {
+      final span = SourceSpan.fromOffset(
+        multiLineSource,
+        multiLineSource.indexOf('Colums'),
+        6,
+      );
+      final out = span.toContextualPointer(multiLineSource);
+      final lines = out.split('\n');
+      // Expected: Text("hi"), | Colums(), | carets | Text("bye"),
+      expect(lines.length, 4);
+      expect(lines[0].trim(), 'Text("hi"),');
+      expect(lines[1].trim(), 'Colums(),');
+      expect(lines[2].trim().startsWith('^'), isTrue);
+      expect(lines[3].trim(), 'Text("bye"),');
+    });
+
+    test('contextLines: 3 widens the excerpt further', () {
+      final span = SourceSpan.fromOffset(
+        multiLineSource,
+        multiLineSource.indexOf('Colums'),
+        6,
+      );
+      final out = span.toContextualPointer(
+        multiLineSource,
+        contextLines: 3,
+      );
+      // Covers the whole source plus a caret row.
+      expect(out, contains('Column('));
+      expect(out, contains('children: ['));
+      expect(out, contains('Text("hi"),'));
+      expect(out, contains('Colums(),'));
+      expect(out, contains('Text("bye"),'));
+      expect(out, contains('^'));
+    });
+
+    test('span at start of source omits missing above lines', () {
+      final span = SourceSpan.fromOffset(multiLineSource, 0, 6);
+      final out = span.toContextualPointer(multiLineSource);
+      final lines = out.split('\n');
+      // First line of source has no "above" line — excerpt at lines[0],
+      // caret at [1], below line at [2].
+      expect(lines.length, 3);
+      expect(lines[0], 'Column(');
+      expect(lines[1].trim().startsWith('^'), isTrue);
+      expect(lines[2].trim(), 'children: [');
+    });
+
+    test('span at end of source omits missing below lines', () {
+      final span = SourceSpan.fromOffset(
+        multiLineSource,
+        multiLineSource.length - 1,
+        1,
+      );
+      final out = span.toContextualPointer(multiLineSource);
+      final lines = out.split('\n');
+      expect(lines.length, 3);
+      expect(lines[0].trim(), '],');
+      expect(lines[1], ')');
+      expect(lines[2].trim().startsWith('^'), isTrue);
+    });
+
+    test('empty fullSource falls back to toPointerString', () {
+      const span = SourceSpan(
+        offset: 0,
+        length: 1,
+        line: 1,
+        column: 1,
+        excerpt: 'x',
+      );
+      expect(span.toContextualPointer(''), span.toPointerString());
+    });
+  });
 }

@@ -17,6 +17,7 @@ export 'src/core/rune_context.dart' show RuneContext;
 export 'src/core/source_span.dart' show SourceSpan;
 export 'src/defaults/rune_defaults.dart' show RuneDefaults;
 export 'src/dev/rune_dev_overlay.dart' show RuneDevOverlay;
+export 'src/dev/rune_source_formatter.dart' show formatRuneSource;
 export 'src/dynamic_view.dart' show RuneView;
 export 'src/registry/component_registry.dart' show ComponentRegistry;
 export 'src/registry/constant_registry.dart' show ConstantRegistry;

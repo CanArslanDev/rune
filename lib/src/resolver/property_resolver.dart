@@ -1,4 +1,5 @@
 import 'package:analyzer/dart/ast/ast.dart';
+import 'package:rune/src/core/exceptions.dart';
 import 'package:rune/src/core/rune_context.dart';
 import 'package:rune/src/core/rune_state.dart';
 import 'package:rune/src/core/source_span.dart';
@@ -74,13 +75,38 @@ final class PropertyResolver {
       return null;
     }
 
-    // 4. Bridge-registered extension (or miss → ResolveException).
-    return ctx.extensions.require(
-      propName,
-      target,
-      ctx,
+    // 4. Bridge-registered extension (hit) — return directly.
+    if (ctx.extensions.contains(propName)) {
+      return ctx.extensions.resolve(propName, target, ctx);
+    }
+
+    // 4b. Miss on every dispatch step. We take over exception
+    // construction so the "did you mean ...?" trailer fires against
+    // the most relevant candidate pool:
+    //   - if the target is a recognized built-in type, suggest one of
+    //     the whitelisted properties for that type;
+    //   - otherwise, fall back to registered extension names.
+    final location =
+        SourceSpan.fromAstOffset(ctx.source, node.offset, node.length);
+    final typeLabel = builtinTargetTypeLabel(target);
+    if (typeLabel != null) {
+      final builtin = builtinPropertiesFor(typeLabel);
+      if (builtin.isNotEmpty) {
+        throw ResolveException.withSuggestion(
+          source: node.toSource(),
+          baseMessage: 'No built-in property ".$propName" on $typeLabel',
+          candidate: propName,
+          candidates: builtin,
+          location: location,
+        );
+      }
+    }
+    throw ResolveException.withSuggestion(
       source: node.toSource(),
-      location: SourceSpan.fromAstOffset(ctx.source, node.offset, node.length),
+      baseMessage: 'Unknown extension property ".$propName"',
+      candidate: propName,
+      candidates: ctx.extensions.names,
+      location: location,
     );
   }
 }

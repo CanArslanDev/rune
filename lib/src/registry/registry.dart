@@ -59,4 +59,11 @@ class Registry<T extends Object> {
 
   /// Number of registered entries. Useful in tests and introspection.
   int get size => _items.length;
+
+  /// Iterable view of every registered entry's name.
+  ///
+  /// Used by resolver throw sites to compute Levenshtein-based
+  /// "did you mean ...?" suggestions without exposing the backing map.
+  /// Iteration order follows insertion order of the underlying map.
+  Iterable<String> get names => _items.keys;
 }

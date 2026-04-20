@@ -35,6 +35,11 @@ final class RuneDataContext {
   /// Whether a value — possibly `null` — exists for [key].
   bool has(String key) => _data.containsKey(key);
 
+  /// Iterable view of every key present in this data context. Used by
+  /// resolver throw sites to compute Levenshtein-based "did you mean
+  /// ...?" suggestions on unknown identifiers.
+  Iterable<String> get keys => _data.keys;
+
   /// Returns a new [RuneDataContext] with [additions] merged on top of this
   /// one.
   ///

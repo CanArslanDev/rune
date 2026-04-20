@@ -84,4 +84,19 @@ final class ConstantRegistry {
   /// Total number of registered members across all types.
   int get size =>
       _members.values.fold<int>(0, (sum, bucket) => sum + bucket.length);
+
+  /// Iterable view of every registered type name (outer keys). Used by
+  /// resolver throw sites to compute suggestions on an unknown prefix
+  /// (`Colros.red` → suggest `Colors`).
+  Iterable<String> get typeNames => _members.keys;
+
+  /// Iterable view of the member names registered under [typeName].
+  /// Returns an empty iterable when [typeName] is unknown. Used when
+  /// the type is right but the member is misspelled
+  /// (`Colors.redd` → suggest `red`).
+  Iterable<String> memberNamesOf(String typeName) {
+    final bucket = _members[typeName];
+    if (bucket == null) return const <String>[];
+    return bucket.keys;
+  }
 }

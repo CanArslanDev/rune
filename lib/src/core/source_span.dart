@@ -148,6 +148,61 @@ final class SourceSpan {
     return '$excerpt\n$indent$carets';
   }
 
+  /// Renders a pointer block with [contextLines] of surrounding source
+  /// above and below the offending line.
+  ///
+  /// [fullSource] is the complete Rune source string this span points
+  /// into; the caller supplies it explicitly so [SourceSpan] itself
+  /// stays a cheap value object that carries only the single line it
+  /// was constructed with. [contextLines] is clamped to a non-negative
+  /// integer; `0` reproduces [toPointerString].
+  ///
+  /// The format is:
+  ///
+  /// ```
+  /// <above line N-1>
+  /// <above line N>
+  /// <excerpt line>
+  /// <indent>^^^
+  /// <below line 1>
+  /// <below line 2>
+  /// ```
+  ///
+  /// Context lines omitted when the span sits at the top or bottom of
+  /// [fullSource]. When [fullSource] is empty, or when the span's line
+  /// number falls outside its line count (a pathological condition),
+  /// falls back to [toPointerString].
+  String toContextualPointer(
+    String fullSource, {
+    int contextLines = 1,
+  }) {
+    if (contextLines <= 0 || fullSource.isEmpty) {
+      return toPointerString();
+    }
+    final lines = fullSource.split('\n');
+    // [line] is 1-based. Convert to 0-based index into [lines].
+    final targetIndex = line - 1;
+    if (targetIndex < 0 || targetIndex >= lines.length) {
+      return toPointerString();
+    }
+
+    final startIndex = math.max(0, targetIndex - contextLines);
+    final endIndex = math.min(lines.length - 1, targetIndex + contextLines);
+
+    final buffer = StringBuffer();
+    for (var i = startIndex; i < targetIndex; i++) {
+      buffer.writeln(lines[i]);
+    }
+    // Excerpt + caret row reuse toPointerString exactly.
+    buffer.write(toPointerString());
+    for (var i = targetIndex + 1; i <= endIndex; i++) {
+      buffer
+        ..write('\n')
+        ..write(lines[i]);
+    }
+    return buffer.toString();
+  }
+
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;

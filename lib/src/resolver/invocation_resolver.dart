@@ -358,7 +358,23 @@ final class InvocationResolver implements InvocationResolverContract {
         invocationLocation: location,
       );
     }
-    throw UnregisteredBuilderException(source, typeName, location: location);
+    throw UnregisteredBuilderException.withSuggestion(
+      source,
+      typeName,
+      _builderCandidates(ctx),
+      location: location,
+    );
+  }
+
+  /// Concatenates every registered builder name — widgets, value-builder
+  /// type names (stripped of `.ctor`), and in-scope components — for the
+  /// "did you mean ...?" Levenshtein lookup at unregistered-builder
+  /// throw sites. Iteration order follows the registries' own insertion
+  /// order, which keeps suggestions deterministic across runs.
+  Iterable<String> _builderCandidates(RuneContext ctx) sync* {
+    yield* ctx.widgets.names;
+    yield* ctx.values.typeNames;
+    yield* ctx.components.names;
   }
 
   /// Invokes [build] and, if it raises an [ArgumentException] with no
