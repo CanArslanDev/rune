@@ -14,12 +14,12 @@ void main() {
             RuneView(
               source: '''
                 Form(
-                  autovalidateMode: AutovalidateMode.always,
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
                   child: Column(children: [
                     TextFormField(
-                      value: '',
-                      validator: (v) => v == null || v.isEmpty
-                        ? 'Required'
+                      value: 'abc',
+                      validator: (v) => v == null || v.length < 5
+                        ? 'Too short'
                         : null,
                     ),
                   ]),
@@ -30,13 +30,18 @@ void main() {
           ),
         );
         await tester.pumpAndSettle();
-        // autovalidateMode: always validates on the initial pump.
-        expect(find.text('Required'), findsOneWidget);
+        // Before user interaction, validator has not fired yet.
+        expect(find.text('Too short'), findsNothing);
 
-        // Typing a valid value clears the error.
-        await tester.enterText(find.byType(TextFormField), 'you@example.com');
+        // Type a short (still invalid) value; onUserInteraction fires now.
+        await tester.enterText(find.byType(TextFormField), 'ab');
         await tester.pumpAndSettle();
-        expect(find.text('Required'), findsNothing);
+        expect(find.text('Too short'), findsOneWidget);
+
+        // Type a valid value; error clears.
+        await tester.enterText(find.byType(TextFormField), 'longer-value');
+        await tester.pumpAndSettle();
+        expect(find.text('Too short'), findsNothing);
       },
     );
 
