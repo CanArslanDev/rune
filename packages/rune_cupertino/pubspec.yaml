@@ -4,7 +4,6 @@ version: 0.1.1
 repository: https://github.com/CanArslanDev/rune/tree/main/packages/rune_cupertino
 homepage: https://github.com/CanArslanDev/rune
 issue_tracker: https://github.com/CanArslanDev/rune/issues
-documentation: https://canarslandev.github.io/rune/
 topics:
   - rune
   - bridge

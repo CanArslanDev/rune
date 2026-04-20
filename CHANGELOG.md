@@ -20,6 +20,17 @@ All notable changes to this project are documented here. Format follows
 - Root README gains a row for `rune_devtools_extension` in the
   Bridge-packages table.
 
+### Removed
+
+- **GitHub Pages dartdoc hosting.** The `.github/workflows/docs.yaml`
+  workflow, root README API-docs badge + hosted-docs reference,
+  and every package's `documentation:` pubspec field pointing at
+  `https://canarslandev.github.io/rune/` are all gone. pub.dev
+  already renders `dart doc` output on every published release,
+  so the hand-rolled Pages deployment was redundant. Consumers
+  follow the pub.dev-provided API-docs link from each package's
+  landing page instead.
+
 ## [1.18.0] - 2026-04-20 - DevTools inspection (Phase 1)
 
 ### Added
