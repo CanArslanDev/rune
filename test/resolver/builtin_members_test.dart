@@ -1148,4 +1148,162 @@ void main() {
       expect(matched, isFalse);
     });
   });
+
+  group('invokeBuiltinMethod: AnimationController.drive (v1.12.0)', () {
+    AnimationController makeController() => AnimationController(
+          vsync: const TestVSync(),
+          duration: const Duration(milliseconds: 100),
+        );
+
+    testWidgets('drive(tween) returns a live Animation', (tester) async {
+      final ctrl = makeController();
+      addTearDown(ctrl.dispose);
+      final tween = Tween<double>(begin: 0, end: 10);
+      final node = parseMethod('ctrl.drive(t)');
+      final out = invokeBuiltinMethod(
+        target: ctrl,
+        methodName: 'drive',
+        positionalArgs: <Object?>[tween],
+        namedArgs: const <String, Object?>{},
+        sourceNode: node,
+        ctx: testContext(),
+      );
+      expect(out, isA<Animation<Object?>>());
+    });
+
+    testWidgets(
+      'drive with a non-Animatable positional raises ResolveException',
+      (tester) async {
+        final ctrl = makeController();
+        addTearDown(ctrl.dispose);
+        final node = parseMethod('ctrl.drive(x)');
+        expect(
+          () => invokeBuiltinMethod(
+            target: ctrl,
+            methodName: 'drive',
+            positionalArgs: const <Object?>[42],
+            namedArgs: const <String, Object?>{},
+            sourceNode: node,
+            ctx: testContext(),
+          ),
+          throwsA(isA<ResolveException>()),
+        );
+      },
+    );
+
+    testWidgets('drive with wrong arity raises ResolveException',
+        (tester) async {
+      final ctrl = makeController();
+      addTearDown(ctrl.dispose);
+      final node = parseMethod('ctrl.drive()');
+      expect(
+        () => invokeBuiltinMethod(
+          target: ctrl,
+          methodName: 'drive',
+          positionalArgs: const <Object?>[],
+          namedArgs: const <String, Object?>{},
+          sourceNode: node,
+          ctx: testContext(),
+        ),
+        throwsA(isA<ResolveException>()),
+      );
+    });
+  });
+
+  group('invokeBuiltinMethod: Animatable.animate / chain (v1.12.0)', () {
+    testWidgets('Tween.animate(parent) returns a composed Animation',
+        (tester) async {
+      final ctrl = AnimationController(
+        vsync: const TestVSync(),
+        duration: const Duration(milliseconds: 50),
+      );
+      addTearDown(ctrl.dispose);
+      final tween = Tween<double>(begin: 0, end: 100);
+      final node = parseMethod('t.animate(p)');
+      final out = invokeBuiltinMethod(
+        target: tween,
+        methodName: 'animate',
+        positionalArgs: <Object?>[ctrl],
+        namedArgs: const <String, Object?>{},
+        sourceNode: node,
+        ctx: testContext(),
+      );
+      expect(out, isA<Animation<Object?>>());
+      final anim = out! as Animation<Object?>;
+      expect(anim.value, 0.0);
+    });
+
+    testWidgets('Tween.chain(next) composes two Animatables', (tester) async {
+      final tween = Tween<double>(begin: 0, end: 1);
+      final curve = CurveTween(curve: Curves.easeIn);
+      final node = parseMethod('t.chain(c)');
+      final out = invokeBuiltinMethod(
+        target: tween,
+        methodName: 'chain',
+        positionalArgs: <Object?>[curve],
+        namedArgs: const <String, Object?>{},
+        sourceNode: node,
+        ctx: testContext(),
+      );
+      expect(out, isA<Animatable<Object?>>());
+    });
+
+    testWidgets(
+      'Tween.animate with a non-Animation positional raises '
+      'ResolveException',
+      (tester) async {
+        final tween = Tween<double>(begin: 0, end: 1);
+        final node = parseMethod('t.animate(x)');
+        expect(
+          () => invokeBuiltinMethod(
+            target: tween,
+            methodName: 'animate',
+            positionalArgs: const <Object?>[42],
+            namedArgs: const <String, Object?>{},
+            sourceNode: node,
+            ctx: testContext(),
+          ),
+          throwsA(isA<ResolveException>()),
+        );
+      },
+    );
+
+    testWidgets(
+      'Tween.chain with a non-Animatable positional raises ResolveException',
+      (tester) async {
+        final tween = Tween<double>(begin: 0, end: 1);
+        final node = parseMethod('t.chain(x)');
+        expect(
+          () => invokeBuiltinMethod(
+            target: tween,
+            methodName: 'chain',
+            positionalArgs: const <Object?>[42],
+            namedArgs: const <String, Object?>{},
+            sourceNode: node,
+            ctx: testContext(),
+          ),
+          throwsA(isA<ResolveException>()),
+        );
+      },
+    );
+
+    testWidgets(
+      'Unknown method on Animatable raises ResolveException',
+      (tester) async {
+        final tween = Tween<double>(begin: 0, end: 1);
+        final node = parseMethod('t.nope()');
+        expect(
+          () => invokeBuiltinMethod(
+            target: tween,
+            methodName: 'nope',
+            positionalArgs: const <Object?>[],
+            namedArgs: const <String, Object?>{},
+            sourceNode: node,
+            ctx: testContext(),
+          ),
+          throwsA(isA<ResolveException>()),
+        );
+      },
+    );
+  });
 }

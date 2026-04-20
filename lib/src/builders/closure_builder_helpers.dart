@@ -518,6 +518,83 @@ ExpansionPanelHeaderBuilder toExpansionPanelHeaderBuilder(
   };
 }
 
+/// Validates a resolved `pageBuilder` argument for [PageRouteBuilder]
+/// and returns a [RoutePageBuilder] that feeds
+/// `(BuildContext, Animation<double>, Animation<double>)` into the
+/// underlying [RuneClosure].
+///
+/// Failure modes mirror [toIndexedBuilder]: null / wrong runtime type /
+/// wrong arity (expected 3). The returned builder raises
+/// [ResolveException] if the closure body yields a non-[Widget].
+RoutePageBuilder toPageRouteBuilderPageBuilder(
+  Object? source,
+  String widgetName,
+) {
+  final closure = _requireClosure(source, widgetName, 'pageBuilder', 3);
+  return (ctx, animation, secondaryAnimation) {
+    final result = closure.call(<Object?>[ctx, animation, secondaryAnimation]);
+    if (result is! Widget) {
+      throw ResolveException(
+        widgetName,
+        '$widgetName.pageBuilder closure must return a Widget; '
+        'got ${result.runtimeType}',
+      );
+    }
+    return result;
+  };
+}
+
+/// Validates a resolved `transitionsBuilder` argument for
+/// [PageRouteBuilder] and returns a [RouteTransitionsBuilder] that feeds
+/// `(BuildContext, Animation<double>, Animation<double>, Widget)` into
+/// the underlying [RuneClosure].
+///
+/// Failure modes mirror [toIndexedBuilder]: null / wrong runtime type /
+/// wrong arity (expected 4). The returned builder raises
+/// [ResolveException] if the closure body yields a non-[Widget].
+RouteTransitionsBuilder toPageRouteBuilderTransitionsBuilder(
+  Object? source,
+  String widgetName,
+) {
+  final closure =
+      _requireClosure(source, widgetName, 'transitionsBuilder', 4);
+  return (ctx, animation, secondaryAnimation, child) {
+    final result = closure
+        .call(<Object?>[ctx, animation, secondaryAnimation, child]);
+    if (result is! Widget) {
+      throw ResolveException(
+        widgetName,
+        '$widgetName.transitionsBuilder closure must return a Widget; '
+        'got ${result.runtimeType}',
+      );
+    }
+    return result;
+  };
+}
+
+/// Validates a resolved `(Route) -> bool` predicate closure used by
+/// `Navigator.popUntil(predicate)` and returns a
+/// `RoutePredicate` that feeds the current `Route` into the underlying
+/// [RuneClosure] and enforces a `bool` return value.
+///
+/// Failure modes mirror [toIndexedBuilder]: null / wrong runtime type /
+/// wrong arity (expected 1). A non-bool return at invocation time
+/// raises [ResolveException].
+RoutePredicate toRoutePopPredicate(Object? source, String widgetName) {
+  final closure = _requireClosure(source, widgetName, 'predicate', 1);
+  return (route) {
+    final result = closure.call(<Object?>[route]);
+    if (result is! bool) {
+      throw ResolveException(
+        widgetName,
+        '$widgetName.predicate closure must return bool; '
+        'got ${result.runtimeType}',
+      );
+    }
+    return result;
+  };
+}
+
 /// Shared guard: extracts a [RuneClosure] of arity [expectedArity] from
 /// [source], raising [ArgumentException] citing [widgetName] and
 /// [paramName] on any failure (null, wrong runtime type, wrong arity).

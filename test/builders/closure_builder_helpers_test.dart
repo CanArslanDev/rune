@@ -288,4 +288,101 @@ void main() {
       expect(seen, isEmpty);
     });
   });
+
+  group('toPageRouteBuilderPageBuilder', () {
+    test('null source throws ArgumentException', () {
+      expect(
+        () => toPageRouteBuilderPageBuilder(null, 'PageRouteBuilder'),
+        throwsA(isA<ArgumentException>()),
+      );
+    });
+
+    test('wrong arity throws ArgumentException', () {
+      expect(
+        () => toPageRouteBuilderPageBuilder(
+          _closureOf("(c) => Text('x')"),
+          'PageRouteBuilder',
+        ),
+        throwsA(isA<ArgumentException>()),
+      );
+    });
+
+    testWidgets('invokes the closure and returns its Widget', (tester) async {
+      final pb = toPageRouteBuilderPageBuilder(
+        _closureOf("(c, a, s) => Text('Page')"),
+        'PageRouteBuilder',
+      );
+      final route = PageRouteBuilder<void>(
+        pageBuilder: pb,
+        transitionDuration: const Duration(milliseconds: 10),
+        reverseTransitionDuration: const Duration(milliseconds: 10),
+      );
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Builder(
+            builder: (ctx) => ElevatedButton(
+              onPressed: () => Navigator.of(ctx).push(route),
+              child: const Text('Go'),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('Go'));
+      await tester.pumpAndSettle();
+      expect(find.text('Page'), findsOneWidget);
+    });
+  });
+
+  group('toPageRouteBuilderTransitionsBuilder', () {
+    test('null source throws ArgumentException', () {
+      expect(
+        () => toPageRouteBuilderTransitionsBuilder(
+          null,
+          'PageRouteBuilder',
+        ),
+        throwsA(isA<ArgumentException>()),
+      );
+    });
+
+    test('wrong arity throws ArgumentException', () {
+      expect(
+        () => toPageRouteBuilderTransitionsBuilder(
+          _closureOf("(c, a, s) => Text('x')"),
+          'PageRouteBuilder',
+        ),
+        throwsA(isA<ArgumentException>()),
+      );
+    });
+  });
+
+  group('toRoutePopPredicate', () {
+    test('null source throws ArgumentException', () {
+      expect(
+        () => toRoutePopPredicate(null, 'Navigator.popUntil'),
+        throwsA(isA<ArgumentException>()),
+      );
+    });
+
+    test('wrong arity throws ArgumentException', () {
+      expect(
+        () => toRoutePopPredicate(
+          _closureOf('(r, x) => true'),
+          'Navigator.popUntil',
+        ),
+        throwsA(isA<ArgumentException>()),
+      );
+    });
+
+    test('non-bool return at invocation raises ResolveException', () {
+      final pred = toRoutePopPredicate(
+        _closureOf("(r) => 'not-a-bool'"),
+        'Navigator.popUntil',
+      );
+      final route = MaterialPageRoute<void>(
+        builder: (_) => const SizedBox(),
+        settings: const RouteSettings(name: '/x'),
+      );
+      expect(() => pred(route), throwsA(isA<ResolveException>()));
+    });
+  });
 }

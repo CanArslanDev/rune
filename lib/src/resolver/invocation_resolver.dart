@@ -576,6 +576,7 @@ final class InvocationResolver implements InvocationResolverContract {
     'showSnackBar': runShowSnackBar,
     'showDatePicker': runShowDatePicker,
     'showTimePicker': runShowTimePicker,
+    'showMenu': runShowMenu,
   };
 
   /// Whitelist of `Navigator.<method>(...)` imperative bridge calls.
@@ -595,6 +596,7 @@ final class InvocationResolver implements InvocationResolverContract {
     'pushReplacement': runNavigatorPushReplacement,
     'pushNamed': runNavigatorPushNamed,
     'canPop': runNavigatorCanPop,
+    'popUntil': runNavigatorPopUntil,
   };
 }
 

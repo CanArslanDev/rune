@@ -350,6 +350,94 @@ Future<TimeOfDay?> runShowTimePicker(
   );
 }
 
+/// Resolves `Navigator.popUntil(predicate)` into
+/// `Navigator.of(context).popUntil(predicate)` (v1.12.0).
+///
+/// Accepts either:
+/// - exactly one positional `(Route) -> bool` closure (typical use), or
+/// - one named `predicate:` closure of the same shape.
+///
+/// Any other shape (missing / non-closure / wrong arity / non-bool
+/// return at invocation time) raises either [ArgumentException] or
+/// [ResolveException] citing the bridge name. Returns `null` (Flutter's
+/// `Navigator.popUntil` is void).
+Object? runNavigatorPopUntil(ResolvedArguments args, RuneContext ctx) {
+  final context = _requireFlutterContext(ctx, 'Navigator.popUntil');
+  for (final key in args.named.keys) {
+    if (key != 'predicate') {
+      throw ArgumentException(
+        'Navigator.popUntil',
+        'Navigator.popUntil only accepts the named argument "predicate"; '
+        'got "$key"',
+      );
+    }
+  }
+  final Object? predicateSource;
+  if (args.positional.isNotEmpty) {
+    if (args.positional.length != 1) {
+      throw ResolveException(
+        'Navigator.popUntil',
+        'Navigator.popUntil expects exactly one positional '
+        '(Route) -> bool predicate; got ${args.positional.length}',
+      );
+    }
+    predicateSource = args.positional[0];
+  } else {
+    predicateSource = args.named['predicate'];
+  }
+  if (predicateSource == null) {
+    throw const ArgumentException(
+      'Navigator.popUntil',
+      'Missing required argument "predicate"',
+    );
+  }
+  final predicate =
+      toRoutePopPredicate(predicateSource, 'Navigator.popUntil');
+  Navigator.of(context).popUntil(predicate);
+  return null;
+}
+
+/// Resolves `showMenu(position, items, ...)` into Flutter's imperative
+/// [showMenu] function (v1.12.0).
+///
+/// Accepts named arguments only:
+/// - `position` (required, [RelativeRect]).
+/// - `items` (required, `List<PopupMenuEntry>`). Non-entry list members
+///   are silently filtered out, matching the Column/Row children-filter
+///   convention.
+/// - `initialValue` ([Object?]). Optional.
+/// - `elevation` ([num]? coerced to double). Optional.
+/// - `semanticLabel` ([String]?). Optional.
+/// - `useRootNavigator` ([bool]?). Defaults to `false`.
+///
+/// Returns the `Future<Object?>` yielded by Flutter's [showMenu]. Rune
+/// source has no `await` syntax today; callers typically discard the
+/// future and read the selection through a registered named event fired
+/// by an enclosing `PopupMenuItem.onTap`.
+Future<Object?> runShowMenu(ResolvedArguments args, RuneContext ctx) {
+  final context = _requireFlutterContext(ctx, 'showMenu');
+  final position =
+      args.require<RelativeRect>('position', source: 'showMenu');
+  final itemsRaw = args.require<List<Object?>>('items', source: 'showMenu');
+  final items =
+      itemsRaw.whereType<PopupMenuEntry<Object?>>().toList(growable: false);
+  if (items.isEmpty) {
+    throw const ArgumentException(
+      'showMenu',
+      '`items` must contain at least one PopupMenuEntry',
+    );
+  }
+  return showMenu<Object?>(
+    context: context,
+    position: position,
+    items: items,
+    initialValue: args.named['initialValue'],
+    elevation: args.get<num>('elevation')?.toDouble(),
+    semanticLabel: args.get<String>('semanticLabel'),
+    useRootNavigator: args.getOr<bool>('useRootNavigator', false),
+  );
+}
+
 /// Shared guard: reads [RuneContext.flutterContext] or raises
 /// [ResolveException] citing [bridgeName] so unit tests without a live
 /// widget tree get an actionable diagnostic rather than a null-deref.

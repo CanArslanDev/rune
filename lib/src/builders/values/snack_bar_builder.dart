@@ -22,9 +22,7 @@ import 'package:rune/src/core/rune_context.dart';
 /// - `padding` ([EdgeInsetsGeometry]?).
 /// - `showCloseIcon` ([bool]?).
 ///
-/// `action` is intentionally out of scope for v1.3.0: a full
-/// `SnackBarAction` value builder is deferred to a follow-up so the
-/// current release can ship without the extra surface area.
+/// - `action` ([SnackBarAction]?) - wired in v1.12.0.
 final class SnackBarBuilder implements RuneValueBuilder {
   /// Const constructor. The builder is stateless.
   const SnackBarBuilder();
@@ -50,6 +48,7 @@ final class SnackBarBuilder implements RuneValueBuilder {
       margin: args.get<EdgeInsetsGeometry>('margin'),
       padding: args.get<EdgeInsetsGeometry>('padding'),
       showCloseIcon: args.get<bool>('showCloseIcon'),
+      action: args.get<SnackBarAction>('action'),
     );
   }
 }

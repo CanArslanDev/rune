@@ -125,6 +125,11 @@ void main() {
         'RotationTransition',
         'SizeTransition',
         'AnimatedBuilder',
+        // v1.12.0 deferred-item closeout.
+        'ListenableBuilder',
+        'CheckedPopupMenuItem',
+        'BottomSheet',
+        'PaginatedDataTable',
       ]) {
         expect(r.contains(name), isTrue, reason: 'missing widget $name');
       }
@@ -189,6 +194,12 @@ void main() {
         'Tween',
         'ColorTween',
         'CurvedAnimation',
+        // v1.12.0 deferred-item closeout.
+        'PageRouteBuilder',
+        'SnackBarAction',
+        'RelativeRect.fromLTRB',
+        'FilledButton.tonal',
+        'RuneDataTableSource',
       ]) {
         expect(r.contains(key), isTrue, reason: 'missing value $key');
       }
@@ -229,8 +240,8 @@ void main() {
       RuneDefaults.registerWidgets(w);
       RuneDefaults.registerValues(v);
       RuneDefaults.registerConstants(c);
-      expect(w.size, greaterThanOrEqualTo(115));
-      expect(v.size, greaterThanOrEqualTo(54));
+      expect(w.size, greaterThanOrEqualTo(119));
+      expect(v.size, greaterThanOrEqualTo(59));
       expect(c.size, greaterThanOrEqualTo(58));
     });
   });

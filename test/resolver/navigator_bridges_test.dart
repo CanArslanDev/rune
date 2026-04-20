@@ -373,5 +373,97 @@ void main() {
         expect(tester.takeException(), isA<RuneException>());
       },
     );
+
+    testWidgets(
+      'Navigator.popUntil with a matching predicate is a no-op when the '
+      'root is already current',
+      (tester) async {
+        await tester.pumpWidget(
+          _wrap(
+            RuneView(
+              source: '''
+                ElevatedButton(
+                  onPressed: () => Navigator.popUntil((r) => r.isFirst),
+                  child: Text('Pop'),
+                )
+              ''',
+              config: RuneConfig.defaults(),
+            ),
+          ),
+        );
+        await tester.tap(find.text('Pop'));
+        await tester.pump();
+        // Still on the root page; no exception and no missing widgets.
+        expect(find.text('Pop'), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      },
+    );
+
+    testWidgets(
+      'Navigator.popUntil with no predicate raises a RuneException',
+      (tester) async {
+        await tester.pumpWidget(
+          _wrap(
+            RuneView(
+              source: '''
+                ElevatedButton(
+                  onPressed: () => Navigator.popUntil(),
+                  child: Text('Pop'),
+                )
+              ''',
+              config: RuneConfig.defaults(),
+            ),
+          ),
+        );
+        await tester.tap(find.text('Pop'));
+        await tester.pump();
+        expect(tester.takeException(), isA<RuneException>());
+      },
+    );
+
+    testWidgets(
+      'Navigator.popUntil accepts the predicate via a named argument',
+      (tester) async {
+        await tester.pumpWidget(
+          _wrap(
+            RuneView(
+              source: '''
+                ElevatedButton(
+                  onPressed: () => Navigator.popUntil(predicate: (r) => r.isFirst),
+                  child: Text('Pop'),
+                )
+              ''',
+              config: RuneConfig.defaults(),
+            ),
+          ),
+        );
+        await tester.tap(find.text('Pop'));
+        await tester.pump();
+        expect(tester.takeException(), isNull);
+      },
+    );
+
+    testWidgets(
+      'Navigator.popUntil with a wrong-arity predicate raises a '
+      'RuneException',
+      (tester) async {
+        await tester.pumpWidget(
+          _wrap(
+            RuneView(
+              source: '''
+                ElevatedButton(
+                  onPressed: () => Navigator.popUntil((r, x) => true),
+                  child: Text('Pop'),
+                )
+              ''',
+              config: RuneConfig.defaults(),
+            ),
+          ),
+        );
+        await tester.tap(find.text('Pop'));
+        await tester.pump();
+        expect(tester.takeException(), isA<RuneException>());
+      },
+    );
   });
 }

@@ -82,8 +82,11 @@ const Map<String, List<String>> _builtinMethodsByType = <String, List<String>>{
     'stop',
     'reset',
     'repeat',
+    'drive',
     'dispose',
   ],
+  'Animation': <String>['drive'],
+  'Animatable': <String>['animate', 'chain'],
 };
 
 /// Mapping from runtime-target type label to the whitelisted property
@@ -194,6 +197,16 @@ const Map<String, List<String>> _builtinPropertiesByType =
     'horizontal',
     'vertical',
   ],
+  'Route': <String>[
+    'isFirst',
+    'isActive',
+    'isCurrent',
+    'settings',
+  ],
+  'RouteSettings': <String>[
+    'name',
+    'arguments',
+  ],
 };
 
 /// Returns the whitelisted property names on [typeLabel], or an empty
@@ -224,6 +237,7 @@ String? builtinTargetTypeLabel(Object? target) {
   if (target is TabController) return 'TabController';
   if (target is AnimationController) return 'AnimationController';
   if (target is Animation<double>) return 'Animation';
+  if (target is Animatable<Object?>) return 'Animatable';
   if (target is AsyncSnapshot<Object?>) return 'AsyncSnapshot';
   if (target is BoxConstraints) return 'BoxConstraints';
   if (target is ThemeData) return 'ThemeData';
@@ -232,6 +246,8 @@ String? builtinTargetTypeLabel(Object? target) {
   if (target is MediaQueryData) return 'MediaQueryData';
   if (target is Size) return 'Size';
   if (target is EdgeInsets) return 'EdgeInsets';
+  if (target is Route<Object?>) return 'Route';
+  if (target is RouteSettings) return 'RouteSettings';
   return null;
 }
 
@@ -484,6 +500,25 @@ Never _throwUnknownMethod({
       _ => (false, null),
     };
   }
+  // Route whitelist (v1.12.0). Enables `Navigator.popUntil((r) =>
+  // r.isFirst)` and similar predicates to work with the built-in
+  // resolver path without custom data bridges.
+  if (target is Route<Object?>) {
+    return switch (propertyName) {
+      'isFirst' => (true, target.isFirst),
+      'isActive' => (true, target.isActive),
+      'isCurrent' => (true, target.isCurrent),
+      'settings' => (true, target.settings),
+      _ => (false, null),
+    };
+  }
+  if (target is RouteSettings) {
+    return switch (propertyName) {
+      'name' => (true, target.name),
+      'arguments' => (true, target.arguments),
+      _ => (false, null),
+    };
+  }
   return (false, null);
 }
 
@@ -659,6 +694,21 @@ Object? invokeBuiltinMethod({
   // covers the full controller mutation surface.
   if (target is AnimationController) {
     return _invokeAnimationControllerMethod(
+      target: target,
+      methodName: methodName,
+      positionalArgs: positionalArgs,
+      source: source,
+      locationOf: locationOf,
+    );
+  }
+  // Animatable method whitelist (v1.12.0). Covers Tween / CurveTween /
+  // any composed Animatable: `tween.animate(parent)` returns a live
+  // Animation<T>, and `tween.chain(next)` produces a composed Animatable.
+  // Tween is itself an Animatable<T>, so this arm matches any untyped
+  // Rune tween as well as the built-in ColorTween. Check is gated on
+  // Animatable<Object?> to admit the widest runtime type.
+  if (target is Animatable<Object?>) {
+    return _invokeAnimatableMethod(
       target: target,
       methodName: methodName,
       positionalArgs: positionalArgs,
@@ -1642,6 +1692,25 @@ Object? _invokeAnimationControllerMethod({
         'got ${positionalArgs.length}',
         location: locationOf(),
       );
+    case 'drive':
+      _requireControllerArity(
+        typeName: 'AnimationController',
+        methodName: 'drive',
+        expected: 1,
+        positionalArgs: positionalArgs,
+        source: source,
+        locationOf: locationOf,
+      );
+      final raw = positionalArgs[0];
+      if (raw is! Animatable<Object?>) {
+        throw ResolveException(
+          source,
+          'AnimationController.drive expects an Animatable (e.g. Tween, '
+          'CurveTween) at position 0, got ${raw.runtimeType}',
+          location: locationOf(),
+        );
+      }
+      return target.drive<Object?>(raw);
     case 'dispose':
       _requireControllerArity(
         typeName: 'AnimationController',
@@ -1657,6 +1726,68 @@ Object? _invokeAnimationControllerMethod({
 
   _throwUnknownMethod(
     typeLabel: 'AnimationController',
+    methodName: methodName,
+    source: source,
+    locationOf: locationOf,
+  );
+}
+
+/// Dispatch arm for [Animatable] (v1.12.0). Covers `Tween.animate(parent)`
+/// which returns a live `Animation<T>` driven by `parent`, and
+/// `Animatable.chain(next)` which returns a composed `Animatable<T>`.
+/// Both methods are pure: they produce new values without mutating
+/// either receiver or argument.
+Object? _invokeAnimatableMethod({
+  required Animatable<Object?> target,
+  required String methodName,
+  required List<Object?> positionalArgs,
+  required String source,
+  required SourceSpan Function() locationOf,
+}) {
+  switch (methodName) {
+    case 'animate':
+      _requireControllerArity(
+        typeName: 'Animatable',
+        methodName: 'animate',
+        expected: 1,
+        positionalArgs: positionalArgs,
+        source: source,
+        locationOf: locationOf,
+      );
+      final raw = positionalArgs[0];
+      if (raw is! Animation<double>) {
+        throw ResolveException(
+          source,
+          'Animatable.animate expects an Animation<double> (e.g. an '
+          'AnimationController, CurvedAnimation) at position 0, got '
+          '${raw.runtimeType}',
+          location: locationOf(),
+        );
+      }
+      return target.animate(raw);
+    case 'chain':
+      _requireControllerArity(
+        typeName: 'Animatable',
+        methodName: 'chain',
+        expected: 1,
+        positionalArgs: positionalArgs,
+        source: source,
+        locationOf: locationOf,
+      );
+      final raw = positionalArgs[0];
+      if (raw is! Animatable<double>) {
+        throw ResolveException(
+          source,
+          'Animatable.chain expects an Animatable<double> at position 0, '
+          'got ${raw.runtimeType}',
+          location: locationOf(),
+        );
+      }
+      return target.chain(raw);
+  }
+
+  _throwUnknownMethod(
+    typeLabel: 'Animatable',
     methodName: methodName,
     source: source,
     locationOf: locationOf,

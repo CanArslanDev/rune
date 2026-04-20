@@ -182,5 +182,85 @@ void main() {
         expect(tester.takeException(), isNull);
       },
     );
+
+    testWidgets(
+      'showMenu mounts a menu with PopupMenuItem children',
+      (tester) async {
+        await tester.pumpWidget(
+          _wrap(
+            RuneView(
+              source: '''
+                ElevatedButton(
+                  onPressed: () => showMenu(
+                    position: RelativeRect.fromLTRB(10, 10, 10, 10),
+                    items: [
+                      PopupMenuItem(value: 1, child: Text('Alpha')),
+                      PopupMenuItem(value: 2, child: Text('Beta')),
+                    ],
+                  ),
+                  child: Text('Open'),
+                )
+              ''',
+              config: RuneConfig.defaults(),
+            ),
+          ),
+        );
+        await tester.tap(find.text('Open'));
+        await tester.pumpAndSettle();
+        expect(find.text('Alpha'), findsOneWidget);
+        expect(find.text('Beta'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'showMenu without position raises a RuneException',
+      (tester) async {
+        await tester.pumpWidget(
+          _wrap(
+            RuneView(
+              source: '''
+                ElevatedButton(
+                  onPressed: () => showMenu(
+                    items: [
+                      PopupMenuItem(value: 1, child: Text('Alpha')),
+                    ],
+                  ),
+                  child: Text('Open'),
+                )
+              ''',
+              config: RuneConfig.defaults(),
+            ),
+          ),
+        );
+        await tester.tap(find.text('Open'));
+        await tester.pump();
+        expect(tester.takeException(), isA<RuneException>());
+      },
+    );
+
+    testWidgets(
+      'showMenu with an empty items list raises a RuneException',
+      (tester) async {
+        await tester.pumpWidget(
+          _wrap(
+            RuneView(
+              source: '''
+                ElevatedButton(
+                  onPressed: () => showMenu(
+                    position: RelativeRect.fromLTRB(0, 0, 0, 0),
+                    items: [],
+                  ),
+                  child: Text('Open'),
+                )
+              ''',
+              config: RuneConfig.defaults(),
+            ),
+          ),
+        );
+        await tester.tap(find.text('Open'));
+        await tester.pump();
+        expect(tester.takeException(), isA<RuneException>());
+      },
+    );
   });
 }
