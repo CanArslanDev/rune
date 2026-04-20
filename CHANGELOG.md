@@ -6,6 +6,87 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [1.11.0] - 2026-04-19 - bridge ecosystem kickoff
+
+### Added
+
+- **rune_cupertino sibling bridge package (v0.1.0).** First
+  third-party-style bridge delivered as a separate package:
+  `packages/rune_cupertino/`. One class, `CupertinoBridge`,
+  implements `RuneBridge.registerInto(config)` and wires the
+  Cupertino widget family, a `CupertinoThemeData` value builder,
+  and 30 `CupertinoIcons.*` constants into a RuneConfig with
+  `config.withBridges([const CupertinoBridge()])`.
+- **Ten Cupertino widget builders.** `CupertinoApp`,
+  `CupertinoPageScaffold`, `CupertinoNavigationBar`,
+  `CupertinoButton`, `CupertinoSwitch`, `CupertinoSlider`,
+  `CupertinoTextField` (with the same stateful-controller pattern
+  as the Material TextField), `CupertinoActivityIndicator`,
+  `CupertinoAlertDialog`, `CupertinoDialogAction`. Registered
+  through the bridge contract so consumers opt in explicitly.
+- **Event-callback helpers on the public barrel.**
+  `voidEventCallback` and `valueEventCallback<T>` are now exported
+  from `package:rune/rune.dart`. Bridge packages previously could
+  not wire event-carrying widgets without reaching into
+  `package:rune/src/...` paths; exporting these helpers aligns the
+  bridge pattern with the "no src/ imports from external code"
+  convention.
+
+### Notes
+
+- Main `rune` package (1.10.0 to 1.11.0) is a pure ecosystem bump:
+  no widget / value / constant additions and no resolver changes
+  beyond the barrel export. The feature substance of the release
+  lives in the new sibling package.
+- `packages/rune_cupertino/` ships at its own version track
+  starting at `0.1.0`. 72 tests across the bridge registration,
+  per-widget argument forwarding, event dispatch, disabled-state
+  paths, value builder, constants seed, and six end-to-end
+  integration smokes that mount a `RuneView` inside a
+  `CupertinoApp`.
+- `rune_provider` (Provider / Riverpod integration) and
+  `rune_router` (go_router / auto_route integration) stay
+  deferred. Either they ship as patch releases to v1.11.x, or
+  they land in a future v1.x release; the decision waits for
+  real adoption feedback on pub.dev to drive the ordering.
+
+### Deferred from the plan
+
+- The v1.x roadmap anticipated three bridges shipping together in
+  v1.11.0. The actual delivery focused on `rune_cupertino` because
+  the Cupertino widget set is a self-contained, high-value
+  package that demonstrates the bridge pattern end-to-end without
+  bringing along additional third-party dependencies.
+- `CupertinoPicker`, `CupertinoActionSheet`, `CupertinoSegmentedControl`,
+  and `CupertinoContextMenu` stay deferred inside rune_cupertino
+  itself; each has complex shape (closure-heavy builders, generic
+  typing, imperative dispatch) that fits a follow-up patch to
+  rune_cupertino rather than the first release.
+
+## v1.x series close
+
+v1.11.0 closes the post-v1.0.0 v1.x roadmap:
+
+| Release | Theme |
+|---------|-------|
+| v1.0.0 | Stability milestone |
+| v1.1.0 | Lifecycle + controllers |
+| v1.2.0 | Closure-based builder widgets |
+| v1.3.0 | Dialogs + overlays + imperative bridges |
+| v1.4.0 | Theme + Material 3 polish |
+| v1.5.0 | Forms + validation |
+| v1.6.0 | Navigation + routing |
+| v1.7.0 | Gestures + advanced interaction |
+| v1.8.0 | Data tables + expansion + stepper |
+| v1.9.0 | Explicit animations |
+| v1.10.0 | Developer experience |
+| v1.11.0 | Bridge ecosystem kickoff (rune_cupertino) |
+
+Public-API stability pact from v1.0.0 held across all twelve
+releases. Zero breaking changes. Main package passes 1619 root
+tests plus architecture invariants plus 7 sibling tests.
+rune_cupertino adds another 72 tests.
+
 ## [1.10.0] - 2026-04-19 - developer experience
 
 ### Added
@@ -1267,7 +1348,8 @@ All notable changes to this project are documented here. Format follows
 - Example app at `example/lib/main.dart` demonstrating the full Phase 1
   feature set.
 
-[Unreleased]: https://github.com/CanArslanDev/rune/compare/v1.10.0...HEAD
+[Unreleased]: https://github.com/CanArslanDev/rune/compare/v1.11.0...HEAD
+[1.11.0]: https://github.com/CanArslanDev/rune/compare/v1.10.0...v1.11.0
 [1.10.0]: https://github.com/CanArslanDev/rune/compare/v1.9.0...v1.10.0
 [1.9.0]: https://github.com/CanArslanDev/rune/compare/v1.8.0...v1.9.0
 [1.8.0]: https://github.com/CanArslanDev/rune/compare/v1.7.0...v1.8.0

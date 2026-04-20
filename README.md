@@ -37,7 +37,7 @@ Deliver UI from a server, a CMS, or a designer tool without shipping a new app b
 
 ```yaml
 dependencies:
-  rune: ^1.10.0
+  rune: ^1.11.0
 ```
 
 The package is pre-publication; use a `git:` or `path:` dependency until a tagged `pub.dev` release lands. `dart pub publish --dry-run` currently reports 0 errors / 0 warnings.
@@ -102,7 +102,7 @@ A runnable version lives in [`example/`](example/).
 
 ## Supported source syntax
 
-Current release: **v1.10.0**. Developer experience polish: "did you mean X?" suggestions on ResolveException / UnregisteredBuilderException / BindingException, a widened source-pointer API for multi-line error context, and a public `formatRuneSource` utility for canonical Rune source formatting. Registry introspection (names, keys) supports these and future tooling.
+Current release: **v1.11.0**. Bridge ecosystem kickoff: the new `rune_cupertino` sibling package brings 10 Cupertino widget builders (CupertinoApp, CupertinoPageScaffold, CupertinoButton, CupertinoSwitch, CupertinoSlider, CupertinoTextField, CupertinoNavigationBar, CupertinoActivityIndicator, CupertinoAlertDialog, CupertinoDialogAction), CupertinoThemeData, and 30 CupertinoIcons.* constants through a single `CupertinoBridge` applied via `RuneConfig.withBridges([const CupertinoBridge()])`. Main-package event-callback helpers are now barrel-exported so future bridges can stay on public APIs.
 
 | Category              | Elements                                                                                                                                                                                                     |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -125,6 +125,7 @@ Current release: **v1.10.0**. Developer experience polish: "did you mean X?" sug
 | Imperative bridges    | `showDialog(builder: ...)`, `showModalBottomSheet(builder: ...)`, `showSnackBar(snackBar)`, `Navigator.pop(result?)`, `showDatePicker(initialDate, firstDate, lastDate)`, `showTimePicker(initialTime)`, `Navigator.push(route)`, `Navigator.pushReplacement(route)`, `Navigator.pushNamed(name, arguments?)`, `Navigator.canPop()`. All route through `RuneContext.flutterContext`. |
 | Context accessors     | `Theme.of(context)`, `MediaQuery.of(context)`. Return raw Flutter values with whitelisted property access. |
 | Developer utilities | `formatRuneSource(source)` canonical formatter; `SourceSpan.toContextualPointer(source, contextLines)` widened error pointer; "did you mean X?" suggestions on missing builder / method / identifier diagnostics. |
+| Sibling bridges | Cupertino widgets via `rune_cupertino` (see Bridge packages section below); `.w` / `.h` / `.sp` / `.dm` responsive extensions via `rune_responsive_sizer`. |
 
 Anything outside this surface raises a `RuneException` (parse, resolve, or unregistered-builder variant). The plans in `docs/superpowers/plans/` enumerate the phases that built this set.
 
@@ -292,6 +293,21 @@ Three hundred and seventy-two tests cover every resolver, every builder, every r
 ## Example
 
 See [`example/`](example/) for a runnable demo that exercises the full current feature set.
+
+## Bridge packages
+
+Third-party and first-party integrations ship as separate bridge
+packages that register widgets, values, constants, and extensions
+into a shared `RuneConfig`. Each package has its own version track
+and README.
+
+| Package | Description |
+|---------|-------------|
+| [`rune_responsive_sizer`](packages/rune_responsive_sizer) | Percent-of-screen extensions: `.w`, `.h`, `.sp`, `.dm`. |
+| [`rune_cupertino`](packages/rune_cupertino) | Cupertino widget family (CupertinoApp through CupertinoAlertDialog), CupertinoThemeData, CupertinoIcons constants. |
+
+Apply any bridge with `RuneConfig.defaults().withBridges([...])`.
+The RuneBridge contract is one method: `void registerInto(RuneConfig config)`.
 
 ## License
 
