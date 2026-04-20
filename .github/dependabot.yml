@@ -1,0 +1,80 @@
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: "chore(ci)"
+    labels:
+      - dependencies
+      - github-actions
+    open-pull-requests-limit: 5
+
+  - package-ecosystem: pub
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: "chore(deps)"
+    labels:
+      - dependencies
+      - pub
+    open-pull-requests-limit: 5
+    ignore:
+      - dependency-name: analyzer
+        versions: [">=7.0.0"]
+
+  - package-ecosystem: pub
+    directory: "/packages/rune_responsive_sizer"
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: "chore(deps)"
+    labels:
+      - dependencies
+      - pub
+      - rune_responsive_sizer
+    open-pull-requests-limit: 3
+
+  - package-ecosystem: pub
+    directory: "/packages/rune_cupertino"
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: "chore(deps)"
+    labels:
+      - dependencies
+      - pub
+      - rune_cupertino
+    open-pull-requests-limit: 3
+
+  - package-ecosystem: pub
+    directory: "/packages/rune_provider"
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: "chore(deps)"
+    labels:
+      - dependencies
+      - pub
+      - rune_provider
+    open-pull-requests-limit: 3
+
+  - package-ecosystem: pub
+    directory: "/packages/rune_router"
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: "chore(deps)"
+    labels:
+      - dependencies
+      - pub
+      - rune_router
+    open-pull-requests-limit: 3
