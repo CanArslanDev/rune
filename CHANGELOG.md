@@ -6,6 +6,37 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [1.14.0] - 2026-04-20 - routing bridge (rune_router)
+
+### Added
+
+- **rune_router sibling bridge package (v0.1.0).** Third
+  third-party-style bridge. Registers a narrow surface of
+  [`package:go_router`](https://pub.dev/packages/go_router) on a
+  `RuneConfig` through `RouterBridge`:
+  - `GoRoute(path, builder, name?, routes?)` value builder. The
+    `builder` closure is `(BuildContext, GoRouterState) -> Widget`.
+  - `GoRouter(routes, initialLocation?, debugLogDiagnostics?)` value
+    builder. Filters non-GoRoute entries from `routes:` so
+    conditional `[if (...)]` list constructs compose cleanly.
+  - `GoRouterApp(router, title?, theme?, debugShowCheckedModeBanner?)`
+    widget. Wraps `MaterialApp.router(routerConfig:)` so Rune source
+    can install the router at the app root.
+
+### Notes
+
+- Main `rune` package (1.13.0 to 1.14.0) is a pure ecosystem bump.
+  No widget / value / constant / resolver changes at the main-package
+  layer. Main test count unchanged.
+- Source-level imperatives (`context.go('/path')`,
+  `context.push('/path')`) stay deferred. They need a pluggable
+  imperative registry in the main `rune` package. Host apps
+  navigate by holding a reference to the router instance and
+  calling `.go(...)` / `.push(...)` from `onEvent` callbacks.
+- rune_router ships at `0.1.0`, matching the cadence of
+  `rune_cupertino` and `rune_provider`. 20 tests pass; analyzer
+  clean under `very_good_analysis ^5.1.0`.
+
 ## [1.13.0] - 2026-04-20 - reactive state bridge (rune_provider)
 
 ### Added

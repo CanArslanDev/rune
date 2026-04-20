@@ -67,3 +67,15 @@ jobs:
       - name: Test rune_provider
         working-directory: packages/rune_provider
         run: flutter test
+
+      - name: Install rune_router dependencies
+        working-directory: packages/rune_router
+        run: flutter pub get
+
+      - name: Analyze rune_router
+        working-directory: packages/rune_router
+        run: flutter analyze
+
+      - name: Test rune_router
+        working-directory: packages/rune_router
+        run: flutter test
