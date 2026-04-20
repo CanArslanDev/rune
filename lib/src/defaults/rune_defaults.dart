@@ -5,6 +5,7 @@ import 'package:rune/src/builders/values/box_decoration_builder.dart';
 import 'package:rune/src/builders/values/button_segment_builder.dart';
 import 'package:rune/src/builders/values/color_builder.dart';
 import 'package:rune/src/builders/values/color_scheme_from_seed_builder.dart';
+import 'package:rune/src/builders/values/cupertino_page_route_builder.dart';
 import 'package:rune/src/builders/values/date_time_builder.dart';
 import 'package:rune/src/builders/values/duration_builder.dart';
 import 'package:rune/src/builders/values/edge_insets_all_builder.dart';
@@ -17,10 +18,12 @@ import 'package:rune/src/builders/values/grid_view_count_builder_builder.dart';
 import 'package:rune/src/builders/values/grid_view_extent_builder.dart';
 import 'package:rune/src/builders/values/grid_view_extent_builder_builder.dart';
 import 'package:rune/src/builders/values/list_view_builder_builder.dart';
+import 'package:rune/src/builders/values/material_page_route_builder.dart';
 import 'package:rune/src/builders/values/navigation_destination_builder.dart';
 import 'package:rune/src/builders/values/navigation_rail_destination_builder.dart';
 import 'package:rune/src/builders/values/offset_builder.dart';
 import 'package:rune/src/builders/values/page_controller_builder.dart';
+import 'package:rune/src/builders/values/route_settings_builder.dart';
 import 'package:rune/src/builders/values/rune_component_builder.dart';
 import 'package:rune/src/builders/values/scroll_controller_builder.dart';
 import 'package:rune/src/builders/values/search_anchor_bar_builder.dart';
@@ -349,6 +352,10 @@ abstract final class RuneDefaults {
       ..registerBuilder(const PageControllerBuilder())
       // Modal-UI values (v1.3.0).
       ..registerBuilder(const SnackBarBuilder())
+      // Navigation routes (v1.6.0).
+      ..registerBuilder(const MaterialPageRouteBuilder())
+      ..registerBuilder(const CupertinoPageRouteBuilder())
+      ..registerBuilder(const RouteSettingsBuilder())
       // Theme + Material 3 values (v1.4.0).
       ..registerBuilder(const ColorSchemeFromSeedBuilder())
       ..registerBuilder(const ThemeDataBuilder())

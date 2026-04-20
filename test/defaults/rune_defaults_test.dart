@@ -160,6 +160,9 @@ void main() {
         'FocusNode',
         'PageController',
         'SnackBar',
+        'MaterialPageRoute',
+        'CupertinoPageRoute',
+        'RouteSettings',
       ]) {
         expect(r.contains(key), isTrue, reason: 'missing value $key');
       }
@@ -190,7 +193,7 @@ void main() {
       RuneDefaults.registerValues(v);
       RuneDefaults.registerConstants(c);
       expect(w.size, greaterThanOrEqualTo(99));
-      expect(v.size, greaterThanOrEqualTo(41));
+      expect(v.size, greaterThanOrEqualTo(44));
       expect(c.size, greaterThanOrEqualTo(54));
     });
   });

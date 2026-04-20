@@ -96,13 +96,16 @@ final class InvocationResolver implements InvocationResolverContract {
     }
 
     if (target is SimpleIdentifier) {
-      // v1.3.0 `Navigator.pop(...)` bridge: a `Navigator`-prefixed call
-      // with the special method name `pop` dispatches to the imperative
-      // Navigator bridge rather than the runtime-method path. Placed
-      // before the component/value/widget lookups so no host-registered
-      // builder named `Navigator` can shadow it.
-      if (target.name == 'Navigator' && node.methodName.name == 'pop') {
-        return _resolveImperativeBridge(node, ctx, runNavigatorPop);
+      // v1.3.0 + v1.6.0 `Navigator.*(...)` bridges: a `Navigator`-prefixed
+      // call with a whitelisted method name dispatches to the matching
+      // imperative Navigator bridge rather than the runtime-method path.
+      // Placed before the component/value/widget lookups so no host-
+      // registered builder named `Navigator` can shadow it.
+      if (target.name == 'Navigator') {
+        final navBridge = _navigatorBridges[node.methodName.name];
+        if (navBridge != null) {
+          return _resolveImperativeBridge(node, ctx, navBridge);
+        }
       }
       // v1.4.0 context accessors: `Theme.of(ctx)` and
       // `MediaQuery.of(ctx)` yield the enclosing Flutter theme/media-query
@@ -543,9 +546,10 @@ final class InvocationResolver implements InvocationResolverContract {
   ///
   /// Entries route from the Rune source identifier (`showDialog`,
   /// `showModalBottomSheet`, `showSnackBar`) to the top-level helper
-  /// in `imperative_helpers.dart`. `Navigator.pop` is not listed here
-  /// because it is shaped as a `SimpleIdentifier`-target
-  /// [MethodInvocation] and handled in the target-branch above.
+  /// in `imperative_helpers.dart`. `Navigator.*` entries are not listed
+  /// here because they are shaped as `SimpleIdentifier`-target
+  /// [MethodInvocation]s and handled via [_navigatorBridges] in the
+  /// target-branch above.
   static final Map<
       String,
       Object? Function(ResolvedArguments args, RuneContext ctx)
@@ -556,6 +560,25 @@ final class InvocationResolver implements InvocationResolverContract {
     'showSnackBar': runShowSnackBar,
     'showDatePicker': runShowDatePicker,
     'showTimePicker': runShowTimePicker,
+  };
+
+  /// Whitelist of `Navigator.<method>(...)` imperative bridge calls.
+  ///
+  /// Entries route from the Rune source method name (`pop`, `push`,
+  /// `pushNamed`, `pushReplacement`, `canPop`) to the top-level helper
+  /// in `imperative_helpers.dart`. Placed in a dedicated map so the
+  /// target-branch dispatch stays a single O(1) lookup and the set of
+  /// supported Navigator methods is explicit at a glance.
+  static final Map<
+      String,
+      Object? Function(ResolvedArguments args, RuneContext ctx)
+  > _navigatorBridges = <String,
+      Object? Function(ResolvedArguments args, RuneContext ctx)>{
+    'pop': runNavigatorPop,
+    'push': runNavigatorPush,
+    'pushReplacement': runNavigatorPushReplacement,
+    'pushNamed': runNavigatorPushNamed,
+    'canPop': runNavigatorCanPop,
   };
 }
 

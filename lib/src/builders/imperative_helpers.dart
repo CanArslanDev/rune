@@ -143,6 +143,140 @@ Object? runNavigatorPop(ResolvedArguments args, RuneContext ctx) {
   return null;
 }
 
+/// Resolves `Navigator.push(route)` into `Navigator.of(context).push(route)`.
+///
+/// Accepts exactly one positional argument of type [Route]. Named
+/// arguments raise [ArgumentException]; any other positional shape raises
+/// [ResolveException] citing the bridge name. Returns `null` (Flutter's
+/// `Navigator.push` returns a `Future<T?>`; Rune source has no `await`
+/// syntax today and the future is intentionally discarded).
+Object? runNavigatorPush(ResolvedArguments args, RuneContext ctx) {
+  final context = _requireFlutterContext(ctx, 'Navigator.push');
+  if (args.named.isNotEmpty) {
+    throw ArgumentException(
+      'Navigator.push',
+      'Navigator.push does not accept named arguments; got '
+      '${args.named.keys.join(', ')}',
+    );
+  }
+  if (args.positional.length != 1) {
+    throw ResolveException(
+      'Navigator.push',
+      'Navigator.push expects exactly one positional Route argument; '
+      'got ${args.positional.length}',
+    );
+  }
+  final candidate = args.positional[0];
+  if (candidate is! Route<Object?>) {
+    throw ResolveException(
+      'Navigator.push',
+      'Navigator.push expects a Route (e.g. MaterialPageRoute, '
+      'CupertinoPageRoute); got ${candidate.runtimeType}',
+    );
+  }
+  // Fire-and-forget: the returned Future<T?> cannot be awaited from Rune
+  // source today. The route still mounts and dismisses correctly because
+  // Flutter's Navigator handles its own lifecycle.
+  Navigator.of(context).push<Object?>(candidate);
+  return null;
+}
+
+/// Resolves `Navigator.pushReplacement(route)` into
+/// `Navigator.of(context).pushReplacement(route)`.
+///
+/// Identical contract to [runNavigatorPush]: exactly one positional
+/// [Route] argument, no named arguments. Returns `null`.
+Object? runNavigatorPushReplacement(ResolvedArguments args, RuneContext ctx) {
+  final context = _requireFlutterContext(ctx, 'Navigator.pushReplacement');
+  if (args.named.isNotEmpty) {
+    throw ArgumentException(
+      'Navigator.pushReplacement',
+      'Navigator.pushReplacement does not accept named arguments; got '
+      '${args.named.keys.join(', ')}',
+    );
+  }
+  if (args.positional.length != 1) {
+    throw ResolveException(
+      'Navigator.pushReplacement',
+      'Navigator.pushReplacement expects exactly one positional Route '
+      'argument; got ${args.positional.length}',
+    );
+  }
+  final candidate = args.positional[0];
+  if (candidate is! Route<Object?>) {
+    throw ResolveException(
+      'Navigator.pushReplacement',
+      'Navigator.pushReplacement expects a Route (e.g. MaterialPageRoute, '
+      'CupertinoPageRoute); got ${candidate.runtimeType}',
+    );
+  }
+  Navigator.of(context).pushReplacement<Object?, Object?>(candidate);
+  return null;
+}
+
+/// Resolves `Navigator.pushNamed(name, arguments?)` into
+/// `Navigator.of(context).pushNamed(name, arguments: arguments)`.
+///
+/// Accepts:
+/// - exactly one positional argument: the route name ([String]).
+/// - one optional named argument `arguments` of any type (mirrors
+///   Flutter's `RouteSettings.arguments`).
+///
+/// Any other named argument raises [ArgumentException]; wrong positional
+/// count or a non-[String] name raises [ResolveException] citing the
+/// bridge name. Returns `null` (the returned `Future<T?>` is discarded).
+Object? runNavigatorPushNamed(ResolvedArguments args, RuneContext ctx) {
+  final context = _requireFlutterContext(ctx, 'Navigator.pushNamed');
+  for (final key in args.named.keys) {
+    if (key != 'arguments') {
+      throw ArgumentException(
+        'Navigator.pushNamed',
+        'Navigator.pushNamed only accepts the named argument "arguments"; '
+        'got "$key"',
+      );
+    }
+  }
+  if (args.positional.length != 1) {
+    throw ResolveException(
+      'Navigator.pushNamed',
+      'Navigator.pushNamed expects exactly one positional String argument '
+      '(the route name); got ${args.positional.length}',
+    );
+  }
+  final name = args.positional[0];
+  if (name is! String) {
+    throw ResolveException(
+      'Navigator.pushNamed',
+      'Navigator.pushNamed expects a String route name; '
+      'got ${name.runtimeType}',
+    );
+  }
+  Navigator.of(context).pushNamed<Object?>(
+    name,
+    arguments: args.named['arguments'],
+  );
+  return null;
+}
+
+/// Resolves `Navigator.canPop()` into `Navigator.of(context).canPop()`.
+///
+/// Accepts no arguments. Returns a [bool] indicating whether the enclosing
+/// [Navigator] has at least one route on the stack above the initial
+/// route. Callers typically use it to guard an `if`-element that only
+/// shows a back button when popping is possible.
+Object? runNavigatorCanPop(ResolvedArguments args, RuneContext ctx) {
+  final context = _requireFlutterContext(ctx, 'Navigator.canPop');
+  if (args.named.isNotEmpty || args.positional.isNotEmpty) {
+    throw ArgumentException(
+      'Navigator.canPop',
+      'Navigator.canPop accepts no arguments; got '
+      '${args.positional.length} positional and '
+      '${args.named.length} named',
+    );
+  }
+  return Navigator.of(context).canPop();
+}
+
 /// Resolves `showDatePicker(...)` into Flutter's imperative
 /// `showDatePicker`.
 ///
