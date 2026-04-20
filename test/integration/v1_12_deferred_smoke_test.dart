@@ -4,14 +4,6 @@ import 'package:rune/rune.dart';
 
 Widget _wrap(Widget child) => MaterialApp(home: Scaffold(body: child));
 
-Widget _wrapWithRoutes(Widget child) => MaterialApp(
-      home: Scaffold(body: child),
-      routes: {
-        '/a': (ctx) => const Scaffold(body: Center(child: Text('Page A'))),
-        '/b': (ctx) => const Scaffold(body: Center(child: Text('Page B'))),
-      },
-    );
-
 void main() {
   group('v1.12.0 deferred-item closeout smokes', () {
     testWidgets('ListenableBuilder subscribes to the Listenable',
