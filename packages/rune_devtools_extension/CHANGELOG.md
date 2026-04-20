@@ -8,11 +8,21 @@ All notable changes to this package are documented here. Format follows
 
 ### Added
 
-- Pre-built Flutter web bundle under `extension/devtools/build/`.
-  Flutter DevTools loads it directly from a local scheme, so the
-  package is consumable out of the box with no build step on the
-  consumer side. `web/` source folder ships alongside the bundle
-  for developers who want to customise or rebuild.
+- `web/` Flutter-web source scaffold (`index.html`,
+  `manifest.json`, `favicon.png`, maskable icons) so
+  `flutter build web` can compile the DevTools UI against it.
+  Tracked in git and published to pub.dev.
+- `tool/build_bundle.sh` convenience script that runs
+  `flutter pub get` + `flutter build web` into
+  `extension/devtools/build/` and strips `.symbols` debug
+  sidecars. Used by maintainers before `dart pub publish` and by
+  path-dep consumers after cloning.
+- `.pubignore` at the package root. Takes precedence over
+  `.gitignore` during publish and deliberately omits
+  `extension/devtools/build/`. The compiled bundle stays out of
+  git (it is ~30 MB of derived artefacts) but lands inside the
+  pub.dev archive on each release so Flutter DevTools can render
+  the tab without any consumer-side build step.
 
 ## [0.1.0-scaffold] - 2026-04-20
 

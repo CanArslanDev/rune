@@ -42,16 +42,20 @@ If the extension tab reports **Could not reach the host process**, the host app 
 
 ## Building the web app
 
-The package ships with a pre-built Flutter web bundle under `extension/devtools/build/`. Consumers don't need to build anything; Flutter DevTools loads the existing bundle directly.
+The compiled Flutter web bundle lives under `extension/devtools/build/`. It is **not tracked in git**: the output is ~30 MB of derived artefacts that have no place in source history. Instead, the bundle is produced on demand:
 
-When **developing the extension itself** (modifying `lib/main.dart`), rebuild after each change:
+- **For consumers installing from pub.dev:** no action required. pub.dev publishes the bundle inside the package archive on each release, so `dart pub get` populates `extension/devtools/build/` inside the cached package directly. Flutter DevTools picks it up.
+- **For consumers installing from a path-dependency (local monorepo development, git fork, etc.):** run the build once after cloning:
 
-```bash
-cd packages/rune_devtools_extension
-flutter build web --pwa-strategy=none --output=extension/devtools/build
-```
+    ```bash
+    packages/rune_devtools_extension/tool/build_bundle.sh
+    ```
 
-Commit the regenerated bundle in the same PR as the Dart source change. The bundle is ~37 MB uncommitted / ~12 MB compressed; pub.dev accepts the size because CanvasKit ships locally (DevTools loads the extension from a local scheme that cannot fetch the public CDN).
+    The script does `flutter pub get` + `flutter build web` + strips the debug `.symbols` sidecars. Rerun whenever you edit `lib/main.dart`.
+
+- **For maintainers of this package before publishing:** run `tool/build_bundle.sh`, then `dart pub publish`. A `.pubignore` at the package root takes precedence over `.gitignore` during publish and deliberately omits `extension/devtools/build/`, so the freshly built bundle is included in the pub.dev archive even though git never tracks it.
+
+The local CanvasKit bundle (~20 MB) cannot be replaced by a CDN fetch because Flutter DevTools serves the extension from a local scheme with a strict CSP that blocks external origins.
 
 ## License
 

@@ -1,0 +1,58 @@
+# When `.pubignore` is present, `dart pub publish` uses it instead
+# of `.gitignore` for deciding which files to include in the
+# published archive. We keep the compiled DevTools bundle under
+# `extension/devtools/build/` out of git (it is ~30 MB of derived
+# artefacts), but it MUST ship inside the pub.dev archive so
+# Flutter DevTools can load the extension. The bundle line is
+# deliberately omitted below.
+#
+# Everything else mirrors `.gitignore` so pub publishes exactly the
+# files a git clone would see (plus the compiled bundle).
+
+# IDE / editor clutter
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+.atom/
+.history
+.svn/
+
+# Dart / Flutter transient state
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+/build/
+coverage/
+pubspec.lock
+
+# Misc.
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+migrate_working_dir/
+
+# Symbolication related
+app.*.symbols
+
+# Obfuscation related
+app.*.map.json
+
+# Flutter platform directories (sibling packages generate these
+# from `flutter create --platforms=...`; this package only needs
+# web/, which we DO publish).
+/macos/
+/windows/
+/linux/
+/android/
+/ios/
+
+# Notably absent: /extension/devtools/build/
+# The compiled Flutter web bundle lives there. pub.dev needs it;
+# git does not.

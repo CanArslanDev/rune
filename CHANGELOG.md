@@ -19,14 +19,18 @@ All notable changes to this project are documented here. Format follows
   `analyze + test` block covering the new package.
 - Root README gains a row for `rune_devtools_extension` in the
   Bridge-packages table.
-- **Pre-built Flutter web bundle under `extension/devtools/build/`
-  committed to the repo.** Makes the extension usable the moment
-  a consumer app adds `rune_devtools_extension` as a
-  `dev_dependency` (no manual `flutter build web` step on their
-  end). Flutter DevTools loads the compiled bundle directly from
-  a local scheme. Bundle size ~37 MB uncompressed / ~12 MB
-  compressed at publish time; CanvasKit is bundled locally because
-  the DevTools local-scheme origin cannot fetch the public CDN.
+- **Flutter-web scaffold + build pipeline for
+  `rune_devtools_extension`.** The package gains a `web/` source
+  folder (tracked in git), a `tool/build_bundle.sh` convenience
+  script, and a distinct `.pubignore` so the compiled bundle
+  under `extension/devtools/build/` lands on pub.dev without ever
+  entering git history. Consumers installing from pub.dev get the
+  bundle automatically; path-dependency consumers run
+  `tool/build_bundle.sh` once after cloning. Git tracks only the
+  Dart source + the ~20 KB web scaffold, keeping repo size
+  unchanged; pub.dev archives the ~30 MB compiled bundle because
+  Flutter DevTools cannot fetch CanvasKit from its local-scheme
+  iframe.
 
 ### Removed
 

@@ -34,6 +34,12 @@ migrate_working_dir/
 .pub-cache/
 .pub/
 /build/
+# DevTools extension's compiled bundle. Built on demand by
+# tool/build_bundle.sh (or any `flutter build web --output=...`
+# invocation) before `dart pub publish` or local path-dep testing.
+# Not tracked in git: the compiled output is ~30 MB of derived
+# artefacts that would bloat history pointlessly.
+/extension/devtools/build/
 coverage/
 pubspec.lock
 
