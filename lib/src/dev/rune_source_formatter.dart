@@ -129,6 +129,15 @@ void _writeExpression(
     );
     return;
   }
+  if (expression is SetOrMapLiteral) {
+    _writeSetOrMapLiteral(
+      expression,
+      buffer: buffer,
+      indent: indent,
+      maxLineLength: maxLineLength,
+    );
+    return;
+  }
   if (expression is ParenthesizedExpression) {
     buffer.write('(');
     _writeExpression(
@@ -306,6 +315,92 @@ void _writeListLiteral(
     ..write(']');
 }
 
+/// Emits a [SetOrMapLiteral] — `{1, 2, 3}` (set) or
+/// `{'a': 1, 'b': 2}` (map) — with the same fits-vs-break logic as
+/// [ListLiteral].
+///
+/// Sits as a standalone helper rather than routing through the list
+/// path because:
+///  - Map entries need bespoke `key: value` rendering that strips the
+///    space analyzer's own `toSource()` emits before the colon.
+///  - Empty `{}` defaults to a Set literal in Dart syntax; preserving
+///    that verbatim is simpler than trying to infer intent.
+void _writeSetOrMapLiteral(
+  SetOrMapLiteral expression, {
+  required StringBuffer buffer,
+  required int indent,
+  required int maxLineLength,
+}) {
+  final elements = expression.elements;
+  if (elements.isEmpty) {
+    buffer.write('{}');
+    return;
+  }
+
+  final singleLine = _tryFormatSingleLine(
+    head: '',
+    arguments: elements,
+    opener: '{',
+    closer: '}',
+  );
+  final currentColumn = _currentColumn(buffer, indent);
+  if (singleLine != null &&
+      currentColumn + singleLine.length <= maxLineLength) {
+    buffer.write(singleLine);
+    return;
+  }
+
+  final innerIndent = indent + 1;
+  final innerPad = '  ' * innerIndent;
+  final outerPad = '  ' * indent;
+  buffer.write('{\n');
+  for (final element in elements) {
+    buffer.write(innerPad);
+    if (element is MapLiteralEntry) {
+      _writeMapEntry(
+        element,
+        buffer: buffer,
+        indent: innerIndent,
+        maxLineLength: maxLineLength,
+      );
+    } else if (element is Expression) {
+      _writeExpression(
+        element,
+        buffer: buffer,
+        indent: innerIndent,
+        maxLineLength: maxLineLength,
+      );
+    } else {
+      buffer.write(element.toSource());
+    }
+    buffer.write(',\n');
+  }
+  buffer
+    ..write(outerPad)
+    ..write('}');
+}
+
+/// Writes a single map entry as `key: value`, recursing into the value
+/// so nested calls get broken correctly. Analyzer's own `toSource()`
+/// emits `key : value` with a space before the colon; this helper
+/// normalises to the idiomatic Dart/Flutter style.
+void _writeMapEntry(
+  MapLiteralEntry entry, {
+  required StringBuffer buffer,
+  required int indent,
+  required int maxLineLength,
+}) {
+  buffer
+    ..write(entry.key.toSource())
+    ..write(': ');
+  _writeExpression(
+    entry.value,
+    buffer: buffer,
+    indent: indent,
+    maxLineLength: maxLineLength,
+  );
+}
+
 /// Returns [head] + opener + joined `arguments.toSource()` + closer
 /// when no argument introduces a newline in its own source form and
 /// no element contains a multi-line substring. Otherwise returns
@@ -331,6 +426,12 @@ String? _tryFormatSingleLine({
 String _renderNodeForSingleLine(AstNode node) {
   if (node is NamedExpression) {
     return '${node.name.label.name}: ${node.expression.toSource()}';
+  }
+  if (node is MapLiteralEntry) {
+    // Analyzer's toSource() emits `key : value` with a space before
+    // the colon; normalise to idiomatic `key: value` here so short
+    // maps render compactly.
+    return '${node.key.toSource()}: ${node.value.toSource()}';
   }
   return node.toSource();
 }

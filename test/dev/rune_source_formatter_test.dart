@@ -112,5 +112,99 @@ void main() {
     test('named constructor preserved (EdgeInsets.all)', () {
       expect(formatRuneSource('EdgeInsets.all(16)'), 'EdgeInsets.all(16)');
     });
+
+    test('map literal short form stays single-line', () {
+      expect(
+        formatRuneSource("{'a': 1, 'b': 2}"),
+        "{'a': 1, 'b': 2}",
+      );
+    });
+
+    test('map literal breaks onto multiple lines when long', () {
+      const input = "{'one': 'alpha-value', 'two': 'beta-value', "
+          "'three': 'gamma-value', 'four': 'delta-value', "
+          "'five': 'epsilon-value'}";
+      final formatted = formatRuneSource(input);
+      expect(
+        formatted.contains('\n'),
+        isTrue,
+        reason: 'expected multi-line map on long literal:\n$formatted',
+      );
+      final lines = formatted.split('\n');
+      // Closing brace is on its own line.
+      expect(lines.last.trim(), '}');
+    });
+
+    test('set literal short form stays single-line', () {
+      expect(formatRuneSource('{1, 2, 3}'), '{1, 2, 3}');
+    });
+
+    test('list with if-element keeps the if on its own line when breaking', () {
+      const input =
+          "[Text('a'), if (flag) Text('b'), if (otherFlag) Text('c'), "
+          "Text('d'), Text('e'), Text('f'), Text('g')]";
+      final formatted = formatRuneSource(input);
+      expect(formatted.contains('\n'), isTrue);
+      // Each `if (...)` element appears on its own line when broken.
+      final lines = formatted.split('\n').map((l) => l.trim()).toList();
+      final ifLines = lines.where((l) => l.startsWith('if (')).toList();
+      expect(
+        ifLines.length,
+        2,
+        reason: 'expected both if-elements on their own lines:\n$formatted',
+      );
+    });
+
+    test('list with for-element preserves for-element when breaking', () {
+      const input =
+          "[Text('header'), for (final item in items) Text(item), "
+          "Text('alpha'), Text('beta'), Text('gamma')]";
+      final formatted = formatRuneSource(input);
+      // The for-element should still be present in some form.
+      expect(formatted.contains('for (final item in items)'), isTrue);
+    });
+
+    test('string interpolation is preserved across formatting', () {
+      const input = r"Text('Hello, ${name}!')";
+      expect(formatRuneSource(input), input);
+    });
+
+    test('ternary stays single-line when it fits', () {
+      expect(
+        formatRuneSource('flag ? 1 : 2'),
+        'flag ? 1 : 2',
+      );
+    });
+
+    test('arrow closure body is preserved', () {
+      const input = '(ctx, state) => Text(state.name)';
+      expect(formatRuneSource(input), input);
+    });
+
+    test('empty argument list stays compact', () {
+      expect(formatRuneSource('Divider()'), 'Divider()');
+      expect(formatRuneSource('SizedBox.shrink()'), 'SizedBox.shrink()');
+    });
+
+    test('deeply nested calls get progressive indent when broken', () {
+      // Force a break with a long leaf label so the full chain must
+      // wrap; check that indentation grows by 2 spaces per level.
+      const longLabel = 'some-very-long-leaf-label-that-forces-a-break';
+      const input = 'Outer(child: Middle(child: Inner(child: '
+          "Leaf(label: '$longLabel'))))";
+      final formatted = formatRuneSource(input);
+      final lines = formatted.split('\n');
+      final indents = lines
+          .map((l) => l.length - l.trimLeft().length)
+          .where((i) => i > 0)
+          .toList();
+      // Expect at least three distinct levels: 2 / 4 / 6 spaces.
+      expect(
+        indents.toSet().length >= 3,
+        isTrue,
+        reason:
+            'expected >=3 distinct indent levels on deep chain:\n$formatted',
+      );
+    });
   });
 }

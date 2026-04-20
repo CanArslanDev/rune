@@ -6,6 +6,31 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [1.17.1] - 2026-04-20 - source formatter polish
+
+### Changed
+
+- **`formatRuneSource` handles map literals properly.** Previously
+  the formatter fell through to analyzer's own `toSource()` for
+  `SetOrMapLiteral` nodes, which emits `'a' : 1` with a space
+  before the colon. A dedicated `_writeSetOrMapLiteral` helper now
+  renders map entries as `'a': 1` (idiomatic style) and applies
+  the same fits-vs-break logic the list-literal path already uses:
+  short maps stay single-line, long maps break onto one entry per
+  line with trailing commas.
+- Empty `{}` still renders as `{}` (Dart's default-Set
+  interpretation is preserved because the formatter does not
+  synthesise a type annotation).
+
+### Added
+
+- 11 new formatter tests covering map literal short + long forms,
+  set literals, list with if-elements, list with for-elements,
+  string-interpolation preservation, ternary, arrow closure
+  preservation, empty argument lists, and deeply-nested-call
+  progressive indentation. Total formatter tests: 23 (up from 12).
+- Total main-package tests: 1738 (up from 1728).
+
 ## [1.17.0] - 2026-04-20 - user-registered runtime members
 
 ### Added
