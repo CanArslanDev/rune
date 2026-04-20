@@ -4,7 +4,17 @@ All notable changes to this package are documented here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning follows
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.1.0] - 2026-04-20
+## [0.1.0] - 2026-04-21
+
+### Added
+
+- Pre-built Flutter web bundle under `extension/devtools/build/`.
+  Flutter DevTools loads it directly from a local scheme, so the
+  package is consumable out of the box with no build step on the
+  consumer side. `web/` source folder ships alongside the bundle
+  for developers who want to customise or rebuild.
+
+## [0.1.0-scaffold] - 2026-04-20
 
 ### Added
 

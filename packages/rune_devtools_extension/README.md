@@ -42,14 +42,16 @@ If the extension tab reports **Could not reach the host process**, the host app 
 
 ## Building the web app
 
-The published package ships a pre-built Flutter web bundle under `extension/devtools/build/`. When developing the extension itself (as opposed to consuming it), rebuild after each change:
+The package ships with a pre-built Flutter web bundle under `extension/devtools/build/`. Consumers don't need to build anything; Flutter DevTools loads the existing bundle directly.
+
+When **developing the extension itself** (modifying `lib/main.dart`), rebuild after each change:
 
 ```bash
 cd packages/rune_devtools_extension
-flutter build web --pwa-strategy=none --web-renderer canvaskit --base-href=/ --output=extension/devtools/build
+flutter build web --pwa-strategy=none --output=extension/devtools/build
 ```
 
-Check the resulting bundle in, then run the host app and the updated UI loads on the next DevTools refresh.
+Commit the regenerated bundle in the same PR as the Dart source change. The bundle is ~37 MB uncommitted / ~12 MB compressed; pub.dev accepts the size because CanvasKit ships locally (DevTools loads the extension from a local scheme that cannot fetch the public CDN).
 
 ## License
 

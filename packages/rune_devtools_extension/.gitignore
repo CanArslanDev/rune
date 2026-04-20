@@ -49,9 +49,12 @@ app.*.map.json
 /android/app/release
 
 # Flutter platforms
+# Note: /web/ is intentionally NOT ignored here. This package is a
+# Flutter DevTools extension; its Flutter-web entry point (index.html,
+# flutter_bootstrap, assets) lives under /web/ and ships to consumers
+# so DevTools can load the compiled app.
 /macos/
 /windows/
-/web/
 /linux/
 
 # Android Gradle related
