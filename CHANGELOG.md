@@ -6,6 +6,70 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [1.12.0] - 2026-04-20 - v1.x deferred cleanups
+
+### Added
+
+- **ListenableBuilder widget.** Rebuilds on any `Listenable` change via
+  a `builder(context) => Widget` closure. Pair with `ValueNotifier`,
+  `ChangeNotifier`, `AnimationController`, or any composite listenable
+  to scope rebuilds narrowly.
+- **PageRouteBuilder value builder.** Accepts `pageBuilder`,
+  `transitionsBuilder`, and the usual `Duration` / barrier
+  slots. Two new closure adapters (`toPageRouteBuilderPageBuilder`,
+  `toPageRouteBuilderTransitionsBuilder`) bridge the 3- and 4-arity
+  Flutter signatures into `RuneClosure`s. Works with the existing
+  `Navigator.push` imperative bridge.
+- **Navigator.popUntil.** Imperative bridge pops routes until a
+  user-supplied predicate returns `true`. The predicate receives a
+  `Route` and can reach `route.settings.name`, `route.isFirst`,
+  `route.isCurrent`, `route.isActive` through the runtime's property
+  whitelist. Closure adapter `toRoutePopPredicate` wraps the
+  `RuneClosure` into `RoutePredicate`.
+- **showMenu imperative.** Same shape as `showDialog` /
+  `showModalBottomSheet`: takes a `BuildContext`, `RelativeRect`
+  position, and a list of `PopupMenuEntry`s, returns the selected
+  value through a future.
+- **RelativeRect.fromLTRB value builder.** Positional-constructor
+  wrapper used for positioning popup menus.
+- **CheckedPopupMenuItem widget.** Selectable popup entry with
+  leading checkmark. Complements the existing `PopupMenuItem` and
+  `PopupMenuDivider` pair.
+- **BottomSheet widget.** Inline bottom-sheet host (as opposed to
+  the `showModalBottomSheet` imperative), wiring `onClosing`,
+  `backgroundColor`, `elevation`, `shape`, `clipBehavior`, and
+  `enableDrag` into Flutter's `BottomSheet`.
+- **FilledButton.tonal value builder.** The Material 3 "tonal" filled
+  button variant. Same slot set as `FilledButton`.
+- **SnackBarAction + SnackBar.action slot.** `SnackBarAction` is a
+  new value builder (label + `onPressed` event name) and the
+  `SnackBar` value builder now accepts an `action:` slot. Required
+  once actionable snackbars were promoted from examples to first-class.
+- **PaginatedDataTable + RuneDataTableSource.** Covers the paged
+  variant of `DataTable` end-to-end: the value builder adapts a
+  `Map<String, Object?>` backing store into `DataTableSource` rows
+  through an event-name callback.
+- **AnimationController.drive, Tween.animate, Tween.chain.** Three
+  dispatch arms added to the runtime method whitelist so Rune source
+  can compose Animatables inline without escaping into the host app.
+- **Route / RouteSettings property whitelist.** `Route.isFirst`,
+  `Route.isActive`, `Route.isCurrent`, `Route.settings`,
+  `RouteSettings.name`, `RouteSettings.arguments` are now readable
+  from Rune source, unlocking predicates like
+  `(route) => route.settings.name == '/home'` inside `popUntil`.
+
+### Notes
+
+- **PopupMenuDivider.thickness / indent / endIndent / color stay
+  deferred.** The CI-pinned Flutter 3.24.0 `PopupMenuDivider`
+  constructor exposes only `key` and `height`; those extras were
+  added in later Flutter framework releases. They unlock
+  automatically when the CI Flutter floor moves.
+- Main-package test count climbs from 1619 to 1701 (+82 tests).
+  rune_responsive_sizer stays at 7 tests, rune_cupertino stays at
+  117 tests. All three analyzers clean under `very_good_analysis
+  ^5.1.0`.
+
 ## [1.11.0] - 2026-04-19 - bridge ecosystem kickoff
 
 ### Added
