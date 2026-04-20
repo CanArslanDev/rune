@@ -1,36 +1,45 @@
 ---
 name: Feature request
-about: Propose a new capability or enhancement for Rune
-title: "[feat] "
+about: Propose a new widget, value, constant, extension, resolver arm, or imperative for Rune
+title: "[feature] "
 labels: enhancement
 assignees: ''
 ---
 
-## Problem / motivation
+## What you want to write
 
-What real use case is currently awkward or impossible with Rune today?
-Concrete examples are much more useful than abstract wishes.
+Paste the Rune source you want to be able to write. The more concrete, the better.
 
-## Proposed API
-
-If applicable, show how the feature would look in a Rune source string
-from the end user's point of view.
-
-```dart
-// Example RuneView.source
-''' ... '''
+```
+// example: what you want Rune to understand
+SomeNewWidget(
+  value: 42,
+  onChanged: 'something',
+)
 ```
 
-## Alternatives considered
+## What Rune does today
 
-Other approaches you weighed, and why they fall short.
+Describe the current behavior: does it throw `UnregisteredBuilderException`? `ResolveException`? Something else?
 
-## Which layer does this touch?
+## Scope
 
-- [ ] parser (`lib/src/parser/`)
-- [ ] resolver (`lib/src/resolver/`)
-- [ ] builders (`lib/src/builders/`)
-- [ ] registries (`lib/src/registry/`)
-- [ ] bridges (`lib/src/bridges/` or `packages/<bridge>/`)
-- [ ] dev overlay (`lib/src/dev/`)
-- [ ] other / not sure
+- [ ] New widget builder (one class from Flutter's SDK or a popular package).
+- [ ] New value builder (a constructor or named factory).
+- [ ] New constant group.
+- [ ] New property extension (e.g. `.something` on a value).
+- [ ] New resolver arm (new Dart syntax shape).
+- [ ] New imperative bridge (top-level or `Foo.of(context)` flavor).
+- [ ] Other (explain).
+
+## Why
+
+What does this unlock? Real use cases beat hypotheticals.
+
+## Sibling bridge vs main-package
+
+Third-party or framework-specific integrations (e.g. a Provider / go_router / Firebase pairing) typically ship as a separate `rune_<name>` package under `packages/`. Flutter SDK widgets that are already default-registered-shaped go in the main package. Which does this feel like?
+
+## Additional context
+
+Links to Flutter docs, related issues, prior art in other server-driven-UI packages, etc.
