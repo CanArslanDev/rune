@@ -12,6 +12,10 @@ dependencies:
     sdk: flutter
   rune:
     path: ../
+  rune_provider:
+    path: ../packages/rune_provider
+  rune_responsive_sizer:
+    path: ../packages/rune_responsive_sizer
 
 dev_dependencies:
   flutter_test:

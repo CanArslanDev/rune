@@ -6,6 +6,48 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [1.15.0] - 2026-04-20 - docs + example polish
+
+### Added
+
+- **Example app rewritten as a 4-tab showcase.**
+  `example/lib/main.dart` grows from 2 to 4 `RuneView`s:
+  - **Cart** and **Profile** tabs from v0.2.0+ remain unchanged.
+  - **Reactive** tab drives a `ChangeNotifier` counter through
+    `rune_provider`'s `ChangeNotifierProvider`, `Consumer`, and
+    `Selector`. Demonstrates `RuneReactiveNotifier.state`
+    projection, rebuild suppression via `Selector`, and host-side
+    event dispatch through `onEvent`.
+  - **Responsive** tab uses `rune_responsive_sizer`'s `.w` / `.h`
+    / `.sp` extensions to build a viewport-relative layout.
+  - Each tab owns its own `RuneConfig`: default for Cart and
+    Profile, `withBridges([ProviderBridge()])` for Reactive,
+    `withBridges([ResponsiveSizerBridge()])` for Responsive.
+- **Root README grows a Cookbook section** with copyable recipes
+  covering: two-way binding, `if`-element conditional rendering,
+  ternary event selection, reactive counters via `rune_provider`,
+  percent-of-screen sizing via `rune_responsive_sizer`, and inline
+  routing via `rune_router`.
+- **Root README grows a Writing a bridge guide** that walks
+  through scaffolding a new `RuneBridge` package from scratch
+  (pubspec, barrel, bridge class, widget / value / constant /
+  extension registration) with live references to the four
+  existing bridges ordered by complexity.
+
+### Changed
+
+- Root README "Testing" section updated to reflect the current
+  test matrix (1701 root + 146 sibling tests). `example/README.md`
+  rewritten to document the 4-tab layout; `example/pubspec.yaml`
+  now path-depends on `rune_provider` and `rune_responsive_sizer`
+  so the demo runs out of the box from a clean `pub get`.
+
+### Notes
+
+- Main `rune` package (1.14.0 to 1.15.0) is a pure ecosystem /
+  docs bump. No widget / value / constant / resolver changes at
+  the main-package layer. Root test count unchanged at 1701.
+
 ## [1.14.0] - 2026-04-20 - routing bridge (rune_router)
 
 ### Added

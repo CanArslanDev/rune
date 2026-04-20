@@ -37,7 +37,7 @@ Deliver UI from a server, a CMS, or a designer tool without shipping a new app b
 
 ```yaml
 dependencies:
-  rune: ^1.14.0
+  rune: ^1.15.0
 ```
 
 The package is pre-publication; use a `git:` or `path:` dependency until a tagged `pub.dev` release lands. `dart pub publish --dry-run` currently reports 0 errors / 0 warnings.
@@ -102,7 +102,7 @@ A runnable version lives in [`example/`](example/).
 
 ## Supported source syntax
 
-Current release: **v1.14.0**. Third sibling bridge: `rune_router` brings inline route declarations from [`package:go_router`](https://pub.dev/packages/go_router) into Rune source. Declare routes with `GoRoute(path, builder)`, compose them with `GoRouter(initialLocation, routes)`, and mount them through `GoRouterApp(router)` (a thin `MaterialApp.router` wrapper). Apply with `RuneConfig.defaults().withBridges([const RouterBridge()])`. Main-package surface unchanged; feature substance lives in `packages/rune_router/`.
+Current release: **v1.15.0**. Docs + example polish. Example app rewritten as a 4-tab showcase that exercises `rune_provider` (reactive counter) and `rune_responsive_sizer` (percent-of-screen sizing) alongside the shopping cart and profile form. Root README grows a Cookbook section with copyable recipes and a Writing-a-bridge guide that walks through scaffolding a new `RuneBridge` package from scratch. Main-package feature surface unchanged.
 
 | Category              | Elements                                                                                                                                                                                                     |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -288,11 +288,214 @@ flutter test
 flutter analyze
 ```
 
-Three hundred and seventy-two tests cover every resolver, every builder, every registry, the architecture invariants, and end-to-end `RuneView` renders for each phase. Main is kept green at all times; every commit passes both gates under `very_good_analysis`.
+1701 root tests plus 146 sibling-package tests (7 in `rune_responsive_sizer`, 117 in `rune_cupertino`, 19 in `rune_provider`, 20 in `rune_router`) cover every resolver, every builder, every registry, the architecture invariants, and end-to-end `RuneView` renders. Main is kept green at all times; every commit passes both gates under `very_good_analysis ^5.1.0`, and CI runs the full matrix on every push.
 
 ## Example
 
-See [`example/`](example/) for a runnable demo that exercises the full current feature set.
+See [`example/`](example/) for a runnable 4-tab demo that exercises the full current feature set including `rune_provider` and `rune_responsive_sizer`.
+
+## Cookbook
+
+Common recipes for shaping Rune source to solve real problems. Copy, paste, adapt.
+
+### Two-way binding on a TextField
+
+```dart
+RuneView(
+  data: {'username': username},
+  source: r"""
+    TextField(
+      value: username,
+      onChanged: 'usernameChanged',
+      labelText: 'Username',
+    )
+  """,
+  onEvent: (name, [args]) {
+    if (name == 'usernameChanged') {
+      setState(() => username = args!.first as String);
+    }
+  },
+)
+```
+
+The `value:` arg is read on every rebuild; the `onChanged:` event dispatches the new text. Same pattern works for `Switch(value:, onChanged:)`, `Checkbox(value:, onChanged:)`, and `Slider(value:, onChanged:)`.
+
+### Conditional rendering without a ternary
+
+```
+Column(children: [
+  if (cart.items.isEmpty) Text('Your cart is empty.'),
+  if (cart.items.isNotEmpty)
+    for (final item in cart.items) ListTile(title: Text(item.name)),
+  if (cart.items.length >= 3) Text('Free shipping unlocked!'),
+])
+```
+
+`if`-elements short-circuit cleanly inside `Column.children` / `Row.children`. Use `if (a) X else Y` for either-or branches.
+
+### Dispatching a disabled button via event selection
+
+```
+ElevatedButton(
+  onPressed: username.isEmpty ? 'noop' : 'save',
+  child: Text('Save'),
+)
+```
+
+Route the same button to a no-op event until a predicate is satisfied. The button stays visually enabled; the host simply ignores `'noop'`.
+
+### Reactive counter with `rune_provider`
+
+Host defines a `ChangeNotifier` that also implements `RuneReactiveNotifier`:
+
+```dart
+class CounterNotifier extends ChangeNotifier
+    implements RuneReactiveNotifier {
+  int _count = 0;
+  int get count => _count;
+  void increment() {
+    _count += 1;
+    notifyListeners();
+  }
+
+  @override
+  Map<String, Object?> get state => {'count': _count};
+}
+```
+
+Source consumes it through the `ProviderBridge`:
+
+```
+ChangeNotifierProvider(
+  value: counter,
+  child: Consumer(
+    builder: (ctx, state, child) => Text('Count: ${state.count}'),
+  ),
+)
+```
+
+The `Map`-shaped `state` getter lets Rune's property resolver reach individual fields via ordinary dot-access.
+
+### Percent-of-screen sizing with `rune_responsive_sizer`
+
+```dart
+final config = RuneConfig.defaults()
+    .withBridges(const [ResponsiveSizerBridge()]);
+```
+
+Source uses `.w` / `.h` / `.sp` extensions on num literals:
+
+```
+Container(
+  width: 80.w,
+  height: 8.h,
+  child: Text('Hi', style: TextStyle(fontSize: 16.sp)),
+)
+```
+
+### Named + anonymous navigation with `rune_router`
+
+Declare routes inline; mount through `GoRouterApp`:
+
+```
+GoRouterApp(
+  router: GoRouter(
+    initialLocation: '/',
+    routes: [
+      GoRoute(
+        path: '/',
+        builder: (ctx, state) => Scaffold(
+          body: Center(child: Text('Home')),
+        ),
+      ),
+      GoRoute(
+        path: '/settings',
+        builder: (ctx, state) => Scaffold(
+          body: Center(child: Text('Settings')),
+        ),
+      ),
+    ],
+  ),
+)
+```
+
+Navigate host-side by holding a reference to the `GoRouter`: `router.go('/settings')`.
+
+## Writing a bridge
+
+A `RuneBridge` is one class with one method. Everything else is ordinary Flutter.
+
+### 1. Scaffold a package
+
+```
+packages/my_bridge/
+  pubspec.yaml       # depends on rune: path: ../..
+  analysis_options.yaml
+  lib/
+    my_bridge.dart   # barrel: export 'src/my_bridge_impl.dart' show MyBridge;
+    src/
+      my_bridge_impl.dart
+      widgets/
+        my_widget_builder.dart
+  test/
+    my_bridge_test.dart
+```
+
+### 2. Implement the bridge
+
+```dart
+import 'package:rune/rune.dart';
+
+final class MyBridge implements RuneBridge {
+  const MyBridge();
+
+  @override
+  void registerInto(RuneConfig config) {
+    config.widgets.registerBuilder(const MyWidgetBuilder());
+    config.values.registerBuilder(const MyValueBuilder());
+    config.constants.registerAll('MyConstants', {
+      'green': MyColors.green,
+      'red': MyColors.red,
+    });
+    config.extensions.register('percent', (target, ctx) {
+      if (target is num) return '$target%';
+      throw ArgumentError('.percent expects num');
+    });
+  }
+}
+```
+
+### 3. Author a widget builder
+
+```dart
+final class MyWidgetBuilder implements RuneWidgetBuilder {
+  const MyWidgetBuilder();
+
+  @override
+  String get typeName => 'MyWidget';
+
+  @override
+  Widget build(ResolvedArguments args, RuneContext ctx) {
+    return MyWidget(
+      title: args.require<String>('title', source: 'MyWidget'),
+      color: args.get<Color>('color'),
+    );
+  }
+}
+```
+
+For closure-accepting slots (`builder:`, `onPressed:` with a closure body, etc.), see `packages/rune_cupertino/lib/src/widgets/cupertino_tab_scaffold_builder.dart` for the canonical pattern that imports `RuneClosure` through a narrowly-suppressed `implementation_imports`.
+
+### 4. Consume it
+
+```dart
+final config = RuneConfig.defaults()
+    .withBridges(const [MyBridge()]);
+
+RuneView(config: config, source: "MyWidget(title: 'Hi')");
+```
+
+The four sibling bridges in [`packages/`](packages/) are live reference implementations. Start from `rune_responsive_sizer` (smallest, extension-only), then `rune_cupertino` (widget-heavy), then `rune_provider` (closure-heavy), then `rune_router` (value-builder-heavy).
 
 ## Bridge packages
 
