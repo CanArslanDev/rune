@@ -5,6 +5,7 @@ import 'package:rune/src/builders/resolved_arguments.dart';
 import 'package:rune/src/builders/widgets/elevated_button_builder.dart';
 import 'package:rune/src/builders/widgets/stateful_builder_builder.dart';
 import 'package:rune/src/builders/widgets/text_builder.dart';
+import 'package:rune/src/core/animation_controller_spec.dart';
 import 'package:rune/src/core/exceptions.dart';
 import 'package:rune/src/core/rune_context.dart';
 import 'package:rune/src/parser/dart_parser.dart';
@@ -498,6 +499,74 @@ void main() {
         // Flush post-frame callback + its setState.
         await tester.pumpAndSettle();
         expect(find.text('init=true'), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      },
+    );
+
+    testWidgets(
+      'AnimationControllerSpec in initial is materialised into a real '
+      'AnimationController bound to the host as vsync',
+      (tester) async {
+        // The spec is replaced in-place before initState runs its user
+        // closure; state.ctrl in the builder body is an actual
+        // AnimationController instance and exposes .value (whitelist).
+        final closure = _closureOf(
+          r"(state) => Text('v=${state.ctrl.value}')",
+        );
+        await tester.pumpWidget(
+          _wrap(
+            b.build(
+              ResolvedArguments(
+                named: <String, Object?>{
+                  'initial': const <Object?, Object?>{
+                    'ctrl': AnimationControllerSpec(
+                      duration: Duration(seconds: 1),
+                    ),
+                  },
+                  'builder': closure,
+                },
+              ),
+              testContext(),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        // lowerBound is 0.0 by default; no forward() was called.
+        expect(find.text('v=0.0'), findsOneWidget);
+        // Unmount cleanly disposes the host-owned controller.
+        await tester.pumpWidget(_wrap(const SizedBox.shrink()));
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+      },
+    );
+
+    testWidgets(
+      'AnimationControllerSpec honors initial value from spec',
+      (tester) async {
+        final closure = _closureOf(
+          r"(state) => Text('v=${state.ctrl.value}')",
+        );
+        await tester.pumpWidget(
+          _wrap(
+            b.build(
+              ResolvedArguments(
+                named: <String, Object?>{
+                  'initial': const <Object?, Object?>{
+                    'ctrl': AnimationControllerSpec(
+                      duration: Duration(seconds: 1),
+                      initialValue: 0.25,
+                    ),
+                  },
+                  'builder': closure,
+                },
+              ),
+              testContext(),
+            ),
+          ),
+        );
+        expect(find.text('v=0.25'), findsOneWidget);
+        await tester.pumpWidget(_wrap(const SizedBox.shrink()));
+        await tester.pumpAndSettle();
         expect(tester.takeException(), isNull);
       },
     );

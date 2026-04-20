@@ -119,6 +119,12 @@ void main() {
         'ExpansionTile',
         'ExpansionPanelList',
         'Stepper',
+        'FadeTransition',
+        'SlideTransition',
+        'ScaleTransition',
+        'RotationTransition',
+        'SizeTransition',
+        'AnimatedBuilder',
       ]) {
         expect(r.contains(name), isTrue, reason: 'missing widget $name');
       }
@@ -179,6 +185,10 @@ void main() {
         'DataCell',
         'ExpansionPanel',
         'Step',
+        'AnimationController',
+        'Tween',
+        'ColorTween',
+        'CurvedAnimation',
       ]) {
         expect(r.contains(key), isTrue, reason: 'missing value $key');
       }
@@ -206,6 +216,10 @@ void main() {
       expect(r.contains('StepState', 'indexed'), isTrue);
       expect(r.contains('StepState', 'complete'), isTrue);
       expect(r.contains('StepState', 'error'), isTrue);
+      expect(r.contains('AnimationStatus', 'dismissed'), isTrue);
+      expect(r.contains('AnimationStatus', 'forward'), isTrue);
+      expect(r.contains('AnimationStatus', 'reverse'), isTrue);
+      expect(r.contains('AnimationStatus', 'completed'), isTrue);
     });
 
     test('individual register* calls combined produce the full set', () {
@@ -215,9 +229,9 @@ void main() {
       RuneDefaults.registerWidgets(w);
       RuneDefaults.registerValues(v);
       RuneDefaults.registerConstants(c);
-      expect(w.size, greaterThanOrEqualTo(109));
-      expect(v.size, greaterThanOrEqualTo(50));
-      expect(c.size, greaterThanOrEqualTo(57));
+      expect(w.size, greaterThanOrEqualTo(115));
+      expect(v.size, greaterThanOrEqualTo(54));
+      expect(c.size, greaterThanOrEqualTo(58));
     });
   });
 }

@@ -53,6 +53,7 @@ void registerPhase2aConstants(ConstantRegistry registry) {
   _registerDismissDirection(registry);
   _registerStepperType(registry);
   _registerStepState(registry);
+  _registerAnimationStatus(registry);
 }
 
 // Registers every Colors member that is a concrete Color value.
@@ -386,5 +387,15 @@ void _registerStepperType(ConstantRegistry r) {
 void _registerStepState(ConstantRegistry r) {
   r.registerAll('StepState', <String, Object?>{
     for (final v in StepState.values) v.name: v,
+  });
+}
+
+// Registers AnimationStatus enum values (dismissed, forward, reverse,
+// completed); v1.9.0 addition for use alongside explicit-animation
+// widgets (FadeTransition, SlideTransition, etc.) and the
+// AnimationController method whitelist.
+void _registerAnimationStatus(ConstantRegistry r) {
+  r.registerAll('AnimationStatus', <String, Object?>{
+    for (final v in AnimationStatus.values) v.name: v,
   });
 }

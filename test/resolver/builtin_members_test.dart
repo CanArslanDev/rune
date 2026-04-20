@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -990,6 +992,160 @@ void main() {
         ),
         throwsA(isA<StateError>()),
       );
+    });
+  });
+
+  group('invokeBuiltinMethod: AnimationController (v1.9.0)', () {
+    // Flutter's AnimationController ultimately reaches into
+    // SchedulerBinding.instance / SemanticsBinding.instance; those
+    // require a TestWidgetsFlutterBinding. testWidgets initialises the
+    // binding for us, so every case in this group uses testWidgets
+    // rather than plain test().
+    AnimationController makeController() => AnimationController(
+          vsync: const TestVSync(),
+          duration: const Duration(milliseconds: 100),
+        );
+
+    testWidgets(
+      'forward() starts the controller and returns a TickerFuture',
+      (tester) async {
+        final ctrl = makeController();
+        addTearDown(ctrl.dispose);
+        final node = parseMethod('ctrl.forward()');
+        final out = invokeBuiltinMethod(
+          target: ctrl,
+          methodName: 'forward',
+          positionalArgs: const <Object?>[],
+          namedArgs: const <String, Object?>{},
+          sourceNode: node,
+          ctx: testContext(),
+        );
+        expect(out, isA<TickerFuture>());
+        expect(ctrl.isAnimating, isTrue);
+        ctrl.stop();
+      },
+    );
+
+    testWidgets('stop() halts a running controller', (tester) async {
+      final ctrl = makeController();
+      unawaited(ctrl.forward());
+      addTearDown(ctrl.dispose);
+      final node = parseMethod('ctrl.stop()');
+      invokeBuiltinMethod(
+        target: ctrl,
+        methodName: 'stop',
+        positionalArgs: const <Object?>[],
+        namedArgs: const <String, Object?>{},
+        sourceNode: node,
+        ctx: testContext(),
+      );
+      expect(ctrl.isAnimating, isFalse);
+    });
+
+    testWidgets('reset() returns the value to lowerBound', (tester) async {
+      final ctrl = makeController()..value = 0.8;
+      addTearDown(ctrl.dispose);
+      final node = parseMethod('ctrl.reset()');
+      invokeBuiltinMethod(
+        target: ctrl,
+        methodName: 'reset',
+        positionalArgs: const <Object?>[],
+        namedArgs: const <String, Object?>{},
+        sourceNode: node,
+        ctx: testContext(),
+      );
+      expect(ctrl.value, 0.0);
+    });
+
+    testWidgets(
+      'repeat() drives the controller and is cancelled by stop',
+      (tester) async {
+        final ctrl = makeController();
+        addTearDown(ctrl.dispose);
+        final node = parseMethod('ctrl.repeat()');
+        invokeBuiltinMethod(
+          target: ctrl,
+          methodName: 'repeat',
+          positionalArgs: const <Object?>[],
+          namedArgs: const <String, Object?>{},
+          sourceNode: node,
+          ctx: testContext(),
+        );
+        expect(ctrl.isAnimating, isTrue);
+        ctrl.stop();
+      },
+    );
+
+    testWidgets(
+      'forward(from: 0.5) coerces int/double positional args',
+      (tester) async {
+        final ctrl = makeController();
+        addTearDown(ctrl.dispose);
+        final node = parseMethod('ctrl.forward(0.5)');
+        invokeBuiltinMethod(
+          target: ctrl,
+          methodName: 'forward',
+          positionalArgs: const <Object?>[0.5],
+          namedArgs: const <String, Object?>{},
+          sourceNode: node,
+          ctx: testContext(),
+        );
+        expect(ctrl.value, closeTo(0.5, 1e-9));
+        ctrl.stop();
+      },
+    );
+
+    testWidgets('unknown method raises ResolveException', (tester) async {
+      final ctrl = makeController();
+      addTearDown(ctrl.dispose);
+      final node = parseMethod('ctrl.nope()');
+      expect(
+        () => invokeBuiltinMethod(
+          target: ctrl,
+          methodName: 'nope',
+          positionalArgs: const <Object?>[],
+          namedArgs: const <String, Object?>{},
+          sourceNode: node,
+          ctx: testContext(),
+        ),
+        throwsA(isA<ResolveException>()),
+      );
+    });
+  });
+
+  group('resolveBuiltinProperty: Animation<double> (v1.9.0)', () {
+    test('.value returns the current animation value', () {
+      const anim = AlwaysStoppedAnimation<double>(0.42);
+      final (matched, value) = resolveBuiltinProperty(anim, 'value');
+      expect(matched, isTrue);
+      expect(value, 0.42);
+    });
+
+    test('.status returns the AnimationStatus', () {
+      const anim = AlwaysStoppedAnimation<double>(1);
+      final (matched, value) = resolveBuiltinProperty(anim, 'status');
+      expect(matched, isTrue);
+      expect(value, AnimationStatus.forward);
+    });
+
+    testWidgets(
+      '.isAnimating is false for a stopped controller',
+      (tester) async {
+        final ctrl = AnimationController(
+          vsync: const TestVSync(),
+          duration: const Duration(milliseconds: 100),
+        );
+        addTearDown(ctrl.dispose);
+        final (matched, value) = resolveBuiltinProperty(ctrl, 'isAnimating');
+        expect(matched, isTrue);
+        expect(value, isFalse);
+      },
+    );
+
+    test('unknown property falls through', () {
+      const anim = AlwaysStoppedAnimation<double>(0);
+      final (matched, _) = resolveBuiltinProperty(anim, 'unknown');
+      expect(matched, isFalse);
     });
   });
 }

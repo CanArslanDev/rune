@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:rune/src/builders/builder.dart';
 import 'package:rune/src/builders/resolved_arguments.dart';
 import 'package:rune/src/builders/stateful_builder_helpers.dart';
+import 'package:rune/src/core/animation_controller_spec.dart';
 import 'package:rune/src/core/exceptions.dart';
 import 'package:rune/src/core/rune_context.dart';
 import 'package:rune/src/core/rune_state.dart';
@@ -111,8 +112,17 @@ class _StatefulHost extends StatefulWidget {
   State<_StatefulHost> createState() => _StatefulHostState();
 }
 
-class _StatefulHostState extends State<_StatefulHost> {
+class _StatefulHostState extends State<_StatefulHost>
+    with TickerProviderStateMixin {
   late RuneState _state;
+
+  /// Real `AnimationController` instances this host owns. Each entry was
+  /// materialized from an [AnimationControllerSpec] found in
+  /// `widget.initial`. The list exists so `dispose` can tear them down
+  /// explicitly and `autoDisposeListenables` can skip them to avoid a
+  /// double-dispose.
+  final List<AnimationController> _ownedAnimationControllers =
+      <AnimationController>[];
 
   @override
   void initState() {
@@ -121,7 +131,41 @@ class _StatefulHostState extends State<_StatefulHost> {
       entries: widget.initial,
       onMutation: _scheduleRebuild,
     );
+    _materialiseAnimationControllers();
     widget.invokeInitState?.call(_state);
+  }
+
+  /// Walks the initial entries, replacing every [AnimationControllerSpec]
+  /// with a freshly-constructed [AnimationController] bound to `this`
+  /// as the [TickerProvider]. Mutates `_state.entries` directly to bypass
+  /// the `onMutation` callback; materialization happens inside
+  /// `initState` before the first build, so there is no rebuild to
+  /// schedule. Disposal of the created controllers is handled in
+  /// `dispose` via [_ownedAnimationControllers].
+  void _materialiseAnimationControllers() {
+    final entries = _state.entries;
+    for (final key in entries.keys.toList()) {
+      final v = entries[key];
+      if (v is AnimationControllerSpec) {
+        final ctrl = AnimationController(
+          vsync: this,
+          duration: v.duration,
+          reverseDuration: v.reverseDuration,
+          lowerBound: v.lowerBound,
+          upperBound: v.upperBound,
+          animationBehavior: v.animationBehavior,
+          value: v.initialValue,
+          debugLabel: v.debugLabel,
+        );
+        _ownedAnimationControllers.add(ctrl);
+        // Direct mutation of the entries map does not fire onMutation,
+        // which is the documented leaky-abstraction behavior of
+        // RuneState.entries. We want this here: materialization runs
+        // inside initState before any build, so scheduling a rebuild
+        // would be wasted work.
+        entries[key] = ctrl;
+      }
+    }
   }
 
   @override
@@ -150,11 +194,30 @@ class _StatefulHostState extends State<_StatefulHost> {
     // Run user dispose first so source-level cleanup sees the state
     // before any auto-disposed Listenables are torn down.
     widget.invokeDispose?.call(_state);
+    // Dispose host-owned animation controllers explicitly. This runs
+    // regardless of `autoDisposeListenables` because the host created
+    // them implicitly from a spec; the source never saw the real
+    // controller during resolution and therefore cannot be expected
+    // to dispose it.
+    for (final ctrl in _ownedAnimationControllers) {
+      ctrl.dispose();
+    }
     if (widget.autoDisposeListenables) {
       for (final entry in _state.entries.values) {
-        if (entry is ChangeNotifier) {
-          entry.dispose();
+        if (entry is! ChangeNotifier) continue;
+        // Skip entries already disposed above via the owned-controllers
+        // list to prevent a double-dispose. Identity compare instead of
+        // List.contains so the lint doesn't flag the unrelated-type
+        // case (AnimationController vs ChangeNotifier).
+        var alreadyDisposed = false;
+        for (final owned in _ownedAnimationControllers) {
+          if (identical(owned, entry)) {
+            alreadyDisposed = true;
+            break;
+          }
         }
+        if (alreadyDisposed) continue;
+        entry.dispose();
       }
     }
     super.dispose();

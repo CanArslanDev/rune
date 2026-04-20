@@ -466,6 +466,33 @@ ValueChanged<int>? toIntValueChanged(
   };
 }
 
+/// Validates a resolved `builder` argument for [AnimatedBuilder] and
+/// returns a [TransitionBuilder] that feeds `(BuildContext, Widget?)`
+/// into the underlying [RuneClosure].
+///
+/// Unlike plain `(BuildContext) -> Widget` builders, [AnimatedBuilder]'s
+/// builder receives an optional `child` widget (the `child:` argument
+/// passed to the [AnimatedBuilder] constructor), allowing the static
+/// subtree to be hoisted out of the animation callback for efficiency.
+///
+/// Failure modes mirror [toIndexedBuilder]: null / wrong runtime type /
+/// wrong arity (expected 2). The returned builder raises
+/// [ResolveException] if the closure body yields a non-[Widget].
+TransitionBuilder toAnimatedBuilder(Object? source, String widgetName) {
+  final closure = _requireClosure(source, widgetName, 'builder', 2);
+  return (ctx, child) {
+    final result = closure.call(<Object?>[ctx, child]);
+    if (result is! Widget) {
+      throw ResolveException(
+        widgetName,
+        '$widgetName.builder closure must return a Widget; '
+        'got ${result.runtimeType}',
+      );
+    }
+    return result;
+  };
+}
+
 /// Validates a resolved `headerBuilder` argument for [ExpansionPanel]
 /// and returns an [ExpansionPanelHeaderBuilder] that feeds
 /// `(BuildContext, bool isExpanded)` into the underlying [RuneClosure].

@@ -46,6 +46,8 @@ import 'package:rune/src/resolver/rune_closure.dart';
 /// - `TextEditingController`: `text`, `value`
 /// - `FocusNode`: `hasFocus`
 /// - `TabController`: `index`
+/// - `Animation<double>` (v1.9.0): `value`, `status`, `isAnimating`,
+///   `isCompleted`, `isDismissed`
 /// - `AsyncSnapshot`: `hasData`, `data`, `hasError`, `error`,
 ///   `connectionState`
 /// - `BoxConstraints`: `maxWidth`, `minWidth`, `maxHeight`, `minHeight`,
@@ -119,6 +121,19 @@ import 'package:rune/src/resolver/rune_closure.dart';
   if (target is TabController) {
     return switch (propertyName) {
       'index' => (true, target.index),
+      _ => (false, null),
+    };
+  }
+  // Animation property whitelist (v1.9.0). AnimationController is a
+  // subtype of Animation<double>, so checking Animation<double> first
+  // covers both. Every getter is side-effect-free and cheap.
+  if (target is Animation<double>) {
+    return switch (propertyName) {
+      'value' => (true, target.value),
+      'status' => (true, target.status),
+      'isAnimating' => (true, target.isAnimating),
+      'isCompleted' => (true, target.isCompleted),
+      'isDismissed' => (true, target.isDismissed),
       _ => (false, null),
     };
   }
@@ -274,6 +289,8 @@ import 'package:rune/src/resolver/rune_closure.dart';
 /// - `PageController`: `jumpToPage(int)`;
 ///   `animateToPage(int, Duration, Curve)`; `dispose` (0 args).
 /// - `TabController`: `animateTo(int)`.
+/// - `AnimationController` (v1.9.0): `forward([num?])`, `reverse([num?])`,
+///   `stop`, `reset` (0 args); `repeat([bool?])`; `dispose` (0 args).
 ///
 /// Any other `(type, method)` pair raises [ResolveException].
 ///
@@ -404,6 +421,18 @@ Object? invokeBuiltinMethod({
   }
   if (target is TabController) {
     return _invokeTabControllerMethod(
+      target: target,
+      methodName: methodName,
+      positionalArgs: positionalArgs,
+      source: source,
+      locationOf: locationOf,
+    );
+  }
+  // Animation controller method whitelist (v1.9.0). Must precede the
+  // generic Animation<double> check in the property resolver; here it
+  // covers the full controller mutation surface.
+  if (target is AnimationController) {
+    return _invokeAnimationControllerMethod(
       target: target,
       methodName: methodName,
       positionalArgs: positionalArgs,
@@ -1289,6 +1318,111 @@ Object? _invokePageControllerMethod({
   throw ResolveException(
     source,
     'No built-in method "$methodName" on PageController',
+    location: locationOf(),
+  );
+}
+
+/// Dispatch arm for [AnimationController] (v1.9.0). Covers the full
+/// playback surface: `forward`, `reverse`, `stop`, `reset`, `repeat`,
+/// and `dispose`. `forward`, `reverse`, `stop`, and `reset` accept an
+/// optional leading `num` for the `from` parameter; `repeat` accepts
+/// an optional `bool` for `reverse` in its single-positional form.
+/// Named arguments are rejected at the top of [invokeBuiltinMethod] for
+/// uniformity with the rest of the controller whitelist.
+Object? _invokeAnimationControllerMethod({
+  required AnimationController target,
+  required String methodName,
+  required List<Object?> positionalArgs,
+  required String source,
+  required SourceSpan Function() locationOf,
+}) {
+  double? optionalFrom(String method) {
+    if (positionalArgs.isEmpty) return null;
+    if (positionalArgs.length > 1) {
+      throw ResolveException(
+        source,
+        'AnimationController.$method expects 0 or 1 positional '
+        'arg, got ${positionalArgs.length}',
+        location: locationOf(),
+      );
+    }
+    final raw = positionalArgs[0];
+    if (raw is! num) {
+      throw ResolveException(
+        source,
+        'AnimationController.$method expects num at position 0, '
+        'got ${raw.runtimeType}',
+        location: locationOf(),
+      );
+    }
+    return raw.toDouble();
+  }
+
+  switch (methodName) {
+    case 'forward':
+      return target.forward(from: optionalFrom('forward'));
+    case 'reverse':
+      return target.reverse(from: optionalFrom('reverse'));
+    case 'stop':
+      if (positionalArgs.isNotEmpty) {
+        throw ResolveException(
+          source,
+          'AnimationController.stop expects 0 positional args, '
+          'got ${positionalArgs.length}',
+          location: locationOf(),
+        );
+      }
+      target.stop();
+      return null;
+    case 'reset':
+      if (positionalArgs.isNotEmpty) {
+        throw ResolveException(
+          source,
+          'AnimationController.reset expects 0 positional args, '
+          'got ${positionalArgs.length}',
+          location: locationOf(),
+        );
+      }
+      target.reset();
+      return null;
+    case 'repeat':
+      if (positionalArgs.isEmpty) {
+        return target.repeat();
+      }
+      if (positionalArgs.length == 1) {
+        final raw = positionalArgs[0];
+        if (raw is! bool) {
+          throw ResolveException(
+            source,
+            'AnimationController.repeat expects bool at position 0 '
+            '(reverse), got ${raw.runtimeType}',
+            location: locationOf(),
+          );
+        }
+        return target.repeat(reverse: raw);
+      }
+      throw ResolveException(
+        source,
+        'AnimationController.repeat expects 0 or 1 positional args, '
+        'got ${positionalArgs.length}',
+        location: locationOf(),
+      );
+    case 'dispose':
+      _requireControllerArity(
+        typeName: 'AnimationController',
+        methodName: 'dispose',
+        expected: 0,
+        positionalArgs: positionalArgs,
+        source: source,
+        locationOf: locationOf,
+      );
+      target.dispose();
+      return null;
+  }
+
+  throw ResolveException(
+    source,
+    'No built-in method "$methodName" on AnimationController',
     location: locationOf(),
   );
 }

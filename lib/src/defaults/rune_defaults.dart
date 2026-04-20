@@ -1,3 +1,4 @@
+import 'package:rune/src/builders/values/animation_controller_builder.dart';
 import 'package:rune/src/builders/values/border_radius_circular_builder.dart';
 import 'package:rune/src/builders/values/bottom_navigation_bar_item_builder.dart';
 import 'package:rune/src/builders/values/box_constraints_builder.dart';
@@ -5,7 +6,9 @@ import 'package:rune/src/builders/values/box_decoration_builder.dart';
 import 'package:rune/src/builders/values/button_segment_builder.dart';
 import 'package:rune/src/builders/values/color_builder.dart';
 import 'package:rune/src/builders/values/color_scheme_from_seed_builder.dart';
+import 'package:rune/src/builders/values/color_tween_builder.dart';
 import 'package:rune/src/builders/values/cupertino_page_route_builder.dart';
+import 'package:rune/src/builders/values/curved_animation_builder.dart';
 import 'package:rune/src/builders/values/data_cell_builder.dart';
 import 'package:rune/src/builders/values/data_column_builder.dart';
 import 'package:rune/src/builders/values/data_row_builder.dart';
@@ -46,8 +49,10 @@ import 'package:rune/src/builders/values/transform_flip_builder.dart';
 import 'package:rune/src/builders/values/transform_rotate_builder.dart';
 import 'package:rune/src/builders/values/transform_scale_builder.dart';
 import 'package:rune/src/builders/values/transform_translate_builder.dart';
+import 'package:rune/src/builders/values/tween_builder.dart';
 import 'package:rune/src/builders/values/value_key_builder.dart';
 import 'package:rune/src/builders/widgets/alert_dialog_builder.dart';
+import 'package:rune/src/builders/widgets/animated_builder_builder.dart';
 import 'package:rune/src/builders/widgets/animated_container_builder.dart';
 import 'package:rune/src/builders/widgets/animated_cross_fade_builder.dart';
 import 'package:rune/src/builders/widgets/animated_opacity_builder.dart';
@@ -86,6 +91,7 @@ import 'package:rune/src/builders/widgets/elevated_button_builder.dart';
 import 'package:rune/src/builders/widgets/expanded_builder.dart';
 import 'package:rune/src/builders/widgets/expansion_panel_list_builder.dart';
 import 'package:rune/src/builders/widgets/expansion_tile_builder.dart';
+import 'package:rune/src/builders/widgets/fade_transition_builder.dart';
 import 'package:rune/src/builders/widgets/filled_button_builder.dart';
 import 'package:rune/src/builders/widgets/filter_chip_builder.dart';
 import 'package:rune/src/builders/widgets/fitted_box_builder.dart';
@@ -124,17 +130,21 @@ import 'package:rune/src/builders/widgets/positioned_builder.dart';
 import 'package:rune/src/builders/widgets/radio_builder.dart';
 import 'package:rune/src/builders/widgets/radio_list_tile_builder.dart';
 import 'package:rune/src/builders/widgets/reorderable_list_view_builder.dart';
+import 'package:rune/src/builders/widgets/rotation_transition_builder.dart';
 import 'package:rune/src/builders/widgets/row_builder.dart';
 import 'package:rune/src/builders/widgets/rune_compose_builder.dart';
 import 'package:rune/src/builders/widgets/safe_area_builder.dart';
 import 'package:rune/src/builders/widgets/scaffold_builder.dart';
+import 'package:rune/src/builders/widgets/scale_transition_builder.dart';
 import 'package:rune/src/builders/widgets/search_bar_builder.dart';
 import 'package:rune/src/builders/widgets/segmented_button_builder.dart';
 import 'package:rune/src/builders/widgets/semantics_builder.dart';
 import 'package:rune/src/builders/widgets/simple_dialog_builder.dart';
 import 'package:rune/src/builders/widgets/simple_dialog_option_builder.dart';
 import 'package:rune/src/builders/widgets/single_child_scroll_view_builder.dart';
+import 'package:rune/src/builders/widgets/size_transition_builder.dart';
 import 'package:rune/src/builders/widgets/sized_box_builder.dart';
+import 'package:rune/src/builders/widgets/slide_transition_builder.dart';
 import 'package:rune/src/builders/widgets/slider_builder.dart';
 import 'package:rune/src/builders/widgets/sliver_app_bar_builder.dart';
 import 'package:rune/src/builders/widgets/sliver_fill_remaining_builder.dart';
@@ -328,7 +338,14 @@ abstract final class RuneDefaults {
       ..registerBuilder(const DataTableBuilder())
       ..registerBuilder(const ExpansionTileBuilder())
       ..registerBuilder(const ExpansionPanelListBuilder())
-      ..registerBuilder(const StepperBuilder());
+      ..registerBuilder(const StepperBuilder())
+      // Explicit animations (v1.9.0).
+      ..registerBuilder(const FadeTransitionBuilder())
+      ..registerBuilder(const SlideTransitionBuilder())
+      ..registerBuilder(const ScaleTransitionBuilder())
+      ..registerBuilder(const RotationTransitionBuilder())
+      ..registerBuilder(const SizeTransitionBuilder())
+      ..registerBuilder(const AnimatedBuilderBuilder());
   }
 
   /// Registers every Phase 1–2c value builder into [registry].
@@ -398,7 +415,12 @@ abstract final class RuneDefaults {
       ..registerBuilder(const DataRowBuilder())
       ..registerBuilder(const DataCellBuilder())
       ..registerBuilder(const ExpansionPanelBuilder())
-      ..registerBuilder(const StepBuilder());
+      ..registerBuilder(const StepBuilder())
+      // Explicit animations (v1.9.0).
+      ..registerBuilder(const AnimationControllerBuilder())
+      ..registerBuilder(const TweenBuilder())
+      ..registerBuilder(const ColorTweenBuilder())
+      ..registerBuilder(const CurvedAnimationBuilder());
   }
 
   /// Seeds [registry] with Phase 2a constants (Colors, enums,
