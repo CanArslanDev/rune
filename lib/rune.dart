@@ -9,6 +9,8 @@ export 'src/binding/rune_event_dispatcher.dart' show RuneEventDispatcher;
 export 'src/bridges/rune_bridge.dart' show RuneBridge;
 export 'src/builders/builder.dart'
     show RuneBuilder, RuneValueBuilder, RuneWidgetBuilder;
+export 'src/builders/event_callback.dart'
+    show valueEventCallback, voidEventCallback;
 export 'src/builders/resolved_arguments.dart' show ResolvedArguments;
 export 'src/config.dart' show RuneConfig;
 export 'src/core/exceptions.dart';
