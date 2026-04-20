@@ -6,6 +6,73 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [1.9.0] - 2026-04-19 - explicit animations
+
+### Added
+
+- **AnimationController.** Source declares an AnimationController
+  inside a `StatefulBuilder`'s `initial` map. The value builder
+  returns an `AnimationControllerSpec` (a pure data descriptor);
+  `StatefulBuilder`'s private host state now mixes in
+  `TickerProviderStateMixin` and swaps each spec in-place for a
+  real `AnimationController(vsync: this, ...)` before any source
+  code touches the state. The host tracks owned controllers and
+  disposes them in its `dispose`, skipping them in the
+  `autoDisposeListenables` sweep to avoid double-disposal. Source
+  calls `.forward()`, `.reverse()`, `.stop()`, `.reset()`, and
+  `.repeat()` via the builtin-method whitelist; property access
+  covers `.value`, `.status`, `.isAnimating`, `.isCompleted`,
+  `.isDismissed`.
+- **Tween value builders.** `Tween(begin, end)` (generic over any
+  runtime value), `ColorTween(begin?, end?)`, and
+  `CurvedAnimation(parent, curve, reverseCurve?)`.
+- **Transition widget builders.** `FadeTransition(opacity, child)`,
+  `SlideTransition(position, child)`, `ScaleTransition(scale,
+  child, alignment?)`, `RotationTransition(turns, child,
+  alignment?)`, `SizeTransition(sizeFactor, child, axis?,
+  axisAlignment?)`. Each takes a Flutter Animation value (typically
+  from a tween driven by an AnimationController).
+- **AnimatedBuilder.** `AnimatedBuilder(animation, builder:
+  (BuildContext, Widget?) -> Widget, child?)`. The builder closure
+  receives an optional child that Flutter rebuilds only when the
+  animation ticks, matching the vanilla AnimatedBuilder contract.
+- **AnimationStatus constants.** `dismissed`, `forward`, `reverse`,
+  `completed` join the constants table.
+- **Animation<double> property access and AnimationController
+  methods.** Read `.value`, `.status`, `.isAnimating`,
+  `.isCompleted`, `.isDismissed` on any Animation<double>. Call
+  `.forward()`, `.reverse()`, `.stop()`, `.reset()`, `.repeat()`,
+  `.dispose()` on AnimationControllers.
+
+### Notes
+
+- Widget count 109 to 115. Value builder count 50 to 54. Constants
+  gain AnimationStatus.
+- About 77 new tests across the six transition widgets, the five
+  value builders (AnimationController, Tween, ColorTween,
+  CurvedAnimation, AnimatedBuilder), the AnimationControllerSpec
+  materialization path in StatefulBuilder, the builtin-method
+  whitelist extensions, and a five-scenario integration smoke
+  (rotating icon with repeat, fading text via forward, sliding
+  panel with tween + curve, animated builder closure, AnimationStatus
+  reach).
+- `ListenableBuilder` stays deferred (AnimatedBuilder accepts any
+  `Listenable` via its `animation` parameter, covering the common
+  case; ListenableBuilder is a thin alias and can ship as a
+  one-file follow-up).
+- `PageRouteBuilder` + `Navigator.popUntil` (predicate closure)
+  remain deferred from v1.6.0; their closure signatures mirror
+  the now-supported `AnimatedBuilder` and could land in a future
+  patch.
+- `.drive(Animatable)` on AnimationController stays out of scope;
+  source users construct the Animation via CurvedAnimation +
+  tween.animate(...) if needed, but `.animate` itself is not yet
+  whitelisted. Future patch candidate.
+- The v1.0.0 stability commitment holds. Zero breaking changes.
+  Existing StatefulBuilder source continues to work unchanged
+  (spec materialization only touches entries that happen to be
+  `AnimationControllerSpec`).
+
 ## [1.8.0] - 2026-04-19 - data tables and structured display
 
 ### Added
@@ -1137,7 +1204,8 @@ All notable changes to this project are documented here. Format follows
 - Example app at `example/lib/main.dart` demonstrating the full Phase 1
   feature set.
 
-[Unreleased]: https://github.com/CanArslanDev/rune/compare/v1.8.0...HEAD
+[Unreleased]: https://github.com/CanArslanDev/rune/compare/v1.9.0...HEAD
+[1.9.0]: https://github.com/CanArslanDev/rune/compare/v1.8.0...v1.9.0
 [1.8.0]: https://github.com/CanArslanDev/rune/compare/v1.7.0...v1.8.0
 [1.7.0]: https://github.com/CanArslanDev/rune/compare/v1.6.0...v1.7.0
 [1.6.0]: https://github.com/CanArslanDev/rune/compare/v1.5.0...v1.6.0
