@@ -6,6 +6,63 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-04-19 - forms, validation, focus
+
+### Added
+
+- **Form widget.** `Form(child, onChanged?, autovalidateMode?)`.
+  `onChanged` fires whenever any child FormField changes (VoidCallback
+  via `voidEventCallback`). `autovalidateMode` accepts the new
+  `AutovalidateMode` enum constants. `canPop` / `onPopInvoked`
+  are deferred to v1.6.0's navigation work.
+- **TextFormField.** A text input with validation. Required / typical
+  args: `value` (initial text), `controller` (external TextEditingController),
+  `validator` (a 1-arg closure `(String?) -> String?` returning a
+  validation message or null), `onSaved` (1-arg closure
+  `(String?) -> void`), `onFieldSubmitted` (String event name or
+  1-arg closure), `onChanged` (same), plus all visual args TextField
+  already had (hintText, labelText, obscureText, maxLines, etc.).
+  `autovalidateMode` per field.
+- **Focus and FocusScope widget builders.**
+  `Focus(child, autofocus?, focusNode?, canRequestFocus?,
+  onFocusChange?)` wraps a subtree in a focus node (external node
+  supplied via the v1.1.0 `FocusNode` value builder).
+  `FocusScope(child, autofocus?, canRequestFocus?, onFocusChange?)`
+  creates a scoped focus tree node.
+- **`TextField.focusNode`.** `TextField` now accepts an optional
+  `focusNode: FocusNode` plumbed through the `_RuneTextField`
+  internal wrapper, closing a v1.1.0 integrity gap where the
+  `FocusNode` value builder existed but no widget consumed it.
+- **Closure helpers.** `toValidator` (`(String?) -> String?`) and
+  `toStringValueChanged` (`(String?) -> void`) join
+  `lib/src/builders/closure_builder_helpers.dart`. Both reuse the
+  existing arity / type validation shared with the v1.2.0 and
+  v1.4.0 helpers.
+- **AutovalidateMode constants.** `always`, `onUnfocus`,
+  `onUserInteraction`, `disabled` join the constants table.
+
+### Notes
+
+- Widget count 96 to 100. Value builder count unchanged. Constants
+  gain AutovalidateMode.
+- About 40 new tests across the four widget builders, the closure
+  helpers, and three integration smokes: Form + TextFormField
+  validator surfacing the error on user interaction, Focus +
+  FocusNode transferring focus across a button press, FocusScope
+  with autofocus granting focus to an autofocus child.
+- `onFieldSubmitted` uses `valueEventCallback<String>` (Flutter's
+  ValueChanged<String> is non-nullable) while `onSaved` uses the new
+  `toStringValueChanged` (Flutter's FormFieldSetter<String> is
+  void Function(String?)). The split keeps each callback's real
+  nullability faithful.
+- A CI-portability fix on the Form-validator integration smoke
+  swapped `AutovalidateMode.always` (which behaves differently
+  between Flutter 3.24 and newer versions on initial render) for
+  `AutovalidateMode.onUserInteraction`, then drove the test via
+  two sequential `enterText` calls (short invalid, then valid).
+  The original intent (Form + TextFormField + validator round-trip)
+  is preserved; only the triggering pattern changed.
+
 ## [1.4.0] - 2026-04-19 - theme access, M3 widgets, date/time pickers
 
 ### Added
@@ -936,7 +993,8 @@ All notable changes to this project are documented here. Format follows
 - Example app at `example/lib/main.dart` demonstrating the full Phase 1
   feature set.
 
-[Unreleased]: https://github.com/CanArslanDev/rune/compare/v1.4.0...HEAD
+[Unreleased]: https://github.com/CanArslanDev/rune/compare/v1.5.0...HEAD
+[1.5.0]: https://github.com/CanArslanDev/rune/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/CanArslanDev/rune/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/CanArslanDev/rune/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/CanArslanDev/rune/compare/v1.1.0...v1.2.0
