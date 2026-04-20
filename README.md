@@ -530,6 +530,7 @@ and README.
 | [`rune_cupertino`](packages/rune_cupertino) | Cupertino widget family (CupertinoApp through CupertinoAlertDialog), CupertinoThemeData, CupertinoIcons constants. |
 | [`rune_provider`](packages/rune_provider) | Reactive state from [`package:provider`](https://pub.dev/packages/provider): `ChangeNotifierProvider`, `Consumer`, `Selector`. Notifiers expose `Map`-shaped state via a `RuneReactiveNotifier.state` getter. |
 | [`rune_router`](packages/rune_router) | Inline routing via [`package:go_router`](https://pub.dev/packages/go_router): `GoRoute`, `GoRouter`, `GoRouterApp` (wraps `MaterialApp.router`). |
+| [`rune_devtools_extension`](packages/rune_devtools_extension) | Flutter DevTools extension. Adds a **rune** tab that inspects every live `RuneView` (source, data context, parse-cache size, last error) via the `ext.rune.inspect` VM service endpoint. |
 
 Apply any bridge with `RuneConfig.defaults().withBridges([...])`.
 The RuneBridge contract is one method: `void registerInto(RuneConfig config)`.

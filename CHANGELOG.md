@@ -6,6 +6,20 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+### Added
+
+- **`rune_devtools_extension` sibling package (v0.1.0).** Phase 2
+  of the DevTools plan. Ships a Flutter-web DevTools extension
+  under `packages/rune_devtools_extension/` that registers a
+  **rune** tab inside Flutter DevTools. Calls the
+  `ext.rune.inspect` endpoint registered by v1.18.0 and renders
+  one expandable card per live `RuneView` surfacing source,
+  data context, cache size, and last error. 7 unit tests on the
+  wire-format parser. CI workflow extended with a sixth
+  `analyze + test` block covering the new package.
+- Root README gains a row for `rune_devtools_extension` in the
+  Bridge-packages table.
+
 ## [1.18.0] - 2026-04-20 - DevTools inspection (Phase 1)
 
 ### Added

@@ -1,0 +1,33 @@
+name: rune_devtools_extension
+description: Flutter DevTools extension for the rune package. Inspect live RuneView instances, their source, data context, and last error from the DevTools tab.
+version: 0.1.0
+repository: https://github.com/CanArslanDev/rune/tree/main/packages/rune_devtools_extension
+homepage: https://github.com/CanArslanDev/rune
+issue_tracker: https://github.com/CanArslanDev/rune/issues
+documentation: https://canarslandev.github.io/rune/
+topics:
+  - rune
+  - devtools
+  - extension
+  - debugging
+  - inspector
+
+environment:
+  sdk: ^3.4.0
+  flutter: ">=3.22.0"
+
+dependencies:
+  devtools_app_shared: ^0.3.0
+  devtools_extensions: ^0.3.0
+  flutter:
+    sdk: flutter
+  rune:
+    path: ../..
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  very_good_analysis: ^5.1.0
+
+flutter:
+  uses-material-design: true
