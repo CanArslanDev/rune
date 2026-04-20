@@ -6,6 +6,62 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [1.8.0] - 2026-04-19 - data tables and structured display
+
+### Added
+
+- **DataTable.** `DataTable(columns: List<DataColumn>, rows:
+  List<DataRow>, sortColumnIndex?, sortAscending?, columnSpacing?,
+  headingRowHeight?, dataRowMinHeight?, dataRowMaxHeight?,
+  showBottomBorder?, dividerThickness?)`. Column sorting is driven
+  by a closure on `DataColumn.onSort: (columnIndex, ascending) ->
+  void`.
+- **DataColumn, DataRow, DataCell value builders.**
+  `DataColumn(label, numeric?, tooltip?, onSort?)`,
+  `DataRow(cells, selected?, onSelectChanged?, color?)`,
+  `DataCell(child, onTap?, showEditIcon?, placeholder?)`. Compose
+  into typed lists passed into DataTable.
+- **ExpansionTile.** `ExpansionTile(title, children?, subtitle?,
+  leading?, trailing?, initiallyExpanded?, onExpansionChanged?,
+  backgroundColor?, collapsedBackgroundColor?, iconColor?,
+  textColor?, tilePadding?, childrenPadding?)`.
+  `onExpansionChanged` is a `(bool) -> void` closure routed through
+  the existing `valueEventCallback<bool>`.
+- **ExpansionPanelList + ExpansionPanel.** `ExpansionPanelList(
+  children: List<ExpansionPanel>, expansionCallback:
+  (int, bool) -> void, animationDuration?, expandedHeaderPadding?)`
+  composes a list of `ExpansionPanel(headerBuilder:
+  (BuildContext, bool) -> Widget, body: Widget, isExpanded?,
+  canTapOnHeader?)` value entries.
+- **Stepper family.** `Stepper(steps: List<Step>, currentStep,
+  type?, onStepTapped?, onStepContinue?, onStepCancel?)` plus a
+  `Step(title, content, subtitle?, isActive?, state?)` value
+  builder. Default controls render automatically; custom
+  `controlsBuilder` stays deferred (Flutter's `ControlsDetails`
+  shape is not a clean value-builder candidate).
+- **Closure helpers.** `toIntBoolCallback` (`(int, bool) -> void`
+  for `DataColumn.onSort` and `ExpansionPanelList.expansionCallback`),
+  `toIntValueChanged` (`(int) -> void` for `Stepper.onStepTapped`),
+  `toExpansionPanelHeaderBuilder` (`(BuildContext, bool) -> Widget`
+  for `ExpansionPanel.headerBuilder`) join
+  `lib/src/builders/closure_builder_helpers.dart`.
+- **Stepper constants.** `StepperType.vertical/.horizontal` and
+  `StepState.indexed/.editing/.complete/.disabled/.error` join the
+  constants table.
+
+### Notes
+
+- Widget count 105 to 109. Value builder count 45 to 50. Constants
+  gain StepperType and StepState.
+- About 60 new tests across the four widget builders, the five
+  value builders, the closure helper extensions, and three
+  integration smokes: DataTable with columns and rows,
+  ExpansionTile expand-on-tap, Stepper advance on Continue.
+- `PaginatedDataTable` stays deferred; its `DataTableSource`
+  contract wants lifecycle-aware mutable state that fits better
+  alongside a future data-binding bridge (not v1.x scope).
+- The v1.0.0 stability commitment holds. Zero breaking changes.
+
 ## [1.7.0] - 2026-04-19 - gestures and advanced interaction
 
 ### Added
@@ -1081,7 +1137,8 @@ All notable changes to this project are documented here. Format follows
 - Example app at `example/lib/main.dart` demonstrating the full Phase 1
   feature set.
 
-[Unreleased]: https://github.com/CanArslanDev/rune/compare/v1.7.0...HEAD
+[Unreleased]: https://github.com/CanArslanDev/rune/compare/v1.8.0...HEAD
+[1.8.0]: https://github.com/CanArslanDev/rune/compare/v1.7.0...v1.8.0
 [1.7.0]: https://github.com/CanArslanDev/rune/compare/v1.6.0...v1.7.0
 [1.6.0]: https://github.com/CanArslanDev/rune/compare/v1.5.0...v1.6.0
 [1.5.0]: https://github.com/CanArslanDev/rune/compare/v1.4.0...v1.5.0
