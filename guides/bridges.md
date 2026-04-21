@@ -238,6 +238,49 @@ Lifecycle per `RuneHttpView`:
 
 **Customisation**: replace the default in-memory cache with a persistent one by passing `cache: MyPersistentCache()` (implement `RuneSourceCache`). Replace the HTTP client with an auth-aware one via `fetcher: MyAuthFetcher()` (implement `RuneSourceFetcher`). Force an immediate refetch via a `GlobalKey<RuneHttpViewState>()` and `state.refresh()`.
 
+## rune_bloc
+
+BLoC-pattern state. Registers `BlocProvider`, `BlocBuilder`, and `BlocListener` on the config.
+
+**Install**
+
+```yaml
+dependencies:
+  rune_bloc: ^0.1.0
+```
+
+**Apply**
+
+```dart
+final config = RuneConfig.defaults()
+    .withBridges(const [BlocBridge()]);
+```
+
+**Reactive state classes** implement the `RuneReactiveState` interface so Rune source can dot-access individual fields:
+
+```dart
+class CounterState implements RuneReactiveState {
+  const CounterState(this.count);
+  final int count;
+
+  @override
+  Map<String, Object?> toRuneMap() => {'count': count};
+}
+```
+
+**Use from source**
+
+```
+BlocProvider(
+  value: counter,
+  child: BlocBuilder(
+    builder: (ctx, state, child) => Text('${state.count}'),
+  ),
+)
+```
+
+`RuneReactiveState` (`rune_bloc`) and `RuneReactiveNotifier` (`rune_provider`) play the same role for the two state-management frameworks. Most consumers pick one.
+
 ## rune_devtools_extension
 
 Flutter DevTools extension that surfaces a **rune** tab showing every live `RuneView` in the host app: source, data context, parse cache size, last render error.

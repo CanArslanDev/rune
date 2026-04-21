@@ -8,6 +8,17 @@ All notable changes to this project are documented here. Format follows
 
 ### Added
 
+- **`rune_bloc` sibling package (v0.1.0).** Registers
+  `BlocProvider`, `BlocBuilder`, and `BlocListener` on a
+  `RuneConfig` through `BlocBridge`. Pairs `flutter_bloc ^8.1.0`
+  with a `RuneReactiveState` interface that state classes
+  implement (`Map<String, Object?> toRuneMap()`) so Rune source
+  can dot-access individual fields. Dual of `rune_provider`'s
+  `RuneReactiveNotifier` pattern; teams pick whichever
+  state-management framework they already use. 16 unit + widget
+  tests cover the bridge registration, per-widget argument
+  validation, and end-to-end cubit-emit flows through
+  `RuneView`.
 - **`rune_http` sibling package (v0.1.0).** `RuneHttpView(url,
   config, data, cacheDuration, ...)` fetches Rune source from an
   HTTP endpoint, caches it in memory (process-wide

@@ -1,0 +1,31 @@
+name: rune_bloc
+description: flutter_bloc bridge for the rune package. Registers BlocProvider, BlocBuilder, and BlocListener widgets on a RuneConfig so Rune source can express BLoC-pattern state.
+version: 0.1.0
+repository: https://github.com/CanArslanDev/rune/tree/main/packages/rune_bloc
+homepage: https://github.com/CanArslanDev/rune
+issue_tracker: https://github.com/CanArslanDev/rune/issues
+topics:
+  - rune
+  - bridge
+  - bloc
+  - state-management
+  - flutter-bloc
+
+environment:
+  sdk: ^3.4.0
+  flutter: ">=3.22.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_bloc: ^8.1.0
+  rune: ^1.18.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  very_good_analysis: ^5.1.0
+
+dependency_overrides:
+  rune:
+    path: ../..
