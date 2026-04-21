@@ -6,6 +6,20 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+### Added
+
+- **`rune_riverpod` sibling package (v0.1.0).** Registers
+  `ProviderScope` + `RiverpodConsumer` on a `RuneConfig` through
+  `RiverpodBridge`. Providers are passed in via `data:`; the
+  consumer `builder(ctx, value, child)` receives the provider's
+  current value (or the `RuneReactiveValue.toRuneMap()` projection
+  if the value implements that interface). Depends on
+  `flutter_riverpod ^2.5.0`. Completes the state-management trio
+  alongside `rune_provider` and `rune_bloc`. 12 unit + widget
+  tests cover bridge registration, argument validation, and
+  end-to-end `StateProvider<int>` + `StateProvider<CounterState>`
+  flows through `RuneView`.
+
 ## [1.19.0] - 2026-04-21 - DevTools Phase 3 host side (source hot-edit)
 
 ### Added

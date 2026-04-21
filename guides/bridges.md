@@ -281,6 +281,58 @@ BlocProvider(
 
 `RuneReactiveState` (`rune_bloc`) and `RuneReactiveNotifier` (`rune_provider`) play the same role for the two state-management frameworks. Most consumers pick one.
 
+## rune_riverpod
+
+Riverpod 2.x integration. Registers `ProviderScope` + `RiverpodConsumer`.
+
+**Install**
+
+```yaml
+dependencies:
+  rune_riverpod: ^0.1.0
+```
+
+**Apply**
+
+```dart
+final config = RuneConfig.defaults()
+    .withBridges(const [RiverpodBridge()]);
+```
+
+**Use from source**
+
+Providers are opaque Dart objects. Pass them through `data:`:
+
+```dart
+final counter = StateProvider<int>((ref) => 0);
+
+RuneView(
+  config: config,
+  data: {'counterProvider': counter},
+  source: r'''
+    RiverpodConsumer(
+      provider: counterProvider,
+      builder: (ctx, count, child) => Text('Count: $count'),
+    )
+  ''',
+)
+```
+
+**Typed state with dot-access**
+
+Implement `RuneReactiveValue` on the emitted type so Rune source can reach individual fields:
+
+```dart
+class CounterState implements RuneReactiveValue {
+  const CounterState(this.count);
+  final int count;
+  @override
+  Map<String, Object?> toRuneMap() => {'count': count};
+}
+```
+
+`RuneReactiveNotifier` (`rune_provider`), `RuneReactiveState` (`rune_bloc`), and `RuneReactiveValue` (`rune_riverpod`) are the same pattern applied to three state-management frameworks. Migration between them changes the interface name and the widget type names but usually leaves source strings intact.
+
 ## rune_devtools_extension
 
 Flutter DevTools extension that surfaces a **rune** tab showing every live `RuneView` in the host app: source, data context, parse cache size, last render error.

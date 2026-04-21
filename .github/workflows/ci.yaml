@@ -125,6 +125,18 @@ jobs:
         working-directory: packages/rune_bloc
         run: flutter test
 
+      - name: Install rune_riverpod dependencies
+        working-directory: packages/rune_riverpod
+        run: flutter pub get
+
+      - name: Analyze rune_riverpod
+        working-directory: packages/rune_riverpod
+        run: flutter analyze
+
+      - name: Test rune_riverpod
+        working-directory: packages/rune_riverpod
+        run: flutter test
+
       # rune_devtools_extension depends on devtools_extensions ^0.3.0,
       # which requires Dart >= 3.6 (Flutter 3.27+). The pinned-floor
       # column still runs on Flutter 3.24.0 (Dart 3.5) for main-package

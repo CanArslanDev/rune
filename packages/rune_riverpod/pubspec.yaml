@@ -1,0 +1,31 @@
+name: rune_riverpod
+description: Riverpod 2.x bridge for the rune package. Registers ProviderScope root + RiverpodConsumer widget for consuming providers by string name inside Rune source.
+version: 0.1.0
+repository: https://github.com/CanArslanDev/rune/tree/main/packages/rune_riverpod
+homepage: https://github.com/CanArslanDev/rune
+issue_tracker: https://github.com/CanArslanDev/rune/issues
+topics:
+  - rune
+  - bridge
+  - riverpod
+  - state-management
+  - reactive
+
+environment:
+  sdk: ^3.4.0
+  flutter: ">=3.22.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_riverpod: ^2.5.0
+  rune: ^1.19.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  very_good_analysis: ^5.1.0
+
+dependency_overrides:
+  rune:
+    path: ../..
