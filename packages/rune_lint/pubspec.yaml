@@ -1,0 +1,35 @@
+name: rune_lint
+description: Validation helpers for rune source strings. Catches unregistered widgets, missing constants, parse errors, and other common mistakes at test time instead of at runtime in front of users.
+version: 0.1.0
+repository: https://github.com/CanArslanDev/rune/tree/main/packages/rune_lint
+homepage: https://github.com/CanArslanDev/rune
+issue_tracker: https://github.com/CanArslanDev/rune/issues
+topics:
+  - rune
+  - lint
+  - validation
+  - testing
+  - diagnostics
+
+environment:
+  sdk: ^3.4.0
+  flutter: ">=3.22.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  # flutter_test is a runtime dep here because `validateRuneSource`
+  # takes a `WidgetTester` and `expectValidRuneSource` calls
+  # `fail(...)` from the matcher layer. Consumers always use this
+  # package from inside a test, so pulling flutter_test into the
+  # main dep graph is harmless.
+  flutter_test:
+    sdk: flutter
+  rune: ^1.19.0
+
+dev_dependencies:
+  very_good_analysis: ^5.1.0
+
+dependency_overrides:
+  rune:
+    path: ../..

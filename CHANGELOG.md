@@ -8,6 +8,18 @@ All notable changes to this project are documented here. Format follows
 
 ### Added
 
+- **`rune_lint` sibling package (v0.1.0).** Test-time validation
+  helpers. `validateRuneSource(tester, source, config, {data})`
+  pumps a `RuneView` inside a `WidgetTester` and returns a
+  `List<RuneLintIssue>` describing every exception that surfaced
+  during the first render;
+  `expectValidRuneSource(tester, source, config)` is a thin
+  matcher wrapper that `fail`s with a readable listing. The
+  `kind` field lets consumer tests filter categories
+  (`parseError`, `unregistered`, `invalidArgument`,
+  `missingBinding`, `resolveError`). 9 widget tests cover every
+  category. Depends on `flutter_test` at runtime because the
+  validator takes a `WidgetTester`.
 - **`rune_riverpod` sibling package (v0.1.0).** Registers
   `ProviderScope` + `RiverpodConsumer` on a `RuneConfig` through
   `RiverpodBridge`. Providers are passed in via `data:`; the

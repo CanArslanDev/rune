@@ -544,6 +544,7 @@ and README.
 | [`rune_http`](packages/rune_http) | `RuneHttpView`: fetch Rune source from a URL, cache in memory with TTL, offline-first fallback to the last-known-good copy. Unlocks the server-driven-UI use case end-to-end. |
 | [`rune_bloc`](packages/rune_bloc) | BLoC-pattern state from [`package:flutter_bloc`](https://pub.dev/packages/flutter_bloc): `BlocProvider`, `BlocBuilder`, `BlocListener`. State classes implement `RuneReactiveState` to expose `Map`-shaped projections. |
 | [`rune_riverpod`](packages/rune_riverpod) | Riverpod 2.x integration: `ProviderScope`, `RiverpodConsumer`. Typed state classes implement `RuneReactiveValue` for dot-access. |
+| [`rune_lint`](packages/rune_lint) | Test-time validation: `expectValidRuneSource(tester, source, config)` catches unregistered widgets, missing constants, typos, and parse errors before a user ever sees the fallback widget. |
 
 Apply any bridge with `RuneConfig.defaults().withBridges([...])`.
 The RuneBridge contract is one method: `void registerInto(RuneConfig config)`.
