@@ -1,0 +1,33 @@
+name: rune_test
+description: Test-ergonomics helpers and a format CLI for rune source strings. pumpRuneView, expectRuneRenders, and a bin/format.dart that wraps formatRuneSource for command-line use.
+version: 0.1.0
+repository: https://github.com/CanArslanDev/rune/tree/main/packages/rune_test
+homepage: https://github.com/CanArslanDev/rune
+issue_tracker: https://github.com/CanArslanDev/rune/issues
+topics:
+  - rune
+  - testing
+  - cli
+  - formatter
+  - tooling
+
+environment:
+  sdk: ^3.4.0
+  flutter: ">=3.22.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_test:
+    sdk: flutter
+  rune: ^1.19.0
+
+dev_dependencies:
+  very_good_analysis: ^5.1.0
+
+executables:
+  rune_format: format
+
+dependency_overrides:
+  rune:
+    path: ../..

@@ -8,6 +8,17 @@ All notable changes to this project are documented here. Format follows
 
 ### Added
 
+- **`rune_test` sibling package (v0.1.0).** Two things in one
+  package: test-ergonomics helpers (`pumpRuneView`,
+  `expectRuneRenders`) that wrap the 10-line
+  `MaterialApp + Scaffold + RuneView` harness most widget tests
+  write by hand, plus a `rune_format` command-line executable
+  (`dart run rune_test:rune_format <file> [--write | --check
+  | --line-length N]`) wrapping `formatRuneSource`. The
+  `--check` flag enables CI jobs that fail when a source file
+  has drifted from canonical format, in the same shape as
+  `dart format --set-exit-if-changed`. 6 widget tests cover
+  the helpers.
 - **`rune_lint` sibling package (v0.1.0).** Test-time validation
   helpers. `validateRuneSource(tester, source, config, {data})`
   pumps a `RuneView` inside a `WidgetTester` and returns a

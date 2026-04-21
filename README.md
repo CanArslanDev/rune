@@ -545,6 +545,7 @@ and README.
 | [`rune_bloc`](packages/rune_bloc) | BLoC-pattern state from [`package:flutter_bloc`](https://pub.dev/packages/flutter_bloc): `BlocProvider`, `BlocBuilder`, `BlocListener`. State classes implement `RuneReactiveState` to expose `Map`-shaped projections. |
 | [`rune_riverpod`](packages/rune_riverpod) | Riverpod 2.x integration: `ProviderScope`, `RiverpodConsumer`. Typed state classes implement `RuneReactiveValue` for dot-access. |
 | [`rune_lint`](packages/rune_lint) | Test-time validation: `expectValidRuneSource(tester, source, config)` catches unregistered widgets, missing constants, typos, and parse errors before a user ever sees the fallback widget. |
+| [`rune_test`](packages/rune_test) | Widget-test helpers (`pumpRuneView`, `expectRuneRenders`) plus a `rune_format` CLI that wraps `formatRuneSource` (`--write`, `--check`, stdin, custom line length). |
 
 Apply any bridge with `RuneConfig.defaults().withBridges([...])`.
 The RuneBridge contract is one method: `void registerInto(RuneConfig config)`.
