@@ -6,6 +6,48 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [1.19.0] - 2026-04-21 - DevTools Phase 3 host side (source hot-edit)
+
+### Added
+
+- **`RuneInspector` gains source-override support.**
+  `setSourceOverrideById(int id, String? source)` (plus a
+  handle-typed `setSourceOverride`) installs or clears a
+  source-string override for a live `RuneView`. The bound
+  `RuneView` reparses and rebuilds on the next frame, surfacing
+  the override in place of its declared source.
+- **Two new VM service extensions** registered alongside
+  `ext.rune.inspect` on the first view mount:
+  - `ext.rune.edit(id: string, source: string)`: apply override.
+  - `ext.rune.reset(id: string)`: clear override.
+  Both return `{"ok": true, "id": N}` on success; error responses
+  use `invalidParams` for shape errors and `extensionError` for
+  missing ids.
+- **Payload additions.** Every inspection entry now carries
+  `overridden: bool` and `originalSource: string | null`
+  (the pre-override source; only populated while an override is
+  active). Enables DevTools UIs to display a "reset to original"
+  affordance.
+- `RuneInspector.registerOverrideListener(handle, listener)`
+  so `RuneView` can wire its `setState` into the inspector without
+  exposing internals. The listener fires on every override change
+  and is scrubbed automatically on `unregisterView`.
+- 4 new tests covering the end-to-end hot-edit flow through a
+  mounted `RuneView`: override replaces rendered source, payload
+  `overridden`/`originalSource` fields, null revert, and
+  override-revert-override cycle.
+
+### Notes
+
+- Release builds pay zero cost (`dart:developer.registerExtension`
+  is compiled out). Host code that calls the override API in
+  release still works but has no effect because no DevTools
+  client can reach the running process.
+- Pairs with `rune_devtools_extension ^0.2.0`, which ships the
+  matching Edit / Reset UI on top of the new endpoints.
+
+## [Unreleased-older]
+
 ### Added
 
 - **`rune_bloc` sibling package (v0.1.0).** Registers

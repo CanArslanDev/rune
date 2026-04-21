@@ -6,19 +6,14 @@ import 'package:flutter/material.dart';
 /// Entry point of the Flutter web app that renders inside the
 /// DevTools "rune" tab.
 ///
-/// DevTools loads the compiled output of this app from
-/// `extension/devtools/build/` at debug time. The app:
+/// v0.2.0 (DevTools Phase 3) adds hot-edit: every card has an
+/// Edit button that opens a source editor; Apply pushes the new
+/// source to the host via `ext.rune.edit`, which the host applies
+/// as an override on the matching `RuneView` until the user taps
+/// Reset (which calls `ext.rune.reset`).
 ///
-/// 1. Calls `ext.rune.inspect` on the host isolate over the VM
-///    service.
-/// 2. Parses the returned JSON into a `List<_ViewPayload>`.
-/// 3. Renders one expandable card per live view surfacing the
-///    source string, data context, parse-cache size, and last
-///    error.
-///
-/// Refresh is manual for v0.1.0: tap the "Refresh" app-bar button
-/// to re-query the host. Later versions can subscribe to a host
-/// event stream once the main `rune` package grows one.
+/// Refresh is manual. Tap the toolbar Refresh button to re-query
+/// `ext.rune.inspect`.
 void main() {
   runApp(const DevToolsExtension(child: _RuneInspectorApp()));
 }
@@ -73,6 +68,32 @@ class _RuneInspectorAppState extends State<_RuneInspectorApp> {
     }
   }
 
+  Future<void> _applyEdit(int id, String newSource) async {
+    try {
+      await serviceManager.callServiceExtensionOnMainIsolate(
+        'ext.rune.edit',
+        args: {'id': '$id', 'source': newSource},
+      );
+      await _refresh();
+    } on Object catch (e) {
+      if (!mounted) return;
+      setState(() => _error = 'Edit failed: $e');
+    }
+  }
+
+  Future<void> _resetEdit(int id) async {
+    try {
+      await serviceManager.callServiceExtensionOnMainIsolate(
+        'ext.rune.reset',
+        args: {'id': '$id'},
+      );
+      await _refresh();
+    } on Object catch (e) {
+      if (!mounted) return;
+      setState(() => _error = 'Reset failed: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -91,7 +112,7 @@ class _RuneInspectorAppState extends State<_RuneInspectorApp> {
   }
 
   Widget _buildBody() {
-    if (_loading) {
+    if (_loading && _views.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
     if (_error != null) {
@@ -104,7 +125,11 @@ class _RuneInspectorAppState extends State<_RuneInspectorApp> {
       padding: const EdgeInsets.all(16),
       itemCount: _views.length,
       separatorBuilder: (_, __) => const SizedBox(height: 12),
-      itemBuilder: (_, i) => _ViewCard(view: _views[i]),
+      itemBuilder: (_, i) => _ViewCard(
+        view: _views[i],
+        onApplyEdit: _applyEdit,
+        onResetEdit: _resetEdit,
+      ),
     );
   }
 }
@@ -114,6 +139,8 @@ class _ViewPayload {
   const _ViewPayload({
     required this.id,
     required this.source,
+    required this.originalSource,
+    required this.overridden,
     required this.data,
     required this.cacheSize,
     required this.lastError,
@@ -125,6 +152,8 @@ class _ViewPayload {
     return _ViewPayload(
       id: idRaw is int ? idRaw : int.tryParse('$idRaw') ?? -1,
       source: (json['source'] as String?) ?? '',
+      originalSource: json['originalSource'] as String?,
+      overridden: (json['overridden'] as bool?) ?? false,
       data: json['data'] is Map
           ? Map<String, Object?>.from(json['data']! as Map)
           : const <String, Object?>{},
@@ -136,29 +165,82 @@ class _ViewPayload {
 
   final int id;
   final String source;
+  final String? originalSource;
+  final bool overridden;
   final Map<String, Object?> data;
   final int? cacheSize;
   final String? lastError;
   final String? snapshotError;
 }
 
-class _ViewCard extends StatelessWidget {
-  const _ViewCard({required this.view});
+class _ViewCard extends StatefulWidget {
+  const _ViewCard({
+    required this.view,
+    required this.onApplyEdit,
+    required this.onResetEdit,
+  });
 
   final _ViewPayload view;
+  final Future<void> Function(int id, String source) onApplyEdit;
+  final Future<void> Function(int id) onResetEdit;
+
+  @override
+  State<_ViewCard> createState() => _ViewCardState();
+}
+
+class _ViewCardState extends State<_ViewCard> {
+  bool _editing = false;
+  late TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.view.source);
+  }
+
+  @override
+  void didUpdateWidget(covariant _ViewCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!_editing && oldWidget.view.source != widget.view.source) {
+      _controller.text = widget.view.source;
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final view = widget.view;
     final hasError = view.lastError != null || view.snapshotError != null;
     return Card(
       clipBehavior: Clip.antiAlias,
       child: ExpansionTile(
         leading: Icon(
-          hasError ? Icons.error_outline : Icons.widgets_outlined,
+          hasError
+              ? Icons.error_outline
+              : view.overridden
+                  ? Icons.edit_note
+                  : Icons.widgets_outlined,
           color: hasError ? theme.colorScheme.error : null,
         ),
-        title: Text('RuneView #${view.id}'),
+        title: Row(
+          children: [
+            Text('RuneView #${view.id}'),
+            if (view.overridden) ...[
+              const SizedBox(width: 8),
+              Chip(
+                label: const Text('overridden'),
+                visualDensity: VisualDensity.compact,
+                backgroundColor: theme.colorScheme.secondaryContainer,
+              ),
+            ],
+          ],
+        ),
         subtitle: Text(
           view.source.split('\n').first.trim(),
           maxLines: 1,
@@ -169,13 +251,53 @@ class _ViewCard extends StatelessWidget {
         children: [
           _Section(
             title: 'Source',
-            child: SelectableText(
-              view.source,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                fontFamily: 'monospace',
+            trailing: _editing
+                ? null
+                : TextButton.icon(
+                    onPressed: () {
+                      setState(() {
+                        _editing = true;
+                        _controller.text = view.source;
+                      });
+                    },
+                    icon: const Icon(Icons.edit, size: 16),
+                    label: const Text('Edit'),
+                  ),
+            child: _editing
+                ? _SourceEditor(
+                    controller: _controller,
+                    onCancel: () => setState(() => _editing = false),
+                    onApply: () async {
+                      final next = _controller.text;
+                      setState(() => _editing = false);
+                      await widget.onApplyEdit(view.id, next);
+                    },
+                  )
+                : SelectableText(
+                    view.source,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      fontFamily: 'monospace',
+                    ),
+                  ),
+          ),
+          if (view.overridden && view.originalSource != null) ...[
+            const SizedBox(height: 12),
+            _Section(
+              title: 'Original (pre-override)',
+              trailing: TextButton.icon(
+                onPressed: () => widget.onResetEdit(view.id),
+                icon: const Icon(Icons.restart_alt, size: 16),
+                label: const Text('Reset'),
+              ),
+              child: SelectableText(
+                view.originalSource!,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  fontFamily: 'monospace',
+                  color: theme.disabledColor,
+                ),
               ),
             ),
-          ),
+          ],
           const SizedBox(height: 12),
           _Section(
             title: 'Data context',
@@ -229,28 +351,86 @@ class _ViewCard extends StatelessWidget {
   }
 }
 
-class _Section extends StatelessWidget {
-  const _Section({
-    required this.title,
-    required this.child,
-    this.titleColor,
+class _SourceEditor extends StatelessWidget {
+  const _SourceEditor({
+    required this.controller,
+    required this.onCancel,
+    required this.onApply,
   });
 
-  final String title;
-  final Widget child;
-  final Color? titleColor;
+  final TextEditingController controller;
+  final VoidCallback onCancel;
+  final VoidCallback onApply;
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(
-          title.toUpperCase(),
-          style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                letterSpacing: 1.2,
-                color: titleColor,
+        TextField(
+          controller: controller,
+          maxLines: null,
+          minLines: 6,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                fontFamily: 'monospace',
               ),
+          decoration: const InputDecoration(
+            border: OutlineInputBorder(),
+            isDense: true,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            TextButton(
+              onPressed: onCancel,
+              child: const Text('Cancel'),
+            ),
+            const SizedBox(width: 8),
+            FilledButton.icon(
+              onPressed: onApply,
+              icon: const Icon(Icons.check, size: 16),
+              label: const Text('Apply'),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _Section extends StatelessWidget {
+  const _Section({
+    required this.title,
+    required this.child,
+    this.titleColor,
+    this.trailing,
+  });
+
+  final String title;
+  final Widget child;
+  final Color? titleColor;
+  final Widget? trailing;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                title.toUpperCase(),
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      letterSpacing: 1.2,
+                      color: titleColor,
+                    ),
+              ),
+            ),
+            if (trailing != null) trailing!,
+          ],
         ),
         const SizedBox(height: 4),
         child,

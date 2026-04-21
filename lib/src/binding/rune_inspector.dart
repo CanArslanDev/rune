@@ -63,6 +63,9 @@ final class RuneInspector {
 
   final Map<int, RuneInspectionSnapshotBuilder> _builders =
       <int, RuneInspectionSnapshotBuilder>{};
+  final Map<int, String> _sourceOverrides = <int, String>{};
+  final Map<int, void Function()> _overrideListeners =
+      <int, void Function()>{};
   int _nextId = 0;
   bool _extensionRegistered = false;
 
@@ -92,6 +95,49 @@ final class RuneInspector {
   /// no-op.
   void unregisterView(RuneInspectorHandle handle) {
     _builders.remove(handle.id);
+    _sourceOverrides.remove(handle.id);
+    _overrideListeners.remove(handle.id);
+  }
+
+  /// Returns the source-string override registered for [handle] via
+  /// [setSourceOverride], or `null` if no override is active. A
+  /// `RuneView` consults this on every build and prefers the
+  /// override over its declared `source` when one is present.
+  String? overrideFor(RuneInspectorHandle handle) =>
+      _sourceOverrides[handle.id];
+
+  /// Installs (or replaces) the source-string override for [handle].
+  /// Pass `null` to clear.
+  ///
+  /// DevTools extensions call [setSourceOverrideById] via the
+  /// `ext.rune.edit` VM service extension; hosts may call this
+  /// variant directly when they have a handle from
+  /// [registerView]. Notifies the registered listener (if any) so
+  /// the bound `RuneView` rebuilds on the next frame.
+  void setSourceOverride(RuneInspectorHandle handle, String? source) =>
+      setSourceOverrideById(handle.id, source);
+
+  /// Id-keyed variant of [setSourceOverride] for callers that only
+  /// have a numeric id (the DevTools extension, test harnesses,
+  /// script-driven hot-reload). No-op if no view is registered
+  /// under [id].
+  void setSourceOverrideById(int id, String? source) {
+    if (source == null) {
+      _sourceOverrides.remove(id);
+    } else {
+      _sourceOverrides[id] = source;
+    }
+    _overrideListeners[id]?.call();
+  }
+
+  /// Registers [listener] to fire whenever an override for [handle]
+  /// is installed or cleared. `RuneView` wires this up during
+  /// `initState` so DevTools-driven edits trigger a rebuild.
+  void registerOverrideListener(
+    RuneInspectorHandle handle,
+    void Function() listener,
+  ) {
+    _overrideListeners[handle.id] = listener;
   }
 
   /// Builds the JSON-safe inspection payload returned by the service
@@ -134,6 +180,8 @@ final class RuneInspector {
   /// silently invalidates any outstanding handles.
   void resetForTesting() {
     _builders.clear();
+    _sourceOverrides.clear();
+    _overrideListeners.clear();
     _nextId = 0;
   }
 
@@ -146,6 +194,69 @@ final class RuneInspector {
         final payload = collectInspectionPayload();
         return developer.ServiceExtensionResponse.result(jsonEncode(payload));
       },
+    );
+    developer.registerExtension(
+      'ext.rune.edit',
+      _handleEditRequest,
+    );
+    developer.registerExtension(
+      'ext.rune.reset',
+      _handleResetRequest,
+    );
+  }
+
+  Future<developer.ServiceExtensionResponse> _handleEditRequest(
+    String method,
+    Map<String, String> parameters,
+  ) async {
+    final idParam = parameters['id'];
+    final sourceParam = parameters['source'];
+    if (idParam == null || sourceParam == null) {
+      return developer.ServiceExtensionResponse.error(
+        developer.ServiceExtensionResponse.invalidParams,
+        '`ext.rune.edit` requires `id` and `source` parameters.',
+      );
+    }
+    final id = int.tryParse(idParam);
+    if (id == null) {
+      return developer.ServiceExtensionResponse.error(
+        developer.ServiceExtensionResponse.invalidParams,
+        '`id` must be an int; got "$idParam".',
+      );
+    }
+    if (!_builders.containsKey(id)) {
+      return developer.ServiceExtensionResponse.error(
+        developer.ServiceExtensionResponse.extensionError,
+        'No live view registered under id $id.',
+      );
+    }
+    setSourceOverrideById(id, sourceParam);
+    return developer.ServiceExtensionResponse.result(
+      jsonEncode(<String, Object?>{'ok': true, 'id': id}),
+    );
+  }
+
+  Future<developer.ServiceExtensionResponse> _handleResetRequest(
+    String method,
+    Map<String, String> parameters,
+  ) async {
+    final idParam = parameters['id'];
+    if (idParam == null) {
+      return developer.ServiceExtensionResponse.error(
+        developer.ServiceExtensionResponse.invalidParams,
+        '`ext.rune.reset` requires an `id` parameter.',
+      );
+    }
+    final id = int.tryParse(idParam);
+    if (id == null) {
+      return developer.ServiceExtensionResponse.error(
+        developer.ServiceExtensionResponse.invalidParams,
+        '`id` must be an int; got "$idParam".',
+      );
+    }
+    setSourceOverrideById(id, null);
+    return developer.ServiceExtensionResponse.result(
+      jsonEncode(<String, Object?>{'ok': true, 'id': id}),
     );
   }
 }

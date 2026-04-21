@@ -4,6 +4,34 @@ All notable changes to this package are documented here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning follows
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2026-04-21 - DevTools Phase 3: source hot-edit
+
+### Added
+
+- **Inline source editor per card.** Each view card surfaces an
+  Edit button next to the Source section. Tapping it replaces
+  the read-only source with a multi-line `TextField`; Apply
+  pushes the new source to the host via the new `ext.rune.edit`
+  VM service extension, and the matching `RuneView` rebuilds
+  with the override on the next frame. The original source is
+  preserved on the payload as `originalSource` and can be
+  restored with Reset (calls `ext.rune.reset`).
+- **"overridden" chip** on each card's header when an edit is
+  active, so it is obvious at a glance which views are rendering
+  non-widget source.
+- **Original source section** appears below the editor while an
+  override is active, with a Reset button to revert to the
+  widget's declared source.
+
+### Notes
+
+- Requires `rune ^1.19.0`. The host-side inspector now exposes
+  `setSourceOverrideById` and registers two additional VM
+  service extensions: `ext.rune.edit`, `ext.rune.reset`.
+- Hot-edit is a debug-only feature. Release builds of the host
+  never register the service extensions, so the tab's Edit /
+  Reset buttons have no effect on release deployments.
+
 ## [0.1.0] - 2026-04-21
 
 ### Added

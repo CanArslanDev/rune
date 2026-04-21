@@ -1,5 +1,5 @@
 name: rune
 issueTracker: https://github.com/CanArslanDev/rune/issues
-version: 0.1.0
+version: 0.2.0
 materialIconCodePoint: '0xe332'
 requiresConnection: true

@@ -18,7 +18,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  rune: ^1.18.0
+  rune: ^1.19.0
 
 dev_dependencies:
   flutter_test:

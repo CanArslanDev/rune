@@ -76,9 +76,20 @@ class _RuneViewState extends State<RuneView> {
     final property = PropertyResolver(_expr);
     _expr.bindProperty(property);
     // Register for DevTools introspection. The inspector lazily wires
-    // the `ext.rune.inspect` VM service extension on the first view;
-    // release builds short-circuit to a no-op inside the inspector.
-    _inspectorHandle = RuneInspector.instance.registerView(_inspectorSnapshot);
+    // the `ext.rune.inspect` / `ext.rune.edit` / `ext.rune.reset` VM
+    // service extensions on the first view; release builds short-
+    // circuit to a no-op inside the inspector.
+    final handle = RuneInspector.instance.registerView(_inspectorSnapshot);
+    _inspectorHandle = handle;
+    RuneInspector.instance.registerOverrideListener(handle, () {
+      if (mounted) {
+        // Override changed (DevTools hot-edit). Drop the AST cache so
+        // the next render reparses the new source and triggers a
+        // rebuild.
+        _cache.clear();
+        setState(() {});
+      }
+    });
   }
 
   @override
@@ -94,18 +105,31 @@ class _RuneViewState extends State<RuneView> {
   /// extension. Called on demand by the `ext.rune.inspect` VM service
   /// handler; never on the render path.
   Map<String, Object?> _inspectorSnapshot() {
+    final handle = _inspectorHandle;
+    final override =
+        handle == null ? null : RuneInspector.instance.overrideFor(handle);
     return <String, Object?>{
-      'source': widget.source,
+      'source': override ?? widget.source,
+      'originalSource': override == null ? null : widget.source,
+      'overridden': override != null,
       'data': widget.data ?? const <String, Object?>{},
       'cacheSize': _cache.size,
       'lastError': _lastError?.toString(),
     };
   }
 
+  /// Returns the currently-effective source, factoring in any
+  /// DevTools-driven hot-edit override. Internal; used by [build].
+  String get _effectiveSource {
+    final handle = _inspectorHandle;
+    if (handle == null) return widget.source;
+    return RuneInspector.instance.overrideFor(handle) ?? widget.source;
+  }
+
   @override
   Widget build(BuildContext context) {
     try {
-      final ast = _parseOrCached(widget.source);
+      final ast = _parseOrCached(_effectiveSource);
       final ctx = _buildContext(context);
       final result = _expr.resolve(ast, ctx);
       if (result is! Widget) {
