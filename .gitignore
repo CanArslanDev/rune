@@ -70,3 +70,5 @@ app.*.map.json
 /docs/
 /idea.md
 /CLAUDE.md
+/.claude/
+/.serena/
