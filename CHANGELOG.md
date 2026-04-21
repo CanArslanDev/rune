@@ -8,6 +8,19 @@ All notable changes to this project are documented here. Format follows
 
 ### Added
 
+- **`rune_http` sibling package (v0.1.0).** `RuneHttpView(url,
+  config, data, cacheDuration, ...)` fetches Rune source from an
+  HTTP endpoint, caches it in memory (process-wide
+  `InMemoryRuneSourceCache`, keyed by URL, default TTL 5 min), and
+  renders through an inner `RuneView`. Stale entries are served
+  instantly while a background refresh runs; failed fetches fall
+  back to the cached copy. Pluggable `RuneSourceCache` /
+  `RuneSourceFetcher` interfaces let hosts wire persistent caches
+  (shared_prefs / Hive / SQLite) or auth-header fetchers. 16 tests
+  cover freshness math, cache round-trip, fetcher success/failure
+  mapping, and end-to-end widget flows including Retry and
+  cache-wins-when-fetch-fails. Unlocks the server-driven-UI
+  narrative this package was designed for.
 - **`rune_devtools_extension` sibling package (v0.1.0).** Phase 2
   of the DevTools plan. Ships a Flutter-web DevTools extension
   under `packages/rune_devtools_extension/` that registers a

@@ -204,6 +204,40 @@ GoRouterApp(
 
 Source-level imperatives (`context.go('/path')`) are not directly exposed in v0.1.0. Host apps navigate by holding a reference to the `GoRouter` and calling `router.go('/settings')` from an `onEvent` callback. A later version can register a `Router.go` imperative via the v1.16.0 `ImperativeRegistry` if demand materializes.
 
+## rune_http
+
+Fetches Rune source from an HTTP endpoint, caches it with a TTL, and renders through an inner `RuneView`. Unlocks the server-driven-UI workflow end-to-end: CMS or config service returns Dart expression strings, mobile app renders them without a fresh binary.
+
+**Install**
+
+```yaml
+dependencies:
+  rune_http: ^0.1.0
+```
+
+**Use from Dart**
+
+```dart
+RuneHttpView(
+  url: 'https://cms.example.com/home.rune',
+  config: RuneConfig.defaults(),
+  data: const {'userName': 'Ali'},
+  cacheDuration: const Duration(minutes: 10),
+  onEvent: (name, [args]) => debugPrint('event: $name'),
+  onError: (error, stack) => debugPrint('http: $error'),
+)
+```
+
+Lifecycle per `RuneHttpView`:
+
+1. First mount checks the `InMemoryRuneSourceCache` (process-wide, keyed by URL). Cache hit and fresh: render instantly, skip fetch.
+2. Cache hit but stale: render cached copy, kick off a background refresh.
+3. Cache miss: show the `loading:` indicator (default: centered `CircularProgressIndicator`) while the first fetch runs.
+4. Fetch success: store in cache, re-render with the new source.
+5. Fetch failure: if a cached copy exists, keep showing it (offline-first). If not, show the `error:` builder (default: centered Retry button).
+
+**Customisation**: replace the default in-memory cache with a persistent one by passing `cache: MyPersistentCache()` (implement `RuneSourceCache`). Replace the HTTP client with an auth-aware one via `fetcher: MyAuthFetcher()` (implement `RuneSourceFetcher`). Force an immediate refetch via a `GlobalKey<RuneHttpViewState>()` and `state.refresh()`.
+
 ## rune_devtools_extension
 
 Flutter DevTools extension that surfaces a **rune** tab showing every live `RuneView` in the host app: source, data context, parse cache size, last render error.
