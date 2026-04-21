@@ -1,6 +1,6 @@
 name: rune_provider
 description: Provider (provider package) bridge for the rune package; registers ChangeNotifierProvider, Consumer, and Selector widgets on a RuneConfig for reactive state in source strings.
-version: 0.1.0
+version: 0.2.0
 repository: https://github.com/CanArslanDev/rune/tree/main/packages/rune_provider
 homepage: https://github.com/CanArslanDev/rune
 issue_tracker: https://github.com/CanArslanDev/rune/issues

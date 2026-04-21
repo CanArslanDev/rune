@@ -8,6 +8,17 @@ All notable changes to this project are documented here. Format follows
 
 ### Added
 
+- **`rune_provider` v0.2.0: MemberRegistry integration.**
+  `Consumer.builder` and `Selector.selector` now pass the raw
+  notifier to the closure when the notifier does NOT implement
+  `RuneReactiveNotifier`. Paired with `rune` v1.17+'s
+  `MemberRegistry`, consumers register property / method
+  accessors on their notifier type and Rune source can
+  dot-access them directly without implementing
+  `RuneReactiveNotifier` or projecting a `state` Map. Existing
+  `RuneReactiveNotifier` notifiers keep working unchanged (the
+  `state` Map is still extracted for them). Two new integration
+  tests cover the new path; 21 package tests pass.
 - **`rune_test` sibling package (v0.1.0).** Two things in one
   package: test-ergonomics helpers (`pumpRuneView`,
   `expectRuneRenders`) that wrap the 10-line

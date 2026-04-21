@@ -109,7 +109,7 @@ CupertinoApp(
 
 ```yaml
 dependencies:
-  rune_provider: ^0.1.0
+  rune_provider: ^0.2.0
 ```
 
 **Apply**

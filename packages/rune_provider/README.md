@@ -20,18 +20,27 @@ All three widgets are fixed to a single `ChangeNotifier` type under the hood. Si
 
 - Flutter >= 3.22
 - Dart >= 3.4
-- `rune` (sibling package in the same monorepo; current dep: `path: ../..`)
+- `rune` ^1.19.0
 - `provider` ^6.1.2
 
 ## Install
 
 ```yaml
 dependencies:
-  rune: ^1.12.0
-  rune_provider: ^0.1.0
+  rune: ^1.19.0
+  rune_provider: ^0.2.0
 ```
 
-## Usage
+## Exposing notifier state to source
+
+The `Consumer(builder:)` and `Selector(selector:)` closures receive a value you can read in source. There are two supported patterns for what that value looks like, and they coexist:
+
+1. **MemberRegistry (recommended, v0.2.0+).** Define your notifier normally. Register property/method accessors on your notifier type and the source reads them by dot-access. No base class or mixin required.
+2. **`RuneReactiveNotifier`.** Implement the mixin so your notifier projects a `Map<String, Object?> get state`. Source reads fields as map keys (`state.count`). Useful when your fields are private and you want a flat map-shaped projection.
+
+Pick whichever fits your notifier's shape. If you do nothing, the closure argument is the raw notifier; register members to make its fields reachable.
+
+## Usage (MemberRegistry pattern)
 
 ```dart
 import 'package:flutter/material.dart';
@@ -49,12 +58,20 @@ class CounterNotifier extends ChangeNotifier {
 
 void main() {
   final counter = CounterNotifier();
+  final config = RuneConfig.defaults()
+      .withBridges(const [ProviderBridge()]);
+  config.members
+    ..registerProperty<CounterNotifier>('count', (c, _) => c.count)
+    ..registerMethod<CounterNotifier>('increment', (c, args, _) {
+      c.increment();
+      return null;
+    });
+
   runApp(
     MaterialApp(
       home: Scaffold(
         body: RuneView(
-          config: RuneConfig.defaults()
-              .withBridges(const [ProviderBridge()]),
+          config: config,
           data: {'counter': counter},
           source: r'''
             ChangeNotifierProvider(
@@ -82,6 +99,23 @@ void main() {
     ),
   );
 }
+```
+
+## Usage (RuneReactiveNotifier pattern)
+
+```dart
+class CounterNotifier extends ChangeNotifier with RuneReactiveNotifier {
+  int _count = 0;
+  int get count => _count;
+
+  @override
+  Map<String, Object?> get state => {'count': _count};
+
+  void increment() { _count++; notifyListeners(); }
+}
+
+// Source reads fields as map keys:
+//   Consumer(builder: (ctx, state, child) => Text('${state.count}'))
 ```
 
 ## License

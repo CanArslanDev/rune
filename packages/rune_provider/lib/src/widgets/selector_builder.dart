@@ -7,20 +7,22 @@ import 'package:rune_provider/src/rune_reactive_notifier.dart';
 /// Builds a `Selector<ChangeNotifier, Object?>` that only rebuilds
 /// its subtree when a derived value changes.
 ///
-/// Like `ConsumerBuilder`, the `selector` closure receives the
-/// notifier's state as a `Map<String, Object?>` (from
-/// [RuneReactiveNotifier.state]) so dot-access inside the closure
-/// works. Non-reactive notifiers yield an empty map.
+/// Like `ConsumerBuilder`, the `selector` closure receives either
+/// the `state` Map (for notifiers that implement
+/// [RuneReactiveNotifier]) or the raw notifier itself (rely on
+/// `config.members.registerProperty<MyNotifier>(...)` for
+/// dot-access in that case). The two patterns coexist; pick the
+/// one that fits your notifier's shape.
 ///
 /// Supported named arguments:
-/// - `selector` (closure `(ctx, state) -> Object?`, required) -
-///   derives the value the subtree depends on. Equality is compared
-///   with `==`; return a new value only when the subtree should
-///   rebuild.
-/// - `builder` (closure `(ctx, value, child) -> Widget`, required) -
+/// - `selector` (closure `(ctx, value) -> Object?`, required):
+///   derives the value the subtree depends on. Equality is
+///   compared with `==`; return a new value only when the
+///   subtree should rebuild.
+/// - `builder` (closure `(ctx, value, child) -> Widget`, required):
 ///   invoked on first mount and whenever `selector` returns a
 ///   different value.
-/// - `child` ([Widget]?) - held constant across rebuilds; forwarded
+/// - `child` ([Widget]?): held constant across rebuilds; forwarded
 ///   to `builder` as the third argument.
 final class SelectorBuilder implements RuneWidgetBuilder {
   /// Const constructor. The builder is stateless.
@@ -31,7 +33,7 @@ final class SelectorBuilder implements RuneWidgetBuilder {
 
   @override
   Widget build(ResolvedArguments args, RuneContext ctx) {
-    final selector = toSelectorSelector<Map<String, Object?>>(
+    final selector = toSelectorSelector<Object?>(
       args.named['selector'],
       widgetName: 'Selector',
     );
@@ -41,10 +43,10 @@ final class SelectorBuilder implements RuneWidgetBuilder {
     );
     return p.Selector<ChangeNotifier, Object?>(
       selector: (innerCtx, notifier) {
-        final state = (notifier is RuneReactiveNotifier)
+        final value = notifier is RuneReactiveNotifier
             ? (notifier as RuneReactiveNotifier).state
-            : const <String, Object?>{};
-        return selector(innerCtx, state);
+            : notifier as Object?;
+        return selector(innerCtx, value);
       },
       builder: builder,
       child: args.get<Widget>('child'),
