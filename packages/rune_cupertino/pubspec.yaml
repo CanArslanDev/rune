@@ -18,10 +18,16 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  rune:
-    path: ../..
+  rune: ^1.18.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   very_good_analysis: ^5.1.0
+
+# Local monorepo development uses the path-dep; pub.dev ignores
+# `dependency_overrides` during publish, so the hosted version
+# above is what consumers actually resolve.
+dependency_overrides:
+  rune:
+    path: ../..

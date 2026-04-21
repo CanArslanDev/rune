@@ -1,20 +1,29 @@
 #!/usr/bin/env bash
 # End-to-end release workflow across the rune monorepo.
 #
-# Handles the order-sensitive step that caused historical bloat in
-# the main `rune` archive: if the DevTools extension's compiled
-# Flutter-web bundle is sitting on disk when we publish the main
-# package, it gets swept into the `rune` archive (~12 MB extra,
-# because `dart pub publish` does not understand that
-# `packages/rune_devtools_extension/extension/devtools/build/`
-# belongs to a separate sibling package). Workaround: build the
-# bundle, publish the extension, delete the bundle, then publish
-# main `rune`.
+# Publish order matters:
 #
-# Rate-limited by pub.dev (12 publishes per 24h per account); if
-# you have queued up several releases in one burst and hit the
-# cap mid-run, rerun the script the next day and pass
-# `--skip-already-published` once that flag is implemented.
+# 1. Main `rune` must land on pub.dev FIRST. Every sibling
+#    package declares `rune: ^1.X.Y` in its `dependencies:` and
+#    pub.dev validates that constraint against the hosted
+#    registry at publish time. If a sibling publishes before the
+#    matching `rune` minor is live, the validator errors out.
+# 2. `rune_devtools_extension` needs the compiled Flutter-web
+#    bundle sitting under `extension/devtools/build/` when its
+#    archive is built. We produce the bundle via
+#    `packages/rune_devtools_extension/tool/build_bundle.sh`
+#    right before that step, and delete it right after.
+# 3. The remaining siblings publish in any order once `rune`
+#    is on pub.dev.
+#
+# Also: main `rune` archive is small only if the DevTools bundle
+# is NOT sitting on disk when we publish (dart pub publish would
+# otherwise sweep it into the main archive because it walks the
+# full subtree of the invocation directory). We make sure the
+# bundle is absent before publishing `rune`.
+#
+# Rate-limit: pub.dev allows 12 publishes / 24h per account.
+# Six packages in one run stays comfortably below the cap.
 
 set -euo pipefail
 
@@ -31,28 +40,31 @@ publish() {
   dart pub publish --force
 }
 
-# 1. Build the DevTools extension bundle and publish the sibling
-#    while the bundle is in place on disk.
+# 1. Ensure no stale DevTools bundle is lying around; the main
+#    rune archive would otherwise balloon to ~12 MB.
+echo "=== Cleaning any stale DevTools bundle ==="
+rm -rf "$BUNDLE_DIR"
+
+# 2. Main `rune` lands first so siblings can resolve their
+#    hosted `rune: ^1.X.Y` constraint against pub.dev.
+publish "$REPO_ROOT" "rune (main)"
+
+# 3. Build the DevTools extension bundle, publish the sibling
+#    while the bundle is in place, then delete the bundle so it
+#    cannot leak into the other sibling archives.
+echo
 echo "=== Building rune_devtools_extension bundle ==="
 bash "$EXT_DIR/tool/build_bundle.sh"
 publish "$EXT_DIR" "rune_devtools_extension"
-
-# 2. Remove the compiled bundle so it does not leak into any
-#    subsequent publish archive.
 echo
 echo "=== Cleaning compiled bundle ==="
 rm -rf "$BUNDLE_DIR"
 
-# 3. Publish the other siblings (order within this block is
-#    unimportant).
+# 4. Remaining siblings publish in any order.
 publish "$REPO_ROOT/packages/rune_responsive_sizer" "rune_responsive_sizer"
 publish "$REPO_ROOT/packages/rune_cupertino" "rune_cupertino"
 publish "$REPO_ROOT/packages/rune_provider" "rune_provider"
 publish "$REPO_ROOT/packages/rune_router" "rune_router"
-
-# 4. Finally publish the main `rune` package. With the bundle gone
-#    the archive comes in at ~370 KB compressed.
-publish "$REPO_ROOT" "rune (main)"
 
 echo
 echo "All packages published."

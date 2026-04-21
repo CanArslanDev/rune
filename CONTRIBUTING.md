@@ -83,6 +83,28 @@ canonical shape: a class implementing `RuneBridge` whose `registerInto`
 installs one or more `RuneExtensionHandler`s, each validating the target
 type and returning a resolved value.
 
+## Documentation requirements
+
+User-facing documentation lives in two surfaces that must stay in sync:
+
+- `README.md` at the repo root: the 5-minute tour, API catalog,
+  quickstart, bridge-packages table.
+- `guides/*.md`: deeper, topic-focused companion guides
+  (`getting-started`, `source-syntax`, `cookbook`, `bridges`,
+  `devtools`, `troubleshooting`).
+
+When you change behavior, syntax support, bridge configuration, or
+the exception taxonomy, update **both** surfaces in the same
+commit. The README is where someone first lands; the guides are
+where they go when the README is not enough. Drift between the
+two is how "the docs lie" bugs creep in.
+
+Rule of thumb: if a change adds or modifies something a consumer
+would write in their `RuneView.source` string, it belongs in
+`guides/source-syntax.md` or `guides/cookbook.md`; if it changes
+how a bridge package is set up, `guides/bridges.md`; if it affects
+errors, `guides/troubleshooting.md`.
+
 ## Testing requirements
 
 - TDD is the expected workflow: write a failing test, make it pass, commit.

@@ -18,10 +18,13 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  rune:
-    path: ../..
+  rune: ^1.18.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   very_good_analysis: ^5.1.0
+
+dependency_overrides:
+  rune:
+    path: ../..

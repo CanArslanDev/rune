@@ -19,6 +19,20 @@ All notable changes to this project are documented here. Format follows
   `analyze + test` block covering the new package.
 - Root README gains a row for `rune_devtools_extension` in the
   Bridge-packages table.
+- **Hosted `rune` dependency on siblings.** Each sibling pubspec
+  declares `rune: ^1.18.0` in `dependencies:` (resolvable on
+  pub.dev) and keeps the monorepo `path: ../..` as a
+  `dependency_overrides` entry (only applied during local
+  development). Fixes the publish blocker where pub.dev rejected
+  `path:` dependencies.
+- **`guides/` folder for extended documentation.** Six focused
+  markdown guides complement the root README:
+  `getting-started.md`, `source-syntax.md`, `cookbook.md`,
+  `bridges.md`, `devtools.md`, `troubleshooting.md`, plus an
+  index `guides/README.md`. README now links them from a
+  "Detailed documentation" section near the top; `CONTRIBUTING.md`
+  documents the rule that README and `guides/` must stay in sync
+  on every user-facing change.
 - **Monorepo publish pipeline.** `tool/publish_all.sh` now encodes
   the release order across the six packages. The script builds
   the DevTools extension bundle, publishes
