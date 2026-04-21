@@ -17,23 +17,34 @@ go_router ([`go_router`](https://pub.dev/packages/go_router)) bridge for the [`r
 | -------------- | -------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
 | `GoRouterApp`  | `MaterialApp.router(routerConfig:)` | Required: `router:` (GoRouter). Optional: `title:`, `theme:`, `debugShowCheckedModeBanner:`. Installs the supplied router at the app root. |
 
-## Scope
+### Source-level imperatives (6, v0.2.0+)
 
-v0.1.0 ships a focused declarative surface: inline route declarations, nested routes via the `routes:` slot on `GoRoute`, and a `MaterialApp.router`-shaped root widget. Source-level imperatives (`context.go('/path')`, `context.push('/path')`) stay deferred until the main `rune` package grows a pluggable imperative registry; until then, host apps keep a reference to the `GoRouter` instance and call `.go(...)` / `.push(...)` from `onEvent` callbacks.
+When the bridge is constructed with `RouterBridge(router: myRouter)`, it also registers six prefixed imperatives on `config.imperatives` so Rune source can navigate without bouncing through host Dart:
+
+| Call from source                                                      | Backed by                                 |
+| --------------------------------------------------------------------- | ----------------------------------------- |
+| `Router.go('/path', extra?)`                                          | `GoRouter.go`                             |
+| `Router.push('/path', extra?)`                                        | `GoRouter.push`                           |
+| `Router.pop([result])`                                                | `GoRouter.pop`                            |
+| `Router.pushReplacement('/path', extra?)`                             | `GoRouter.pushReplacement`                |
+| `Router.goNamed('name', pathParameters?, queryParameters?, extra?)`   | `GoRouter.goNamed`                        |
+| `Router.pushNamed('name', pathParameters?, queryParameters?, extra?)` | `GoRouter.pushNamed`                      |
+
+The plain `const RouterBridge()` form keeps the v0.1.0 behavior: only widget + value builders are registered and navigation stays host-driven.
 
 ## Requirements
 
 - Flutter >= 3.22
 - Dart >= 3.4
-- `rune` (sibling package in the same monorepo; current dep: `path: ../..`)
+- `rune` ^1.19.0
 - `go_router` ^14.0.0
 
 ## Install
 
 ```yaml
 dependencies:
-  rune: ^1.13.0
-  rune_router: ^0.1.0
+  rune: ^1.19.0
+  rune_router: ^0.2.0
 ```
 
 ## Usage
@@ -93,6 +104,26 @@ RuneView(
   source: "GoRouterApp(router: router)",
 );
 // Host-side: router.go('/settings');
+```
+
+### Source-level navigation (v0.2.0+)
+
+Supply the `GoRouter` instance to `RouterBridge` and source can navigate directly:
+
+```dart
+final router = GoRouter(/* ... */);
+final config = RuneConfig.defaults()
+    .withBridges([RouterBridge(router: router)]);
+
+RuneView(
+  config: config,
+  source: """
+    ElevatedButton(
+      onPressed: () => Router.go('/settings'),
+      child: Text('Settings'),
+    )
+  """,
+);
 ```
 
 ## License

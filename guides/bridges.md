@@ -168,7 +168,7 @@ Selector(
 
 ```yaml
 dependencies:
-  rune_router: ^0.1.0
+  rune_router: ^0.2.0
 ```
 
 **Apply**
@@ -202,7 +202,16 @@ GoRouterApp(
 )
 ```
 
-Source-level imperatives (`context.go('/path')`) are not directly exposed in v0.1.0. Host apps navigate by holding a reference to the `GoRouter` and calling `router.go('/settings')` from an `onEvent` callback. A later version can register a `Router.go` imperative via the v1.16.0 `ImperativeRegistry` if demand materializes.
+**Source-level navigation** (v0.2.0+): construct the bridge with `RouterBridge(router: myRouter)` to register six `Router.*` prefixed imperatives on `config.imperatives`: `Router.go`, `Router.push`, `Router.pop`, `Router.pushReplacement`, `Router.goNamed`, `Router.pushNamed`. Source can drive navigation directly:
+
+```
+ElevatedButton(
+  onPressed: () => Router.go('/settings'),
+  child: Text('Settings'),
+)
+```
+
+The plain `const RouterBridge()` form (no router) keeps the v0.1.0 behavior: navigation stays host-driven through an `onEvent` callback holding a reference to the router.
 
 ## rune_http
 

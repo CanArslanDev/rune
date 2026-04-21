@@ -10,7 +10,7 @@
 ///     .withBridges(const [RouterBridge()]);
 /// ```
 ///
-/// v0.1.0 scope:
+/// Declarative scope:
 /// - `GoRoute` value builder: `GoRoute(path, builder)` declares one
 ///   route with a `(ctx, state) -> Widget` closure.
 /// - `GoRouter` value builder: `GoRouter(initialLocation, routes)`
@@ -19,12 +19,14 @@
 ///   router)` so the source can return an app-level widget that
 ///   installs the router at the root of the tree.
 ///
-/// Source-level imperatives (`context.go('/path')`,
-/// `context.push('/path')`) stay deferred until the main `rune`
-/// package grows a pluggable imperative registry. Host apps that
-/// need programmatic navigation keep a reference to the `GoRouter`
-/// instance in their data context and call `.go(...)` / `.push(...)`
-/// from `onEvent` callbacks.
+/// Source-level imperatives (v0.2.0+):
+/// `RouterBridge(router: myRouter)` registers six `Router.*`
+/// prefixed imperatives on `config.imperatives` so source can drive
+/// navigation directly, without bouncing through `onEvent`:
+/// `Router.go`, `Router.push`, `Router.pop`, `Router.pushReplacement`,
+/// `Router.goNamed`, `Router.pushNamed`. The plain `const
+/// RouterBridge()` form skips the imperative registrations and keeps
+/// navigation host-driven.
 library rune_router;
 
 export 'src/router_bridge.dart' show RouterBridge;

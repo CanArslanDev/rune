@@ -8,6 +8,17 @@ All notable changes to this project are documented here. Format follows
 
 ### Added
 
+- **`rune_router` v0.2.0: source-level navigation via
+  ImperativeRegistry.** `RouterBridge(router: myRouter)` now
+  registers six `Router.*` prefixed imperatives on
+  `config.imperatives`: `Router.go`, `Router.push`, `Router.pop`,
+  `Router.pushReplacement`, `Router.goNamed`, `Router.pushNamed`.
+  Source can call `onPressed: () => Router.go('/settings')`
+  directly without bouncing navigation through a host `onEvent`
+  callback. The plain `const RouterBridge()` form is unchanged
+  (only widget + value builders registered). Four new tests cover
+  registration + Router.go + Router.push / Router.pop round-trip
+  through a live `GoRouter`; 24 package tests pass.
 - **`rune_provider` v0.2.0: MemberRegistry integration.**
   `Consumer.builder` and `Selector.selector` now pass the raw
   notifier to the closure when the notifier does NOT implement
