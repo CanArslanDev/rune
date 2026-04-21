@@ -225,7 +225,7 @@ class _RuneExampleAppState extends State<RuneExampleApp> {
             ),
           for (final item in cart.items)
             ListTile(
-              leading: Icon(Icons.shopping_bag),
+              leading: Icon(Icons.shopping_cart),
               title: Text(item.name.toUpperCase()),
               subtitle: Text('\$${item.price}'),
               trailing: TextButton(
