@@ -22,5 +22,16 @@ dev_dependencies:
     sdk: flutter
   very_good_analysis: ^5.1.0
 
+# The example pulls in `rune`, `rune_provider`, and
+# `rune_responsive_sizer` from local paths (monorepo layout).
+# Those siblings declare `rune: ^1.18.0` hosted in their own
+# pubspecs so they can publish to pub.dev. To unify versions
+# locally, force every `rune` reference to resolve to the path
+# source. pub.dev ignores `dependency_overrides` anyway; this
+# block only affects local `flutter pub get`.
+dependency_overrides:
+  rune:
+    path: ../
+
 flutter:
   uses-material-design: true
