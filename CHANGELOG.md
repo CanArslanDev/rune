@@ -4,8 +4,6 @@ All notable changes to this project are documented here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning follows
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
-
 ## [1.20.0] - 2026-04-21 - geometry constructors, color breadth, state-management trio
 
 ### Added
@@ -1947,7 +1945,6 @@ rune_cupertino adds another 72 tests.
 - Example app at `example/lib/main.dart` demonstrating the full Phase 1
   feature set.
 
-[Unreleased]: https://github.com/CanArslanDev/rune/compare/v1.20.0...HEAD
 [1.20.0]: https://github.com/CanArslanDev/rune/compare/v1.19.0...v1.20.0
 [1.11.0]: https://github.com/CanArslanDev/rune/compare/v1.10.0...v1.11.0
 [1.10.0]: https://github.com/CanArslanDev/rune/compare/v1.9.0...v1.10.0
