@@ -123,6 +123,41 @@ void main() {
     });
   });
 
+  group('resolveBuiltinProperty - Duration (v1.21.0)', () {
+    test('unit projections round-trip', () {
+      const d = Duration(hours: 2, minutes: 30);
+      expect(resolveBuiltinProperty(d, 'inDays'), (true, 0));
+      expect(resolveBuiltinProperty(d, 'inHours'), (true, 2));
+      expect(resolveBuiltinProperty(d, 'inMinutes'), (true, 150));
+      expect(resolveBuiltinProperty(d, 'inSeconds'), (true, 9000));
+      expect(resolveBuiltinProperty(d, 'inMilliseconds'), (true, 9000000));
+      expect(resolveBuiltinProperty(d, 'inMicroseconds'), (true, 9000000000));
+    });
+
+    test('unknown property falls through', () {
+      const d = Duration(seconds: 1);
+      expect(resolveBuiltinProperty(d, 'nope'), (false, null));
+    });
+  });
+
+  group('resolveBuiltinProperty - DateTime (v1.21.0)', () {
+    test('field accessors return the expected ints', () {
+      final dt = DateTime.utc(2026, 4, 21, 14, 30, 45);
+      expect(resolveBuiltinProperty(dt, 'year'), (true, 2026));
+      expect(resolveBuiltinProperty(dt, 'month'), (true, 4));
+      expect(resolveBuiltinProperty(dt, 'day'), (true, 21));
+      expect(resolveBuiltinProperty(dt, 'hour'), (true, 14));
+      expect(resolveBuiltinProperty(dt, 'minute'), (true, 30));
+      expect(resolveBuiltinProperty(dt, 'second'), (true, 45));
+      expect(resolveBuiltinProperty(dt, 'weekday'), (true, dt.weekday));
+    });
+
+    test('unknown property falls through', () {
+      final dt = DateTime(2026);
+      expect(resolveBuiltinProperty(dt, 'nope'), (false, null));
+    });
+  });
+
   group('resolveBuiltinProperty - Color (v1.20.0)', () {
     test('red/green/blue/alpha return 0-255 ints', () {
       const color = Color.fromARGB(128, 64, 192, 32);
@@ -225,6 +260,97 @@ void main() {
 
     test('null with any property → (false, null)', () {
       expect(resolveBuiltinProperty(null, 'length'), (false, null));
+    });
+  });
+
+  group('invokeBuiltinMethod - DateTime (v1.21.0)', () {
+    test('isBefore returns true for an earlier DateTime', () {
+      final node = parseMethod('x.isBefore(y)');
+      final target = DateTime.utc(2026);
+      final other = DateTime.utc(2026, 6);
+      final out = invokeBuiltinMethod(
+        target: target,
+        methodName: 'isBefore',
+        positionalArgs: <Object?>[other],
+        namedArgs: const <String, Object?>{},
+        sourceNode: node,
+        ctx: testContext(),
+      );
+      expect(out, isTrue);
+    });
+
+    test('isAfter returns false for an earlier DateTime', () {
+      final node = parseMethod('x.isAfter(y)');
+      final target = DateTime.utc(2026);
+      final other = DateTime.utc(2026, 6);
+      final out = invokeBuiltinMethod(
+        target: target,
+        methodName: 'isAfter',
+        positionalArgs: <Object?>[other],
+        namedArgs: const <String, Object?>{},
+        sourceNode: node,
+        ctx: testContext(),
+      );
+      expect(out, isFalse);
+    });
+
+    test('difference returns a Duration between two DateTimes', () {
+      final node = parseMethod('x.difference(y)');
+      final target = DateTime.utc(2026, 1, 10);
+      final other = DateTime.utc(2026);
+      final out = invokeBuiltinMethod(
+        target: target,
+        methodName: 'difference',
+        positionalArgs: <Object?>[other],
+        namedArgs: const <String, Object?>{},
+        sourceNode: node,
+        ctx: testContext(),
+      );
+      expect(out, isA<Duration>());
+      expect(out, const Duration(days: 9));
+    });
+
+    test('add returns a DateTime advanced by the supplied Duration', () {
+      final node = parseMethod('x.add(d)');
+      final target = DateTime.utc(2026);
+      final out = invokeBuiltinMethod(
+        target: target,
+        methodName: 'add',
+        positionalArgs: const <Object?>[Duration(days: 5)],
+        namedArgs: const <String, Object?>{},
+        sourceNode: node,
+        ctx: testContext(),
+      );
+      expect(out, DateTime.utc(2026, 1, 6));
+    });
+
+    test('subtract returns a DateTime moved backwards by a Duration', () {
+      final node = parseMethod('x.subtract(d)');
+      final target = DateTime.utc(2026);
+      final out = invokeBuiltinMethod(
+        target: target,
+        methodName: 'subtract',
+        positionalArgs: const <Object?>[Duration(days: 5)],
+        namedArgs: const <String, Object?>{},
+        sourceNode: node,
+        ctx: testContext(),
+      );
+      expect(out, DateTime.utc(2025, 12, 27));
+    });
+
+    test('unknown method raises ResolveException', () {
+      final node = parseMethod('x.bogus()');
+      expect(
+        () => invokeBuiltinMethod(
+          target: DateTime.utc(2026),
+          methodName: 'bogus',
+          positionalArgs: const <Object?>[],
+          namedArgs: const <String, Object?>{},
+          sourceNode: node,
+          ctx: testContext(),
+        ),
+        throwsA(isA<ResolveException>()),
+      );
     });
   });
 

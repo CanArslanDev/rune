@@ -210,6 +210,13 @@ void main() {
         'BorderRadius.vertical',
         'BorderRadius.horizontal',
         'Positioned.fill',
+        // v1.21.0 borders + gradients.
+        'Border.all',
+        'Border.symmetric',
+        'BorderSide',
+        'LinearGradient',
+        'RadialGradient',
+        'SweepGradient',
       ]) {
         expect(r.contains(key), isTrue, reason: 'missing value $key');
       }
@@ -241,6 +248,13 @@ void main() {
       expect(r.contains('AnimationStatus', 'forward'), isTrue);
       expect(r.contains('AnimationStatus', 'reverse'), isTrue);
       expect(r.contains('AnimationStatus', 'completed'), isTrue);
+      // v1.21.0: BorderStyle + TileMode enums.
+      expect(r.contains('BorderStyle', 'none'), isTrue);
+      expect(r.contains('BorderStyle', 'solid'), isTrue);
+      expect(r.contains('TileMode', 'clamp'), isTrue);
+      expect(r.contains('TileMode', 'repeated'), isTrue);
+      expect(r.contains('TileMode', 'mirror'), isTrue);
+      expect(r.contains('TileMode', 'decal'), isTrue);
     });
 
     test('individual register* calls combined produce the full set', () {
@@ -251,8 +265,8 @@ void main() {
       RuneDefaults.registerValues(v);
       RuneDefaults.registerConstants(c);
       expect(w.size, greaterThanOrEqualTo(119));
-      expect(v.size, greaterThanOrEqualTo(59));
-      expect(c.size, greaterThanOrEqualTo(58));
+      expect(v.size, greaterThanOrEqualTo(65));
+      expect(c.size, greaterThanOrEqualTo(64));
     });
   });
 }

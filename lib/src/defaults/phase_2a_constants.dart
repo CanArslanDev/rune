@@ -54,6 +54,24 @@ void registerPhase2aConstants(ConstantRegistry registry) {
   _registerStepperType(registry);
   _registerStepState(registry);
   _registerAnimationStatus(registry);
+  _registerBorderStyle(registry); // v1.21.0
+  _registerTileMode(registry); // v1.21.0
+}
+
+void _registerBorderStyle(ConstantRegistry r) {
+  r.registerAll('BorderStyle', const <String, Object?>{
+    'none': BorderStyle.none,
+    'solid': BorderStyle.solid,
+  });
+}
+
+void _registerTileMode(ConstantRegistry r) {
+  r.registerAll('TileMode', const <String, Object?>{
+    'clamp': TileMode.clamp,
+    'repeated': TileMode.repeated,
+    'mirror': TileMode.mirror,
+    'decal': TileMode.decal,
+  });
 }
 
 // Registers every Colors member that is a concrete Color value.

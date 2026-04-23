@@ -1,9 +1,12 @@
 import 'package:rune/src/builders/values/animation_controller_builder.dart';
+import 'package:rune/src/builders/values/border_all_builder.dart';
 import 'package:rune/src/builders/values/border_radius_all_builder.dart';
 import 'package:rune/src/builders/values/border_radius_circular_builder.dart';
 import 'package:rune/src/builders/values/border_radius_horizontal_builder.dart';
 import 'package:rune/src/builders/values/border_radius_only_builder.dart';
 import 'package:rune/src/builders/values/border_radius_vertical_builder.dart';
+import 'package:rune/src/builders/values/border_side_builder.dart';
+import 'package:rune/src/builders/values/border_symmetric_builder.dart';
 import 'package:rune/src/builders/values/bottom_navigation_bar_item_builder.dart';
 import 'package:rune/src/builders/values/box_constraints_builder.dart';
 import 'package:rune/src/builders/values/box_decoration_builder.dart';
@@ -31,6 +34,7 @@ import 'package:rune/src/builders/values/grid_view_count_builder.dart';
 import 'package:rune/src/builders/values/grid_view_count_builder_builder.dart';
 import 'package:rune/src/builders/values/grid_view_extent_builder.dart';
 import 'package:rune/src/builders/values/grid_view_extent_builder_builder.dart';
+import 'package:rune/src/builders/values/linear_gradient_builder.dart';
 import 'package:rune/src/builders/values/list_view_builder_builder.dart';
 import 'package:rune/src/builders/values/material_page_route_builder.dart';
 import 'package:rune/src/builders/values/navigation_destination_builder.dart';
@@ -39,6 +43,7 @@ import 'package:rune/src/builders/values/offset_builder.dart';
 import 'package:rune/src/builders/values/page_controller_builder.dart';
 import 'package:rune/src/builders/values/page_route_builder_builder.dart';
 import 'package:rune/src/builders/values/positioned_fill_builder.dart';
+import 'package:rune/src/builders/values/radial_gradient_builder.dart';
 import 'package:rune/src/builders/values/radius_circular_builder.dart';
 import 'package:rune/src/builders/values/radius_elliptical_builder.dart';
 import 'package:rune/src/builders/values/relative_rect_builder.dart';
@@ -55,6 +60,7 @@ import 'package:rune/src/builders/values/sliver_list_builder_builder.dart';
 import 'package:rune/src/builders/values/snack_bar_action_builder.dart';
 import 'package:rune/src/builders/values/snack_bar_builder.dart';
 import 'package:rune/src/builders/values/step_builder.dart';
+import 'package:rune/src/builders/values/sweep_gradient_builder.dart';
 import 'package:rune/src/builders/values/text_editing_controller_builder.dart';
 import 'package:rune/src/builders/values/text_style_builder.dart';
 import 'package:rune/src/builders/values/theme_data_builder.dart';
@@ -459,7 +465,14 @@ abstract final class RuneDefaults {
       ..registerBuilder(const BorderRadiusOnlyBuilder())
       ..registerBuilder(const BorderRadiusVerticalBuilder())
       ..registerBuilder(const BorderRadiusHorizontalBuilder())
-      ..registerBuilder(const PositionedFillBuilder());
+      ..registerBuilder(const PositionedFillBuilder())
+      // v1.21.0 borders + gradients.
+      ..registerBuilder(const BorderAllBuilder())
+      ..registerBuilder(const BorderSymmetricBuilder())
+      ..registerBuilder(const BorderSideBuilder())
+      ..registerBuilder(const LinearGradientBuilder())
+      ..registerBuilder(const RadialGradientBuilder())
+      ..registerBuilder(const SweepGradientBuilder());
   }
 
   /// Seeds [registry] with Phase 2a constants (Colors, enums,

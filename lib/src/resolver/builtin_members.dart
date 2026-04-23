@@ -87,6 +87,7 @@ const Map<String, List<String>> _builtinMethodsByType = <String, List<String>>{
   ],
   'Animation': <String>['drive'],
   'Animatable': <String>['animate', 'chain'],
+  'DateTime': <String>['isBefore', 'isAfter', 'difference', 'add', 'subtract'],
 };
 
 /// Mapping from runtime-target type label to the whitelisted property
@@ -130,6 +131,26 @@ const Map<String, List<String>> _builtinPropertiesByType =
     'blue',
     'opacity',
     'value',
+  ],
+  'Duration': <String>[
+    'inDays',
+    'inHours',
+    'inMinutes',
+    'inSeconds',
+    'inMilliseconds',
+    'inMicroseconds',
+  ],
+  'DateTime': <String>[
+    'year',
+    'month',
+    'day',
+    'hour',
+    'minute',
+    'second',
+    'millisecond',
+    'microsecond',
+    'weekday',
+    'millisecondsSinceEpoch',
   ],
   'ThemeData': <String>[
     'colorScheme',
@@ -409,6 +430,38 @@ Never _throwUnknownMethod({
       'minHeight' => (true, target.minHeight),
       'biggest' => (true, target.biggest),
       'smallest' => (true, target.smallest),
+      _ => (false, null),
+    };
+  }
+  // Duration unit projections (v1.21.0). Each getter is a pure
+  // read; handy for "x minutes ago" formatting directly in source.
+  if (target is Duration) {
+    return switch (propertyName) {
+      'inDays' => (true, target.inDays),
+      'inHours' => (true, target.inHours),
+      'inMinutes' => (true, target.inMinutes),
+      'inSeconds' => (true, target.inSeconds),
+      'inMilliseconds' => (true, target.inMilliseconds),
+      'inMicroseconds' => (true, target.inMicroseconds),
+      _ => (false, null),
+    };
+  }
+  // DateTime field accessors (v1.21.0). Combined with the method
+  // whitelist (isBefore / isAfter / difference / add / subtract),
+  // source can express non-trivial date arithmetic without
+  // bouncing through host Dart.
+  if (target is DateTime) {
+    return switch (propertyName) {
+      'year' => (true, target.year),
+      'month' => (true, target.month),
+      'day' => (true, target.day),
+      'hour' => (true, target.hour),
+      'minute' => (true, target.minute),
+      'second' => (true, target.second),
+      'millisecond' => (true, target.millisecond),
+      'microsecond' => (true, target.microsecond),
+      'weekday' => (true, target.weekday),
+      'millisecondsSinceEpoch' => (true, target.millisecondsSinceEpoch),
       _ => (false, null),
     };
   }
@@ -741,6 +794,17 @@ Object? invokeBuiltinMethod({
   // Tween is itself an Animatable<T>, so this arm matches any untyped
   // Rune tween as well as the built-in ColorTween. Check is gated on
   // Animatable<Object?> to admit the widest runtime type.
+  // DateTime method whitelist (v1.21.0). isBefore/isAfter/difference
+  // take another DateTime; add/subtract take a Duration.
+  if (target is DateTime) {
+    return _invokeDateTimeMethod(
+      target: target,
+      methodName: methodName,
+      positionalArgs: positionalArgs,
+      source: source,
+      locationOf: locationOf,
+    );
+  }
   if (target is Animatable<Object?>) {
     return _invokeAnimatableMethod(
       target: target,
@@ -1864,6 +1928,114 @@ Object? _invokeTabControllerMethod({
 
   _throwUnknownMethod(
     typeLabel: 'TabController',
+    methodName: methodName,
+    source: source,
+    locationOf: locationOf,
+  );
+}
+
+Object? _invokeDateTimeMethod({
+  required DateTime target,
+  required String methodName,
+  required List<Object?> positionalArgs,
+  required String source,
+  required SourceSpan Function() locationOf,
+}) {
+  switch (methodName) {
+    case 'isBefore':
+      _requireControllerArity(
+        typeName: 'DateTime',
+        methodName: 'isBefore',
+        expected: 1,
+        positionalArgs: positionalArgs,
+        source: source,
+        locationOf: locationOf,
+      );
+      final other = _requireControllerArg<DateTime>(
+        typeName: 'DateTime',
+        methodName: 'isBefore',
+        index: 0,
+        positionalArgs: positionalArgs,
+        source: source,
+        locationOf: locationOf,
+      );
+      return target.isBefore(other);
+    case 'isAfter':
+      _requireControllerArity(
+        typeName: 'DateTime',
+        methodName: 'isAfter',
+        expected: 1,
+        positionalArgs: positionalArgs,
+        source: source,
+        locationOf: locationOf,
+      );
+      final other = _requireControllerArg<DateTime>(
+        typeName: 'DateTime',
+        methodName: 'isAfter',
+        index: 0,
+        positionalArgs: positionalArgs,
+        source: source,
+        locationOf: locationOf,
+      );
+      return target.isAfter(other);
+    case 'difference':
+      _requireControllerArity(
+        typeName: 'DateTime',
+        methodName: 'difference',
+        expected: 1,
+        positionalArgs: positionalArgs,
+        source: source,
+        locationOf: locationOf,
+      );
+      final other = _requireControllerArg<DateTime>(
+        typeName: 'DateTime',
+        methodName: 'difference',
+        index: 0,
+        positionalArgs: positionalArgs,
+        source: source,
+        locationOf: locationOf,
+      );
+      return target.difference(other);
+    case 'add':
+      _requireControllerArity(
+        typeName: 'DateTime',
+        methodName: 'add',
+        expected: 1,
+        positionalArgs: positionalArgs,
+        source: source,
+        locationOf: locationOf,
+      );
+      final duration = _requireControllerArg<Duration>(
+        typeName: 'DateTime',
+        methodName: 'add',
+        index: 0,
+        positionalArgs: positionalArgs,
+        source: source,
+        locationOf: locationOf,
+      );
+      return target.add(duration);
+    case 'subtract':
+      _requireControllerArity(
+        typeName: 'DateTime',
+        methodName: 'subtract',
+        expected: 1,
+        positionalArgs: positionalArgs,
+        source: source,
+        locationOf: locationOf,
+      );
+      final duration = _requireControllerArg<Duration>(
+        typeName: 'DateTime',
+        methodName: 'subtract',
+        index: 0,
+        positionalArgs: positionalArgs,
+        source: source,
+        locationOf: locationOf,
+      );
+      return target.subtract(duration);
+  }
+
+  _throwUnknownMethod(
+    typeLabel: 'DateTime',
     methodName: methodName,
     source: source,
     locationOf: locationOf,
