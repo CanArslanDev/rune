@@ -4,6 +4,67 @@ All notable changes to this project are documented here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning follows
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.21.0] - 2026-04-23 - borders, gradients, time breadth
+
+### Added
+
+- **`Border.all(color?, width?, style?, strokeAlign?)` value
+  builder.** All four named args are optional and default to
+  Flutter's own values (`Colors.black`, `1.0`, `BorderStyle.solid`,
+  `strokeAlignInside`). `width` accepts any `num` and coerces to
+  `double`.
+- **`Border.symmetric(vertical?, horizontal?)` value builder.**
+  Both arms optional, defaulting to `BorderSide.none`. Use when
+  the left/right pair should match each other and the top/bottom
+  pair should match each other.
+- **Standalone `BorderSide(color?, width?, style?, strokeAlign?)`
+  value builder** for composing a single side (commonly used with
+  `OutlineInputBorder` / `UnderlineInputBorder` or passed to
+  `Border.symmetric`).
+- **`LinearGradient(colors, begin?, end?, stops?, tileMode?)`
+  value builder.** `colors` is required. `begin` / `end` accept
+  any `AlignmentGeometry`; default `Alignment.centerLeft` to
+  `Alignment.centerRight`. `stops` is an optional `List<num>`
+  coerced to `List<double>`.
+- **`RadialGradient(colors, center?, radius?, stops?, tileMode?)`
+  value builder.** Defaults: `Alignment.center`, `radius: 0.5`.
+- **`SweepGradient(colors, center?, startAngle?, endAngle?,
+  stops?, tileMode?)` value builder.** Defaults to a full-circle
+  sweep (`0` to `2 * pi`) from `Alignment.center`.
+- **`BoxDecoration` now forwards `border:` and `gradient:`.**
+  Previously those two named args were silently dropped so the
+  new builders can finally compose:
+
+  ```
+  BoxDecoration(
+    border: Border.all(color: Colors.red, width: 2),
+    gradient: LinearGradient(colors: [Colors.blue, Colors.green]),
+  )
+  ```
+
+- **`BorderStyle.none` / `BorderStyle.solid` and `TileMode.clamp`
+  / `.repeated` / `.mirror` / `.decal` constants** now register
+  as part of the default constant set.
+- **`Duration` runtime properties.** `duration.inDays`,
+  `.inHours`, `.inMinutes`, `.inSeconds`, `.inMilliseconds`, and
+  `.inMicroseconds` resolve directly from source. Useful for
+  `"$elapsed.inSeconds seconds"`-shaped formatters.
+- **`DateTime` runtime properties.** `.year`, `.month`, `.day`,
+  `.hour`, `.minute`, `.second`, `.millisecond`, `.microsecond`,
+  `.weekday`, `.millisecondsSinceEpoch`. Combined with the new
+  methods, source can express non-trivial date arithmetic without
+  host-side helpers.
+- **`DateTime` runtime methods.** `.isBefore(other)`,
+  `.isAfter(other)`, `.difference(other)` (returns `Duration`),
+  `.add(duration)`, `.subtract(duration)` (return `DateTime`).
+- **README gains a "Support me with a cup of coffee" section**
+  above `License` linking to `buymeacoffee.com/canarslandev`.
+
+### Notes
+
+- 38 new tests; total root test count 1798 to 1836, analyzer
+  clean.
+
 ## [1.20.0] - 2026-04-21 - geometry constructors, color breadth, state-management trio
 
 ### Added
@@ -1945,6 +2006,7 @@ rune_cupertino adds another 72 tests.
 - Example app at `example/lib/main.dart` demonstrating the full Phase 1
   feature set.
 
+[1.21.0]: https://github.com/CanArslanDev/rune/compare/v1.20.0...v1.21.0
 [1.20.0]: https://github.com/CanArslanDev/rune/compare/v1.19.0...v1.20.0
 [1.11.0]: https://github.com/CanArslanDev/rune/compare/v1.10.0...v1.11.0
 [1.10.0]: https://github.com/CanArslanDev/rune/compare/v1.9.0...v1.10.0
