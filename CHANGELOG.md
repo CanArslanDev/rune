@@ -6,8 +6,36 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [1.20.0] - 2026-04-21 - geometry constructors, color breadth, state-management trio
+
 ### Added
 
+- **`Color.fromARGB(alpha, red, green, blue)` value builder.**
+  Four positional ints build an opaque or partially-transparent
+  color without the `0xAARRGGBB` hex dance. Closes a deferral
+  noted in `color_builder.dart` since Phase 2b.
+- **`Color.fromRGBO(red, green, blue, opacity)` value builder.**
+  Three ints plus a `num` opacity (0.0-1.0, int-coerced to
+  double) give the opacity-channel shape most tutorials use.
+- **`Color` runtime properties.** `color.alpha`, `.red`,
+  `.green`, `.blue`, `.opacity`, `.value` are now resolvable
+  from source. Enables expressions like
+  `Color.fromARGB(accent.alpha, 255 - accent.red, 0, 0)`
+  without bouncing through host Dart.
+- **`Radius.circular(x)` and `Radius.elliptical(x, y)` value
+  builders.** Compose non-uniform corner radii with
+  `BorderRadius.only(topLeft: Radius.circular(12), ...)`.
+- **Four new `BorderRadius` named-constructor builders.**
+  `BorderRadius.all(radius)`, `.only(topLeft, topRight,
+  bottomLeft, bottomRight)`, `.vertical(top, bottom)`,
+  `.horizontal(left, right)`. Complements the existing
+  `.circular(n)` shortcut. Omitted arms on `.only` / `.vertical`
+  / `.horizontal` default to `Radius.zero`, matching Flutter.
+- **`Positioned.fill(child)` value builder.** Stretches the
+  given child to every edge of its parent [Stack]. Override
+  individual sides with `left:` / `top:` / `right:` / `bottom:`;
+  omitted sides default to `0`. Closes the deferral noted in
+  `positioned_builder.dart`.
 - **`rune_router` v0.2.0: source-level navigation via
   ImperativeRegistry.** `RouterBridge(router: myRouter)` now
   registers six `Router.*` prefixed imperatives on
@@ -1919,7 +1947,8 @@ rune_cupertino adds another 72 tests.
 - Example app at `example/lib/main.dart` demonstrating the full Phase 1
   feature set.
 
-[Unreleased]: https://github.com/CanArslanDev/rune/compare/v1.11.0...HEAD
+[Unreleased]: https://github.com/CanArslanDev/rune/compare/v1.20.0...HEAD
+[1.20.0]: https://github.com/CanArslanDev/rune/compare/v1.19.0...v1.20.0
 [1.11.0]: https://github.com/CanArslanDev/rune/compare/v1.10.0...v1.11.0
 [1.10.0]: https://github.com/CanArslanDev/rune/compare/v1.9.0...v1.10.0
 [1.9.0]: https://github.com/CanArslanDev/rune/compare/v1.8.0...v1.9.0

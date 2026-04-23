@@ -37,7 +37,7 @@ Deliver UI from a server, a CMS, or a designer tool without shipping a new app b
 
 ```yaml
 dependencies:
-  rune: ^1.19.0
+  rune: ^1.20.0
 ```
 
 The package is pre-publication; use a `git:` or `path:` dependency until a tagged `pub.dev` release lands. `dart pub publish --dry-run` currently reports 0 errors / 0 warnings.
@@ -115,7 +115,7 @@ A runnable version lives in [`example/`](example/).
 
 ## Supported source syntax
 
-Current release: **v1.18.0**. DevTools inspection (Phase 1). `RuneInspector` tracks every live `RuneView` and registers the `ext.rune.inspect` VM service extension the first time a view mounts. DevTools or any VM-service client can call the extension and receive a JSON payload with every view's source string, data context, parse-cache size, and last error (if the view is in a fallback state). Ships the host-side half; the companion `rune_devtools_extension` package and Flutter-web UI land in Phase 2-3. Release builds pay zero cost because `dart:developer.registerExtension` compiles out. Previous: **v1.17.0** user-registered runtime members. `RuneConfig.members` lets hosts and sibling bridges register property accessors and method invokers for arbitrary Dart types without reflection. Rune source can now write `counter.count` and `counter.increment()` directly against a live `CounterNotifier` in the data context, as long as the host registered those members with `config.members.registerProperty<CounterNotifier>(...)` / `.registerMethod<CounterNotifier>(...)`. Built-in stock-type members (`String.length`, `List.contains`, etc.) stay authoritative; custom classes unlock cleanly. Paired with v1.16.0's `ImperativeRegistry`, the main package now exposes every extension point a sibling bridge needs.
+Current release: **v1.20.0**. Geometry constructors, color breadth, and the state-management trio landing in one bundle. `Color.fromARGB` and `Color.fromRGBO` close the named-constructor gap flagged in Phase 2b. `Radius.circular` / `Radius.elliptical` pair with four new `BorderRadius` shapes (`.all`, `.only`, `.vertical`, `.horizontal`) to compose any corner configuration source can describe. `Positioned.fill` stretches a child across a Stack without the four-sides boilerplate. `Color` also gains six runtime property accessors (`.alpha`, `.red`, `.green`, `.blue`, `.opacity`, `.value`) so source can read channels without host-side helpers. Siblings released in parallel: `rune_router` v0.2.0 (source-level `Router.go` / `Router.push` / `Router.pop` imperatives via the ImperativeRegistry), `rune_provider` v0.2.0 (MemberRegistry integration lets `Consumer.builder` / `Selector.selector` pass the raw notifier so source can dot-access registered fields without `RuneReactiveNotifier`), plus four brand-new siblings: `rune_bloc` (flutter_bloc bridge), `rune_riverpod` (flutter_riverpod bridge completing the state-management trio alongside `rune_provider` + `rune_bloc`), `rune_http` (HTTP source-fetching with offline-first cache), `rune_lint` (test-time validation), `rune_test` (`pumpRuneView` + `rune_format` CLI).
 
 | Category              | Elements                                                                                                                                                                                                     |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
