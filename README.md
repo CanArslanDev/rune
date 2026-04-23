@@ -550,6 +550,10 @@ and README.
 Apply any bridge with `RuneConfig.defaults().withBridges([...])`.
 The RuneBridge contract is one method: `void registerInto(RuneConfig config)`.
 
+## Support me to maintain this package continously with a cup of coffee.
+
+[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](http://buymeacoffee.com/canarslandev)
+
 ## License
 
 MIT. See [`LICENSE`](LICENSE).
