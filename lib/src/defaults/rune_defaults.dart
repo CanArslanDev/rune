@@ -1,10 +1,16 @@
 import 'package:rune/src/builders/values/animation_controller_builder.dart';
+import 'package:rune/src/builders/values/border_radius_all_builder.dart';
 import 'package:rune/src/builders/values/border_radius_circular_builder.dart';
+import 'package:rune/src/builders/values/border_radius_horizontal_builder.dart';
+import 'package:rune/src/builders/values/border_radius_only_builder.dart';
+import 'package:rune/src/builders/values/border_radius_vertical_builder.dart';
 import 'package:rune/src/builders/values/bottom_navigation_bar_item_builder.dart';
 import 'package:rune/src/builders/values/box_constraints_builder.dart';
 import 'package:rune/src/builders/values/box_decoration_builder.dart';
 import 'package:rune/src/builders/values/button_segment_builder.dart';
 import 'package:rune/src/builders/values/color_builder.dart';
+import 'package:rune/src/builders/values/color_from_argb_builder.dart';
+import 'package:rune/src/builders/values/color_from_rgbo_builder.dart';
 import 'package:rune/src/builders/values/color_scheme_from_seed_builder.dart';
 import 'package:rune/src/builders/values/color_tween_builder.dart';
 import 'package:rune/src/builders/values/cupertino_page_route_builder.dart';
@@ -32,6 +38,9 @@ import 'package:rune/src/builders/values/navigation_rail_destination_builder.dar
 import 'package:rune/src/builders/values/offset_builder.dart';
 import 'package:rune/src/builders/values/page_controller_builder.dart';
 import 'package:rune/src/builders/values/page_route_builder_builder.dart';
+import 'package:rune/src/builders/values/positioned_fill_builder.dart';
+import 'package:rune/src/builders/values/radius_circular_builder.dart';
+import 'package:rune/src/builders/values/radius_elliptical_builder.dart';
 import 'package:rune/src/builders/values/relative_rect_builder.dart';
 import 'package:rune/src/builders/values/route_settings_builder.dart';
 import 'package:rune/src/builders/values/rune_component_builder.dart';
@@ -440,7 +449,17 @@ abstract final class RuneDefaults {
       ..registerBuilder(const SnackBarActionBuilder())
       ..registerBuilder(const RelativeRectFromLTRBBuilder())
       ..registerBuilder(const FilledButtonTonalBuilder())
-      ..registerBuilder(const RuneDataTableSourceBuilder());
+      ..registerBuilder(const RuneDataTableSourceBuilder())
+      // v1.20.0 geometry + color breadth.
+      ..registerBuilder(const ColorFromArgbBuilder())
+      ..registerBuilder(const ColorFromRgboBuilder())
+      ..registerBuilder(const RadiusCircularBuilder())
+      ..registerBuilder(const RadiusEllipticalBuilder())
+      ..registerBuilder(const BorderRadiusAllBuilder())
+      ..registerBuilder(const BorderRadiusOnlyBuilder())
+      ..registerBuilder(const BorderRadiusVerticalBuilder())
+      ..registerBuilder(const BorderRadiusHorizontalBuilder())
+      ..registerBuilder(const PositionedFillBuilder());
   }
 
   /// Seeds [registry] with Phase 2a constants (Colors, enums,

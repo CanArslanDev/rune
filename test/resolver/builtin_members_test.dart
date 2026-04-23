@@ -123,6 +123,33 @@ void main() {
     });
   });
 
+  group('resolveBuiltinProperty - Color (v1.20.0)', () {
+    test('red/green/blue/alpha return 0-255 ints', () {
+      const color = Color.fromARGB(128, 64, 192, 32);
+      expect(resolveBuiltinProperty(color, 'alpha'), (true, 128));
+      expect(resolveBuiltinProperty(color, 'red'), (true, 64));
+      expect(resolveBuiltinProperty(color, 'green'), (true, 192));
+      expect(resolveBuiltinProperty(color, 'blue'), (true, 32));
+    });
+
+    test('opacity returns the alpha normalised to 0..1', () {
+      const opaque = Color(0xFF000000);
+      final (hit, value) = resolveBuiltinProperty(opaque, 'opacity');
+      expect(hit, true);
+      expect(value, closeTo(1, 0.001));
+    });
+
+    test('value returns the packed 32-bit ARGB int', () {
+      const color = Color(0x80FF00FF);
+      expect(resolveBuiltinProperty(color, 'value'), (true, 0x80FF00FF));
+    });
+
+    test('unknown property falls through', () {
+      const color = Color(0xFFFF0000);
+      expect(resolveBuiltinProperty(color, 'nope'), (false, null));
+    });
+  });
+
   group('resolveBuiltinProperty - AsyncSnapshot', () {
     test('snapshot with data → hasData true, data value', () {
       const snap = AsyncSnapshot<Object?>.withData(

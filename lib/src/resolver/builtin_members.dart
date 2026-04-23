@@ -123,6 +123,14 @@ const Map<String, List<String>> _builtinPropertiesByType =
     'biggest',
     'smallest',
   ],
+  'Color': <String>[
+    'alpha',
+    'red',
+    'green',
+    'blue',
+    'opacity',
+    'value',
+  ],
   'ThemeData': <String>[
     'colorScheme',
     'textTheme',
@@ -401,6 +409,32 @@ Never _throwUnknownMethod({
       'minHeight' => (true, target.minHeight),
       'biggest' => (true, target.biggest),
       'smallest' => (true, target.smallest),
+      _ => (false, null),
+    };
+  }
+  // Color channel accessors (v1.20.0). The six getters mirror
+  // `dart:ui`'s Color interface; `value` is the packed 32-bit ARGB
+  // representation, `opacity` is the float alpha normalised to 0..1.
+  // These getters are newly deprecated in Flutter 3.27+ in favour of
+  // `.r / .g / .b / .a / .toARGB32()`; the int-returning names stay
+  // the canonical Rune-source surface because (a) they match nearly
+  // every existing tutorial and bridge example and (b) the pinned CI
+  // Flutter 3.24.0 still treats them as non-deprecated.
+  if (target is Color) {
+    // ignore: deprecated_member_use
+    return switch (propertyName) {
+      // ignore: deprecated_member_use
+      'alpha' => (true, target.alpha),
+      // ignore: deprecated_member_use
+      'red' => (true, target.red),
+      // ignore: deprecated_member_use
+      'green' => (true, target.green),
+      // ignore: deprecated_member_use
+      'blue' => (true, target.blue),
+      // ignore: deprecated_member_use
+      'opacity' => (true, target.opacity),
+      // ignore: deprecated_member_use
+      'value' => (true, target.value),
       _ => (false, null),
     };
   }

@@ -200,6 +200,16 @@ void main() {
         'RelativeRect.fromLTRB',
         'FilledButton.tonal',
         'RuneDataTableSource',
+        // v1.20.0 geometry + color breadth.
+        'Color.fromARGB',
+        'Color.fromRGBO',
+        'Radius.circular',
+        'Radius.elliptical',
+        'BorderRadius.all',
+        'BorderRadius.only',
+        'BorderRadius.vertical',
+        'BorderRadius.horizontal',
+        'Positioned.fill',
       ]) {
         expect(r.contains(key), isTrue, reason: 'missing value $key');
       }
